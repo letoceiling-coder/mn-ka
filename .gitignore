@@ -14,7 +14,8 @@
 /auth.json
 /node_modules
 # /public/build - скомпилированные файлы фронтенда должны быть в git для деплоя
-/public/hot
+/public/hot/
+/public/upload/
 /public/storage
 /storage/*.key
 /storage/pail
