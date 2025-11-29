@@ -35,6 +35,7 @@ php artisan deploy [опции]
 - `--message=MESSAGE` - Кастомное сообщение для коммита
 - `--skip-build` - Пропустить npm run build
 - `--dry-run` - Показать что будет сделано без выполнения
+- `--insecure` - Отключить проверку SSL сертификата (для разработки)
 
 **Примеры:**
 ```bash
@@ -49,6 +50,9 @@ php artisan deploy --skip-build
 
 # Просмотр что будет сделано (без выполнения)
 php artisan deploy --dry-run
+
+# Деплой с отключенной проверкой SSL (для разработки)
+php artisan deploy --insecure
 ```
 
 **Что делает:**

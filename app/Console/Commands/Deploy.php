@@ -17,7 +17,8 @@ class Deploy extends Command
     protected $signature = 'deploy 
                             {--message= : Кастомное сообщение для коммита}
                             {--skip-build : Пропустить npm run build}
-                            {--dry-run : Показать что будет сделано без выполнения}';
+                            {--dry-run : Показать что будет сделано без выполнения}
+                            {--insecure : Отключить проверку SSL сертификата (для разработки)}';
 
     /**
      * The console command description.
@@ -256,16 +257,34 @@ class Deploy extends Command
         $commitProcess = Process::run('git rev-parse HEAD');
         $commitHash = trim($commitProcess->output()) ?: 'unknown';
 
-        $this->line("  📡 URL: {$serverUrl}/api/deploy");
+        // Формируем правильный URL (убираем дублирование пути)
+        $deployUrl = rtrim($serverUrl, '/');
+        // Проверяем, содержит ли URL уже путь /api/deploy
+        if (!str_contains($deployUrl, '/api/deploy')) {
+            $deployUrl .= '/api/deploy';
+        }
+
+        $this->line("  📡 URL: {$deployUrl}");
         $this->line("  🔑 Commit: " . substr($commitHash, 0, 7));
 
         try {
-            $response = Http::timeout(300) // 5 минут таймаут
-                ->withHeaders([
+            $httpClient = Http::timeout(300); // 5 минут таймаут
+
+            // Отключить проверку SSL для локальной разработки (если указана опция)
+            if ($this->option('insecure') || env('APP_ENV') === 'local') {
+                $httpClient = $httpClient->withoutVerifying();
+                if ($this->option('insecure')) {
+                    $this->warn('  ⚠️  Проверка SSL сертификата отключена (--insecure)');
+                } else {
+                    $this->line('  ℹ️  Проверка SSL отключена (локальное окружение)');
+                }
+            }
+
+            $response = $httpClient->withHeaders([
                     'X-Deploy-Token' => $deployToken,
                     'Content-Type' => 'application/json',
                 ])
-                ->post("{$serverUrl}/api/deploy", [
+                ->post($deployUrl, [
                     'commit_hash' => $commitHash,
                     'deployed_by' => get_current_user(),
                     'timestamp' => now()->toDateTimeString(),
