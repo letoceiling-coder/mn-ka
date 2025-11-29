@@ -321,8 +321,14 @@ class DeployController extends Controller
     protected function handleComposerInstall(): array
     {
         try {
+            // Получаем путь к composer
+            $composerPath = $this->getComposerPath();
+            
+            // Используем PHP 8.2 для запуска composer
+            $command = "{$this->phpPath} {$composerPath} install --no-dev --optimize-autoloader --no-interaction";
+            
             $process = Process::path($this->basePath)
-                ->run('composer install --no-dev --optimize-autoloader --no-interaction');
+                ->run($command);
 
             if ($process->successful()) {
                 return [
@@ -344,6 +350,43 @@ class DeployController extends Controller
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Получить путь к composer
+     */
+    protected function getComposerPath(): string
+    {
+        // 1. Проверить явно указанный путь в .env
+        $composerPath = env('COMPOSER_PATH');
+        if ($composerPath && file_exists($composerPath)) {
+            return $composerPath;
+        }
+
+        // 2. Попробовать найти composer в стандартных местах
+        $possiblePaths = [
+            '/home/d/dsc23ytp/.local/bin/composer',
+            '/usr/local/bin/composer',
+            '/usr/bin/composer',
+            'composer', // Последняя попытка - использовать из PATH
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if ($path === 'composer') {
+                // Для 'composer' проверяем через which
+                $whichProcess = Process::run('which composer');
+                if ($whichProcess->successful() && trim($whichProcess->output())) {
+                    return trim($whichProcess->output());
+                }
+            } else {
+                if (file_exists($path)) {
+                    return $path;
+                }
+            }
+        }
+
+        // 3. Fallback на 'composer' (будет ошибка, если не найден)
+        return 'composer';
     }
 
     /**
