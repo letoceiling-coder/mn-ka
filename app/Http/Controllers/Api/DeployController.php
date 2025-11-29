@@ -178,20 +178,51 @@ class DeployController extends Controller
             // Настройка безопасной директории для git (решает проблему dubious ownership)
             $this->ensureGitSafeDirectory();
 
+            // Проверяем статус git перед pull
+            $statusProcess = Process::path($this->basePath)
+                ->run('git status --porcelain');
+            
+            $hasChanges = !empty(trim($statusProcess->output()));
+            
+            // Если есть локальные изменения, сохраняем их в stash
+            if ($hasChanges) {
+                Log::info('Обнаружены локальные изменения, сохраняем в stash...');
+                $stashProcess = Process::path($this->basePath)
+                    ->run('git stash push -m "Auto-stash before deploy ' . now()->toDateTimeString() . '"');
+                
+                if (!$stashProcess->successful()) {
+                    Log::warning('Не удалось сохранить изменения в stash', [
+                        'error' => $stashProcess->errorOutput(),
+                    ]);
+                }
+            }
+
+            // Сбрасываем неотслеживаемые файлы, которые могут конфликтовать
+            $this->cleanUntrackedFiles();
+
             // Выполняем git pull с дополнительной настройкой безопасной директории
-            // Используем как параметр -c, так и переменную окружения для максимальной надежности
             $safeDirectoryPath = escapeshellarg($this->basePath);
             $process = Process::path($this->basePath)
                 ->env([
                     'GIT_CEILING_DIRECTORIES' => dirname($this->basePath),
                 ])
-                ->run("git -c safe.directory={$safeDirectoryPath} pull origin main");
+                ->run("git -c safe.directory={$safeDirectoryPath} reset --hard origin/main");
+
+            if (!$process->successful()) {
+                // Если reset не удался, пробуем обычный pull
+                $process = Process::path($this->basePath)
+                    ->env([
+                        'GIT_CEILING_DIRECTORIES' => dirname($this->basePath),
+                    ])
+                    ->run("git -c safe.directory={$safeDirectoryPath} pull origin main --no-rebase");
+            }
 
             if ($process->successful()) {
                 return [
                     'success' => true,
                     'status' => 'success',
                     'output' => $process->output(),
+                    'had_local_changes' => $hasChanges,
                 ];
             }
 
@@ -206,6 +237,46 @@ class DeployController extends Controller
                 'status' => 'error',
                 'error' => $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Очистить неотслеживаемые файлы, которые могут конфликтовать
+     */
+    protected function cleanUntrackedFiles(): void
+    {
+        try {
+            // Получаем список неотслеживаемых файлов
+            $untrackedProcess = Process::path($this->basePath)
+                ->run('git ls-files --others --exclude-standard');
+            
+            $untrackedFiles = array_filter(explode("\n", trim($untrackedProcess->output())));
+            
+            if (empty($untrackedFiles)) {
+                return;
+            }
+
+            // Удаляем только файлы, которые точно должны быть в репозитории
+            $filesToRemove = [
+                'DEPLOY_NEXT_STEPS.md',
+                'DEPLOY_SYSTEM_PLAN.md',
+                'app/Console/Commands/ClearLogs.php',
+                'app/Console/Commands/Deploy.php',
+                'app/Http/Controllers/Api/DeployController.php',
+                'app/Http/Middleware/VerifyDeployToken.php',
+            ];
+
+            foreach ($filesToRemove as $file) {
+                $filePath = $this->basePath . '/' . $file;
+                if (in_array($file, $untrackedFiles) && file_exists($filePath)) {
+                    Log::info("Удаляем неотслеживаемый файл: {$file}");
+                    @unlink($filePath);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Ошибка при очистке неотслеживаемых файлов', [
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
