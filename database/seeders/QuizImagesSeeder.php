@@ -14,10 +14,34 @@ class QuizImagesSeeder extends Seeder
     /**
      * Путь к старому проекту
      */
-    private function getOldProjectPath(): string
+    private function getOldProjectPath(): ?string
     {
-        // Можно настроить через переменную окружения или использовать значение по умолчанию
-        return env('OLD_PROJECT_PATH', 'C:\OSPanel\domains\lagom');
+        // Если задан путь через переменную окружения, используем его
+        $envPath = env('OLD_PROJECT_PATH');
+        if ($envPath && File::exists($envPath)) {
+            return $envPath;
+        }
+
+        // Пробуем возможные пути в зависимости от окружения
+        $possiblePaths = [
+            // Linux/Unix пути
+            '/home/d/dsc23ytp/stroy/public_html',
+            '/var/www/html',
+            '/home/dsc23ytp/stroy/public_html',
+            
+            // Windows пути (для локальной разработки)
+            'C:\OSPanel\domains\lagom',
+            'C:\xampp\htdocs\lagom',
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (File::exists($path)) {
+                return $path;
+            }
+        }
+
+        // Если ничего не найдено, возвращаем null
+        return null;
     }
 
     /**
@@ -68,15 +92,30 @@ class QuizImagesSeeder extends Seeder
             $this->command->info("Создана директория: {$quizDir}");
         }
 
-        $sourceBasePath = rtrim($this->getOldProjectPath(), DIRECTORY_SEPARATOR);
+        $sourceBasePath = $this->getOldProjectPath();
+        
+        if (!$sourceBasePath) {
+            $this->command->warn('⚠️  Путь к старому проекту не определен.');
+            $this->command->info('Для копирования исходных изображений укажите путь в .env файле:');
+            $this->command->info('OLD_PROJECT_PATH=/path/to/old/project');
+            $this->command->info('Если файлы не найдены, будут созданы placeholder изображения.');
+            $this->command->newLine();
+        } else {
+            $this->command->info("📍 Используется путь к старому проекту: {$sourceBasePath}");
+        }
 
         foreach ($quizImages as $imageData) {
-            $sourcePath = $sourceBasePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $imageData['source_file']);
             $targetPath = public_path($imageData['target_path']);
             $relativePath = $imageData['target_path'];
+            $sourcePath = null;
 
-            // Копируем файл из старого проекта
-            if (File::exists($sourcePath)) {
+            // Пробуем найти исходный файл
+            if ($sourceBasePath) {
+                $sourcePath = rtrim($sourceBasePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $imageData['source_file']);
+            }
+
+            // Копируем файл из старого проекта, если путь найден и файл существует
+            if ($sourcePath && File::exists($sourcePath)) {
                 // Если исходный файл PNG, конвертируем в JPG
                 if (strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION)) === 'png') {
                     $this->convertPngToJpg($sourcePath, $targetPath);
@@ -87,10 +126,20 @@ class QuizImagesSeeder extends Seeder
                     $this->command->info("Скопировано: {$imageData['source_file']} -> {$imageData['target_path']}");
                 }
             } else {
-                // Если файл не найден, создаем placeholder
-                $this->command->warn("Файл не найден: {$sourcePath}");
-                $this->createPlaceholderImage($targetPath, $imageData['title']);
-                $this->command->warn("Создан placeholder для {$imageData['name']}");
+                // Если файл не найден или путь к старому проекту не определен, создаем placeholder
+                if ($sourcePath) {
+                    $this->command->warn("Файл не найден: {$sourcePath}");
+                } else {
+                    $this->command->warn("Путь к старому проекту не определен. Используйте переменную OLD_PROJECT_PATH в .env файле.");
+                }
+                
+                // Проверяем, не создан ли уже файл (чтобы не перезаписывать существующие)
+                if (!File::exists($targetPath)) {
+                    $this->createPlaceholderImage($targetPath, $imageData['title']);
+                    $this->command->info("Создан placeholder для {$imageData['name']}");
+                } else {
+                    $this->command->info("Файл {$imageData['name']} уже существует, пропускаем.");
+                }
             }
 
             // Получаем информацию о файле
