@@ -43,14 +43,14 @@ class DeployController extends Controller
 
             Log::info("Используется PHP: {$this->phpPath} (версия: {$this->phpVersion})");
 
-            // Получаем текущий commit hash
-            $oldCommitHash = $this->getCurrentCommitHash();
-
             // 0. Очистка файлов разработки в начале (на случай остатков)
             $this->cleanDevelopmentFiles();
 
-            // 1. Git pull
+            // 1. Git pull (внутри handleGitPull будет настроена безопасная директория)
             $gitPullResult = $this->handleGitPull();
+            
+            // Получаем текущий commit hash ПОСЛЕ настройки безопасной директории
+            $oldCommitHash = $this->getCurrentCommitHash();
             $result['data']['git_pull'] = $gitPullResult['status'];
             if (!$gitPullResult['success']) {
                 throw new \Exception("Ошибка git pull: {$gitPullResult['error']}");
@@ -200,8 +200,9 @@ class DeployController extends Controller
     {
         try {
             // Настройка безопасной директории для git (решает проблему dubious ownership)
+            // ВАЖНО: Это должно быть первым шагом перед всеми git командами
             $this->ensureGitSafeDirectory();
-
+            
             // Определяем безопасную директорию для всех git команд
             $safeDirectoryPath = escapeshellarg($this->basePath);
             $gitEnv = [
@@ -427,13 +428,15 @@ class DeployController extends Controller
     {
         try {
             // Сначала пытаемся добавить в глобальную конфигурацию
+            // Используем кавычки для экранирования пути с пробелами
+            $escapedPath = escapeshellarg($this->basePath);
             $process = Process::path($this->basePath)
-                ->run("git config --global --add safe.directory {$this->basePath}");
+                ->run("git config --global --add safe.directory {$escapedPath} 2>&1");
 
             // Если глобально не получилось, пробуем локально
             if (!$process->successful()) {
                 $processLocal = Process::path($this->basePath)
-                    ->run("git config --local --add safe.directory {$this->basePath}");
+                    ->run("git config --local --add safe.directory {$escapedPath} 2>&1");
 
                 // Если и локально не получилось, используем переменную окружения
                 if (!$processLocal->successful()) {
