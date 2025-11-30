@@ -160,20 +160,22 @@
                         </div>
                         <div class="answer-value">
                             @if(is_array($answer))
-                                @if(isset($answer['name']))
-                                    {{ $answer['name'] }}
+                                @if(isset($answer['text']))
+                                    {{ $answer['text'] }}
                                 @elseif(isset($answer['title']))
                                     {{ $answer['title'] }}
-                                @elseif(isset($answer['answer']))
-                                    {{ is_array($answer['answer']) ? implode(', ', $answer['answer']) : $answer['answer'] }}
+                                @elseif(isset($answer['name']))
+                                    {{ $answer['name'] }}
                                 @else
-                                    {{ json_encode($answer, JSON_UNESCAPED_UNICODE) }}
+                                    {{ is_string($answer) ? $answer : json_encode($answer, JSON_UNESCAPED_UNICODE) }}
                                 @endif
                             @elseif(is_object($answer))
-                                @if(isset($answer->name))
-                                    {{ $answer->name }}
+                                @if(isset($answer->text))
+                                    {{ $answer->text }}
                                 @elseif(isset($answer->title))
                                     {{ $answer->title }}
+                                @elseif(isset($answer->name))
+                                    {{ $answer->name }}
                                 @else
                                     {{ json_encode($answer, JSON_UNESCAPED_UNICODE) }}
                                 @endif

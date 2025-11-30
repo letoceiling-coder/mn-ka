@@ -319,12 +319,14 @@
 
 <script>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiGet, apiPost, apiDelete } from '../../utils/api'
 import Swal from 'sweetalert2'
 
 export default {
     name: 'Notifications',
     setup() {
+        const router = useRouter()
         const loading = ref(false)
         const error = ref(null)
         const notifications = ref([])
@@ -338,7 +340,6 @@ export default {
         const perPage = ref(20)
         const searchTimeout = ref(null)
         const selectedNotification = ref(null)
-        const loadingNotification = ref(false)
 
         const fetchNotifications = async (page = 1) => {
             loading.value = true
@@ -526,7 +527,7 @@ export default {
 
         // Просмотр детальной информации об уведомлении
         const viewNotification = async (notification) => {
-            loadingNotification.value = true
+            // Всегда загружаем полные данные уведомления для проверки типа
             try {
                 const token = localStorage.getItem('token')
                 const headers = {
@@ -547,20 +548,33 @@ export default {
                 }
 
                 const result = await response.json()
-                selectedNotification.value = result.data
+                const fullNotification = result.data
 
+                // Если это уведомление о квизе, сразу переходим на страницу с деталями
+                if (fullNotification.data && fullNotification.data.quiz_id) {
+                    // Отмечаем как прочитанное перед переходом
+                    if (!fullNotification.read) {
+                        await markAsRead(fullNotification.id)
+                    }
+                    // Переходим на страницу с деталями квиза
+                    router.push(`/admin/notifications/quiz/${fullNotification.data.quiz_id}?notification_id=${fullNotification.id}`)
+                    return
+                }
+
+                // Для остальных уведомлений открываем модальное окно
+                selectedNotification.value = fullNotification
+                
                 // Отмечаем как прочитанное при открытии
-                if (!notification.read) {
-                    await markAsRead(notification.id)
+                if (!fullNotification.read) {
+                    await markAsRead(fullNotification.id)
                 }
             } catch (err) {
                 console.error('Error loading notification:', err)
-                // Если не удалось загрузить детали, показываем то что есть
+                // Если не удалось загрузить детали, показываем то что есть в модальном окне
                 selectedNotification.value = notification
-            } finally {
-                loadingNotification.value = false
             }
         }
+
 
         const closeNotificationModal = () => {
             selectedNotification.value = null
@@ -648,7 +662,6 @@ export default {
             getTypeClass,
             getPageNumbers,
             selectedNotification,
-            loadingNotification,
             viewNotification,
             closeNotificationModal,
             markAsReadFromModal,

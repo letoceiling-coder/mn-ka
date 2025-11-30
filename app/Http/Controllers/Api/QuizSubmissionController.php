@@ -84,19 +84,26 @@ class QuizSubmissionController extends Controller
                     }
                     
                     // Для вопросов с вариантами (selects, images-collect) получаем полный путь
-                    if (in_array($question->question_type, ['selects', 'images-collect']) && isset($question->question_data['selects'])) {
-                        $selectedOption = null;
-                        // Ищем выбранный вариант в данных вопроса
-                        foreach ($question->question_data['selects'] as $option) {
-                            $optionId = $option['id'] ?? null;
-                            if ($optionId && ($optionId == $answerValue || (is_array($answer) && ($optionId == ($answer['id'] ?? null)))) {
-                                $selectedOption = $option;
-                                break;
-                            }
-                        }
+                    if (in_array($question->question_type, ['selects', 'images-collect'])) {
+                        $questionData = is_array($question->question_data) ? $question->question_data : (json_decode($question->question_data, true) ?? []);
                         
-                        if ($selectedOption) {
-                            $answerText = $selectedOption['title'] ?? $selectedOption['name'] ?? $answerText;
+                        if (isset($questionData['selects']) && is_array($questionData['selects'])) {
+                            $selectedOption = null;
+                            // Ищем выбранный вариант в данных вопроса
+                            foreach ($questionData['selects'] as $option) {
+                                if (!is_array($option)) {
+                                    continue;
+                                }
+                                $optionId = $option['id'] ?? null;
+                                if ($optionId && ($optionId == $answerValue || (is_array($answer) && ($optionId == ($answer['id'] ?? null))))) {
+                                    $selectedOption = $option;
+                                    break;
+                                }
+                            }
+                            
+                            if ($selectedOption && is_array($selectedOption)) {
+                                $answerText = $selectedOption['title'] ?? $selectedOption['name'] ?? $answerText;
+                            }
                         }
                     }
                     
@@ -166,7 +173,17 @@ class QuizSubmissionController extends Controller
                 // Важно: ответы должны быть в том же порядке, что и вопросы
                 $emailAnswers = [];
                 foreach ($detailedAnswers as $answerData) {
-                    $emailAnswers[] = $answerData['answer'];
+                    // Для email передаем текст ответа или значение
+                    if (isset($answerData['answer']['text'])) {
+                        $emailAnswers[] = $answerData['answer']['text'];
+                    } elseif (isset($answerData['answer']['value'])) {
+                        $emailAnswers[] = $answerData['answer']['value'];
+                    } elseif (isset($answerData['answer']['full_data'])) {
+                        $fullData = $answerData['answer']['full_data'];
+                        $emailAnswers[] = is_array($fullData) ? ($fullData['text'] ?? $fullData['title'] ?? $fullData['name'] ?? $fullData) : $fullData;
+                    } else {
+                        $emailAnswers[] = $answerData['answer'];
+                    }
                 }
                 
                 // Логируем для отладки

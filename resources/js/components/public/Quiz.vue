@@ -278,6 +278,7 @@ export default {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                     },
                     body: JSON.stringify({
@@ -287,17 +288,30 @@ export default {
                     }),
                 });
 
-                const result = await response.json();
+                // Проверяем тип ответа
+                const contentType = response.headers.get('content-type');
+                let result;
 
-                if (response.ok && result.success) {
-                    isCompleted.value = true;
-                    return { success: true, message: result.message };
+                if (contentType && contentType.includes('application/json')) {
+                    result = await response.json();
                 } else {
-                    throw new Error(result.message || 'Ошибка отправки результатов квиза');
+                    // Если ответ не JSON (например, HTML страница с ошибкой)
+                    const text = await response.text();
+                    console.error('Некорректный ответ от сервера:', text);
+                    throw new Error('Сервер вернул некорректный ответ. Пожалуйста, попробуйте еще раз.');
+                }
+
+                if (response.ok && result && result.success) {
+                    isCompleted.value = true;
+                    return { success: true, message: result.message || 'Спасибо за прохождение квиза!' };
+                } else {
+                    const errorMessage = result?.message || result?.error || 'Ошибка отправки результатов квиза';
+                    throw new Error(errorMessage);
                 }
             } catch (err) {
                 console.error('Ошибка отправки результатов квиза:', err);
-                return { success: false, message: err.message || 'Ошибка отправки результатов квиза' };
+                const errorMessage = err.message || 'Ошибка отправки результатов квиза. Пожалуйста, попробуйте еще раз.';
+                return { success: false, message: errorMessage };
             } finally {
                 isSubmitting.value = false;
             }
