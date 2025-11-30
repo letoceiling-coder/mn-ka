@@ -90,6 +90,18 @@ html[data-theme="dark"] {
     .bg-muted {
         background-color: hsl(var(--muted));
     }
+    .bg-muted\/50 {
+        background-color: hsl(var(--muted) / 0.5);
+    }
+    .bg-muted\/30 {
+        background-color: hsl(var(--muted) / 0.3);
+    }
+    .bg-muted\/10 {
+        background-color: hsl(var(--muted) / 0.1);
+    }
+    .bg-muted\/80 {
+        background-color: hsl(var(--muted) / 0.8);
+    }
     .bg-accent {
         background-color: hsl(var(--accent));
     }

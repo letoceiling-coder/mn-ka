@@ -40,9 +40,11 @@ class NotificationTool
      * @param string $title
      * @param string $message
      * @param string|null $type
+     * @param array|null $data
+     * @param bool $sendToTelegram Отправлять ли в Telegram (по умолчанию true)
      * @return Notification
      */
-    public function addNotification(User $user, string $title, string $message, ?string $type = 'info', ?array $data = null): Notification
+    public function addNotification(User $user, string $title, string $message, ?string $type = 'info', ?array $data = null, bool $sendToTelegram = true): Notification
     {
         $notification = Notification::create([
             'user_id' => $user->id,
@@ -54,15 +56,16 @@ class NotificationTool
         ]);
 
         // Отправляем уведомление в Telegram всем администраторам, если включено
-        try {
-            $telegramSettings = \App\Models\TelegramSettings::getSettings();
-            
-            \Illuminate\Support\Facades\Log::debug('Telegram notification check', [
-                'is_enabled' => $telegramSettings->is_enabled,
-                'send_notifications' => $telegramSettings->send_notifications,
-            ]);
-            
-            if ($telegramSettings->is_enabled && $telegramSettings->send_notifications) {
+        if ($sendToTelegram) {
+            try {
+                $telegramSettings = \App\Models\TelegramSettings::getSettings();
+                
+                \Illuminate\Support\Facades\Log::debug('Telegram notification check', [
+                    'is_enabled' => $telegramSettings->is_enabled,
+                    'send_notifications' => $telegramSettings->send_notifications,
+                ]);
+                
+                if ($telegramSettings->is_enabled && $telegramSettings->send_notifications) {
                 // Получаем всех администраторов с telegram_chat_id
                 $adminUsers = \App\Models\User::whereNotNull('telegram_chat_id')
                     ->whereHas('roles', function ($query) {
@@ -98,19 +101,20 @@ class NotificationTool
                         'notification_id' => $notification->id,
                     ]);
                 }
-            } else {
-                \Illuminate\Support\Facades\Log::debug('Telegram notifications disabled', [
-                    'is_enabled' => $telegramSettings->is_enabled,
-                    'send_notifications' => $telegramSettings->send_notifications,
+                } else {
+                    \Illuminate\Support\Facades\Log::debug('Telegram notifications disabled', [
+                        'is_enabled' => $telegramSettings->is_enabled,
+                        'send_notifications' => $telegramSettings->send_notifications,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Логируем ошибку, но не прерываем создание уведомления
+                \Illuminate\Support\Facades\Log::error('Failed to send notification to Telegram', [
+                    'error' => $e->getMessage(),
+                    'notification_id' => $notification->id,
+                    'trace' => $e->getTraceAsString(),
                 ]);
             }
-        } catch (\Exception $e) {
-            // Логируем ошибку, но не прерываем создание уведомления
-            \Illuminate\Support\Facades\Log::error('Failed to send notification to Telegram', [
-                'error' => $e->getMessage(),
-                'notification_id' => $notification->id,
-                'trace' => $e->getTraceAsString(),
-            ]);
         }
 
         return $notification;

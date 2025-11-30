@@ -198,6 +198,11 @@ const routes = [
         meta: { requiresAuth: true },
         children: [
             {
+                path: 'documentation',
+                name: 'admin.documentation',
+                component: () => import('./pages/admin/Documentation.vue'),
+            },
+            {
                 path: '',
                 name: 'admin.dashboard',
                 component: () => import('./pages/admin/Dashboard.vue'),

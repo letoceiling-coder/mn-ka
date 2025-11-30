@@ -7,6 +7,7 @@ use App\Models\Quiz;
 use App\Models\User;
 use App\Mail\QuizCompletionMail;
 use App\Services\NotificationTool;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -141,7 +142,6 @@ class QuizSubmissionController extends Controller
             ];
 
             // Создаем уведомление для администраторов через NotificationTool
-            // Это обеспечит автоматическую отправку в Telegram
             $adminUsers = User::whereHas('roles', function($q) {
                 $q->whereIn('slug', ['admin', 'manager']);
             })->get();
@@ -149,15 +149,48 @@ class QuizSubmissionController extends Controller
             // Добавляем ссылку на просмотр уведомления в данных
             $quizData['view_url'] = '/admin/notifications';
             
-            // Используем существующий экземпляр NotificationTool из конструктора
+            $title = 'Новое прохождение квиза';
+            $message = "Пользователь {$request->contact['name']} ({$request->contact['email']}) прошел квиз \"{$quiz->title}\". Перейдите в уведомления для просмотра деталей.";
+            
+            // Создаем уведомления в БД для каждого администратора
             foreach ($adminUsers as $admin) {
                 $this->notificationTool->addNotification(
                     $admin,
-                    'Новое прохождение квиза',
-                    "Пользователь {$request->contact['name']} ({$request->contact['email']}) прошел квиз \"{$quiz->title}\". Перейдите в уведомления для просмотра деталей.",
+                    $title,
+                    $message,
                     'success',
-                    $quizData
+                    $quizData,
+                    false // Не отправлять в Telegram (отправим один раз для всех)
                 );
+            }
+            
+            // Отправляем уведомление в Telegram один раз для всех администраторов
+            try {
+                $telegramSettings = \App\Models\TelegramSettings::getSettings();
+                if ($telegramSettings->is_enabled && $telegramSettings->send_notifications) {
+                    $telegramAdmins = User::whereNotNull('telegram_chat_id')
+                        ->whereHas('roles', function ($query) {
+                            $query->whereIn('slug', ['admin', 'manager']);
+                        })
+                        ->get();
+
+                    if ($telegramAdmins->isNotEmpty()) {
+                        $telegramService = new TelegramService();
+                        foreach ($telegramAdmins as $telegramAdmin) {
+                            $telegramService->sendNotification(
+                                $title,
+                                $message,
+                                'success',
+                                $quizData,
+                                (string)$telegramAdmin->telegram_chat_id
+                            );
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send quiz notification to Telegram', [
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             // Отправляем email с результатами
