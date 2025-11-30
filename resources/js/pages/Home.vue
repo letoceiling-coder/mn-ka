@@ -1,9 +1,9 @@
 <template>
     <div class="home-page">
         <HeroBanner />
-        <HowWork />
         <Decisions />
         <Quiz />
+        <HowWork />
     </div>
 </template>
 

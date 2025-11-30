@@ -31,11 +31,16 @@ class HowWorkBlockSettingsController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string|max:1000',
+            'image' => 'nullable|string|max:500',
+            'image_alt' => 'nullable|string|max:255',
+            'button_text' => 'nullable|string|max:255',
+            'button_type' => 'nullable|in:url,method',
+            'button_value' => 'nullable|string|max:500',
             'is_active' => 'nullable|boolean',
             'steps' => 'nullable|array',
-            'steps.*.title' => 'required_with:steps|string|max:255',
-            'steps.*.description' => 'required_with:steps|string|max:1000',
-            'steps.*.icon' => 'nullable|string|max:255',
+            'steps.*.point' => 'required_with:steps|in:disc,star',
+            'steps.*.title' => 'required_with:steps|string|max:500',
+            'steps.*.description' => 'nullable|string|max:1000',
             'additional_settings' => 'nullable|array',
         ]);
 
@@ -49,6 +54,11 @@ class HowWorkBlockSettingsController extends Controller
         $settings->update($request->only([
             'title',
             'subtitle',
+            'image',
+            'image_alt',
+            'button_text',
+            'button_type',
+            'button_value',
             'is_active',
             'steps',
             'additional_settings',

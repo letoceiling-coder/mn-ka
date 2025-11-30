@@ -1,8 +1,8 @@
 <template>
     <div class="how-work-settings-page space-y-6">
         <div>
-            <h1 class="text-3xl font-semibold text-foreground">Настройки блока "Как это работает"</h1>
-            <p class="text-muted-foreground mt-1">Управление блоком "Как это работает" на главной странице</p>
+            <h1 class="text-3xl font-semibold text-foreground">Настройки блока "Как мы работаем"</h1>
+            <p class="text-muted-foreground mt-1">Управление блоком "Как мы работаем" на главной странице</p>
         </div>
 
         <!-- Loading State -->
@@ -29,21 +29,9 @@
                         <input
                             v-model="form.title"
                             type="text"
-                            placeholder="Как это работает"
+                            placeholder="Как мы работаем"
                             class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                         />
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-foreground mb-2">
-                            Подзаголовок / Описание
-                        </label>
-                        <textarea
-                            v-model="form.subtitle"
-                            rows="3"
-                            placeholder="Простой процесс работы с нами"
-                            class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
-                        ></textarea>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -56,6 +44,124 @@
                         <label for="is_active" class="text-sm font-medium text-foreground">
                             Блок активен на главной странице
                         </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Settings -->
+            <div class="bg-card rounded-lg border border-border p-6 space-y-6">
+                <h2 class="text-xl font-semibold text-foreground">Изображение</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Изображение
+                        </label>
+                        <div class="space-y-3">
+                            <div v-if="form.image" class="relative">
+                                <img
+                                    :src="form.image.startsWith('data:') || form.image.startsWith('/') ? form.image : `/${form.image}`"
+                                    alt="Preview"
+                                    class="w-full max-w-md h-auto object-cover rounded-lg border border-border"
+                                />
+                                <div class="mt-2 flex gap-2">
+                                    <button
+                                        type="button"
+                                        @click="selectImage"
+                                        class="px-4 py-2 bg-accent/10 text-accent border border-accent/40 rounded hover:bg-accent/20"
+                                    >
+                                        Изменить изображение
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="form.image = null; form.image_alt = ''"
+                                        class="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/40 rounded hover:bg-destructive/20"
+                                    >
+                                        Удалить
+                                    </button>
+                                </div>
+                            </div>
+                            <div v-else>
+                                <button
+                                    type="button"
+                                    @click="selectImage"
+                                    class="w-full h-32 border-2 border-dashed border-border rounded flex items-center justify-center hover:bg-muted/10 transition-colors"
+                                >
+                                    <span class="text-muted-foreground">Выберите изображение</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-1">Рекомендуемый размер: 510x290px (десктоп), 290x165px (мобильный)</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Alt текст для изображения
+                        </label>
+                        <input
+                            v-model="form.image_alt"
+                            type="text"
+                            placeholder="Как мы работаем"
+                            class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button Settings -->
+            <div class="bg-card rounded-lg border border-border p-6 space-y-6">
+                <h2 class="text-xl font-semibold text-foreground">Настройки кнопки</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Текст кнопки
+                        </label>
+                        <input
+                            v-model="form.button_text"
+                            type="text"
+                            placeholder="Заказать обратный звонок"
+                            class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Тип кнопки
+                        </label>
+                        <select
+                            v-model="form.button_type"
+                            class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                        >
+                            <option value="url">URL (ссылка)</option>
+                            <option value="method">Метод (popup)</option>
+                        </select>
+                    </div>
+
+                    <div v-if="form.button_type === 'url'">
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            URL
+                        </label>
+                        <input
+                            v-model="form.button_value"
+                            type="text"
+                            placeholder="/page или https://example.com"
+                            class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                    </div>
+
+                    <div v-if="form.button_type === 'method'">
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            ID метода
+                        </label>
+                        <input
+                            v-model="form.button_value"
+                            type="text"
+                            placeholder="Методы будут добавлены позже"
+                            disabled
+                            class="w-full px-4 py-2 bg-background border border-border rounded-lg opacity-50 cursor-not-allowed"
+                        />
+                        <p class="text-xs text-muted-foreground mt-1">Выбор методов будет доступен после создания функционала методов</p>
                     </div>
                 </div>
             </div>
@@ -92,45 +198,52 @@
                             </button>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-foreground mb-2">
-                                    Иконка / Номер
+                                    Тип иконки
                                 </label>
-                                <input
-                                    v-model="step.icon"
-                                    type="text"
-                                    placeholder="1, 2, 3 или эмодзи"
+                                <select
+                                    v-model="step.point"
                                     class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                                />
+                                >
+                                    <option value="disc">Круг</option>
+                                    <option value="star">Звезда</option>
+                                </select>
                                 <p class="text-xs text-muted-foreground mt-1">
-                                    Если не указано, будет использован номер шага
+                                    Круг для обычных шагов, звезда для финального шага
                                 </p>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-foreground mb-2">
-                                    Заголовок шага
-                                </label>
-                                <input
-                                    v-model="step.title"
-                                    type="text"
-                                    placeholder="Название шага"
-                                    class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                                />
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-foreground mb-2">
-                                Описание шага
+                                Заголовок шага
+                            </label>
+                            <textarea
+                                v-model="step.title"
+                                rows="2"
+                                placeholder="Вы оставляете заявку"
+                                class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                            ></textarea>
+                            <p class="text-xs text-muted-foreground mt-1">
+                                Можно использовать HTML теги, например &lt;br&gt; для переноса строки
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">
+                                Описание шага (необязательно)
                             </label>
                             <textarea
                                 v-model="step.description"
-                                rows="3"
-                                placeholder="Подробное описание шага"
+                                rows="2"
+                                placeholder="занимает не более 1-ой минуты"
                                 class="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                             ></textarea>
+                            <p class="text-xs text-muted-foreground mt-1">
+                                Можно использовать HTML теги, например &lt;br&gt; для переноса строки
+                            </p>
                         </div>
 
                         <!-- Кнопки перемещения -->
@@ -167,6 +280,32 @@
                 </button>
             </div>
         </div>
+
+        <!-- Media Selector Modal -->
+        <div
+            v-if="showMediaModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm overflow-y-auto p-4"
+            @click.self="showMediaModal = false"
+        >
+            <div class="bg-background border border-border rounded-lg shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col my-auto">
+                <div class="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
+                    <h3 class="text-lg font-semibold">Выберите изображение</h3>
+                    <button
+                        @click="showMediaModal = false"
+                        class="text-muted-foreground hover:text-foreground w-8 h-8 flex items-center justify-center rounded hover:bg-muted/10"
+                    >
+                        ✕
+                    </button>
+                </div>
+                <div class="flex-1 overflow-auto h-full">
+                    <Media
+                        :selection-mode="true"
+                        :count-file="1"
+                        @file-selected="handleImageSelected"
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -174,16 +313,26 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import Media from '../Media.vue';
 
 export default {
     name: 'HowWorkSettings',
+    components: {
+        Media,
+    },
     setup() {
         const loading = ref(true);
         const saving = ref(false);
         const error = ref(null);
+        const showMediaModal = ref(false);
         const form = ref({
             title: '',
-            subtitle: '',
+            subtitle: null,
+            image: null,
+            image_alt: '',
+            button_text: '',
+            button_type: 'url',
+            button_value: '',
             is_active: true,
             steps: [],
         });
@@ -196,7 +345,12 @@ export default {
                 if (response.data && response.data.data) {
                     form.value = {
                         title: response.data.data.title || '',
-                        subtitle: response.data.data.subtitle || '',
+                        subtitle: response.data.data.subtitle || null,
+                        image: response.data.data.image || null,
+                        image_alt: response.data.data.image_alt || '',
+                        button_text: response.data.data.button_text || '',
+                        button_type: response.data.data.button_type || 'url',
+                        button_value: response.data.data.button_value || '',
                         is_active: response.data.data.is_active !== false,
                         steps: response.data.data.steps || [],
                     };
@@ -209,14 +363,29 @@ export default {
             }
         };
 
+        const selectImage = () => {
+            showMediaModal.value = true;
+        };
+
+        const handleImageSelected = (file) => {
+            if (file && file.type === 'photo') {
+                const imagePath = file.url.replace(/^\//, '');
+                form.value.image = imagePath;
+                if (!form.value.image_alt) {
+                    form.value.image_alt = file.original_name || 'Как мы работаем';
+                }
+                showMediaModal.value = false;
+            }
+        };
+
         const addStep = () => {
             if (!form.value.steps) {
                 form.value.steps = [];
             }
             form.value.steps.push({
+                point: 'disc',
                 title: '',
-                description: '',
-                icon: '',
+                description: null,
             });
         };
 
@@ -273,6 +442,9 @@ export default {
             saving,
             error,
             form,
+            showMediaModal,
+            selectImage,
+            handleImageSelected,
             addStep,
             removeStep,
             moveStep,
@@ -285,4 +457,3 @@ export default {
 <style scoped>
 /* Дополнительные стили при необходимости */
 </style>
-

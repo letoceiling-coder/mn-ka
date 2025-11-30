@@ -12,6 +12,11 @@ class HowWorkBlockSettings extends Model
     protected $fillable = [
         'title',
         'subtitle',
+        'image',
+        'image_alt',
+        'button_text',
+        'button_type',
+        'button_value',
         'is_active',
         'steps',
         'additional_settings',
@@ -29,24 +34,39 @@ class HowWorkBlockSettings extends Model
     public static function getSettings(): self
     {
         return static::firstOrCreate([], [
-            'title' => 'Как это работает',
-            'subtitle' => 'Простой процесс работы с нами',
+            'title' => 'Как мы работаем',
+            'subtitle' => null,
+            'image' => null,
+            'image_alt' => 'Как мы работаем',
+            'button_text' => 'Заказать обратный звонок',
+            'button_type' => 'url',
+            'button_value' => '',
             'is_active' => true,
             'steps' => [
                 [
-                    'title' => 'Шаг 1',
-                    'description' => 'Описание первого шага',
-                    'icon' => '1',
+                    'point' => 'disc',
+                    'title' => 'Вы оставляете заявку',
+                    'description' => 'занимает не более <br>1-ой минуты',
                 ],
                 [
-                    'title' => 'Шаг 2',
-                    'description' => 'Описание второго шага',
-                    'icon' => '2',
+                    'point' => 'disc',
+                    'title' => 'Мы подбираем участок <br>и проверяем документы',
+                    'description' => null,
                 ],
                 [
-                    'title' => 'Шаг 3',
-                    'description' => 'Описание третьего шага',
-                    'icon' => '3',
+                    'point' => 'disc',
+                    'title' => 'Готовим и согласовываем <br>ИРД, ТУ, ВРИ',
+                    'description' => null,
+                ],
+                [
+                    'point' => 'disc',
+                    'title' => 'Представляем ваши интересы <br>в госструктурах',
+                    'description' => null,
+                ],
+                [
+                    'point' => 'star',
+                    'title' => 'Вы получаете участок, готовый <br> к реализации проекта',
+                    'description' => 'Берём всё на себя — вы получаете<br> результат без бюрократии',
                 ],
             ],
         ]);
