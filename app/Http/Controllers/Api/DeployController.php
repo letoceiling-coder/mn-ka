@@ -86,6 +86,18 @@ class DeployController extends Controller
 
             // 7. Финальная очистка файлов разработки (в конце, после всех операций)
             $this->cleanDevelopmentFiles();
+            
+            // 8. Запускаем Artisan команду для очистки hot файла (дополнительная проверка)
+            try {
+                $cleanHotProcess = Process::path($this->basePath)
+                    ->run("{$this->phpPath} artisan clean:hot --force");
+                
+                if ($cleanHotProcess->successful()) {
+                    Log::info('Файл public/hot очищен через Artisan команду');
+                }
+            } catch (\Exception $e) {
+                Log::warning('Ошибка при запуске clean:hot', ['error' => $e->getMessage()]);
+            }
 
             // Получаем новый commit hash
             $newCommitHash = $this->getCurrentCommitHash();
@@ -571,6 +583,15 @@ class DeployController extends Controller
             Process::path($this->basePath)
                 ->timeout(5)
                 ->run("sleep 2 && find " . escapeshellarg($this->basePath . '/public') . " -maxdepth 1 -name 'hot' -delete 2>/dev/null || true");
+            
+            // Дополнительно: запускаем Artisan команду для гарантированного удаления
+            try {
+                Process::path($this->basePath)
+                    ->timeout(10)
+                    ->run("{$this->phpPath} artisan clean:hot --force 2>/dev/null || true");
+            } catch (\Exception $e) {
+                // Игнорируем ошибки
+            }
                 
         } catch (\Exception $e) {
             Log::warning('Ошибка при очистке файлов разработки', [
