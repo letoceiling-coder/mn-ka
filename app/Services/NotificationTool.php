@@ -56,6 +56,12 @@ class NotificationTool
         // Отправляем уведомление в Telegram всем администраторам, если включено
         try {
             $telegramSettings = \App\Models\TelegramSettings::getSettings();
+            
+            \Illuminate\Support\Facades\Log::debug('Telegram notification check', [
+                'is_enabled' => $telegramSettings->is_enabled,
+                'send_notifications' => $telegramSettings->send_notifications,
+            ]);
+            
             if ($telegramSettings->is_enabled && $telegramSettings->send_notifications) {
                 // Получаем всех администраторов с telegram_chat_id
                 $adminUsers = \App\Models\User::whereNotNull('telegram_chat_id')
@@ -64,24 +70,46 @@ class NotificationTool
                     })
                     ->get();
 
+                \Illuminate\Support\Facades\Log::debug('Telegram admins found', [
+                    'count' => $adminUsers->count(),
+                    'admin_ids' => $adminUsers->pluck('id')->toArray(),
+                ]);
+
                 if ($adminUsers->isNotEmpty()) {
                     $telegramService = new \App\Services\TelegramService();
                     foreach ($adminUsers as $adminUser) {
-                        $telegramService->sendNotification(
+                        $sent = $telegramService->sendNotification(
                             $title,
                             $message,
                             $type,
                             $data,
                             (string)$adminUser->telegram_chat_id
                         );
+                        
+                        \Illuminate\Support\Facades\Log::info('Telegram notification sent', [
+                            'admin_id' => $adminUser->id,
+                            'chat_id' => $adminUser->telegram_chat_id,
+                            'sent' => $sent,
+                            'title' => $title,
+                        ]);
                     }
+                } else {
+                    \Illuminate\Support\Facades\Log::warning('No Telegram admins found for notification', [
+                        'notification_id' => $notification->id,
+                    ]);
                 }
+            } else {
+                \Illuminate\Support\Facades\Log::debug('Telegram notifications disabled', [
+                    'is_enabled' => $telegramSettings->is_enabled,
+                    'send_notifications' => $telegramSettings->send_notifications,
+                ]);
             }
         } catch (\Exception $e) {
             // Логируем ошибку, но не прерываем создание уведомления
             \Illuminate\Support\Facades\Log::error('Failed to send notification to Telegram', [
                 'error' => $e->getMessage(),
                 'notification_id' => $notification->id,
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 

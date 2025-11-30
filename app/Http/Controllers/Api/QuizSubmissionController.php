@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\User;
-use App\Models\Notification;
 use App\Mail\QuizCompletionMail;
 use App\Services\NotificationTool;
 use Illuminate\Http\Request;
@@ -141,23 +140,24 @@ class QuizSubmissionController extends Controller
                 'completed_at' => now()->toDateTimeString(),
             ];
 
-            // Создаем уведомление для администраторов
+            // Создаем уведомление для администраторов через NotificationTool
+            // Это обеспечит автоматическую отправку в Telegram
             $adminUsers = User::whereHas('roles', function($q) {
                 $q->whereIn('slug', ['admin', 'manager']);
             })->get();
 
+            // Добавляем ссылку на просмотр уведомления в данных
+            $quizData['view_url'] = '/admin/notifications';
+            
+            // Используем существующий экземпляр NotificationTool из конструктора
             foreach ($adminUsers as $admin) {
-                // Добавляем ссылку на просмотр уведомления в данных
-                $quizData['view_url'] = '/admin/notifications';
-                
-                Notification::create([
-                    'user_id' => $admin->id,
-                    'title' => 'Новое прохождение квиза',
-                    'message' => "Пользователь {$request->contact['name']} ({$request->contact['email']}) прошел квиз \"{$quiz->title}\". Перейдите в уведомления для просмотра деталей.",
-                    'type' => 'success',
-                    'data' => $quizData,
-                    'read' => false,
-                ]);
+                $this->notificationTool->addNotification(
+                    $admin,
+                    'Новое прохождение квиза',
+                    "Пользователь {$request->contact['name']} ({$request->contact['email']}) прошел квиз \"{$quiz->title}\". Перейдите в уведомления для просмотра деталей.",
+                    'success',
+                    $quizData
+                );
             }
 
             // Отправляем email с результатами
