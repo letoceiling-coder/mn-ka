@@ -86,4 +86,28 @@ class NotificationController extends Controller
             'count' => $count,
         ]);
     }
+
+    /**
+     * Получить детальную информацию об уведомлении
+     */
+    public function show(Request $request, string $id)
+    {
+        $notification = \App\Models\Notification::where('user_id', $request->user()->id)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        return response()->json([
+            'data' => [
+                'id' => $notification->id,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'type' => $notification->type,
+                'data' => $notification->data,
+                'read' => $notification->read,
+                'read_at' => $notification->read_at ? $notification->read_at->toDateTimeString() : null,
+                'created_at' => $notification->created_at->toDateTimeString(),
+                'created_at_human' => $notification->created_at->diffForHumans(),
+            ],
+        ]);
+    }
 }

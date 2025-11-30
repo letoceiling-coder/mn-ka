@@ -102,9 +102,16 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <button
+                            @click="viewNotification(notification)"
+                            class="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                            title="Просмотреть детали"
+                        >
+                            Просмотр
+                        </button>
+                        <button
                             v-if="!notification.read"
                             @click="markAsRead(notification.id)"
-                            class="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+                            class="px-3 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
                             title="Отметить как прочитанное"
                         >
                             Прочитано
@@ -169,6 +176,147 @@
             </div>
         </div>
     </div>
+
+    <!-- Модальное окно для просмотра деталей уведомления -->
+    <div
+        v-if="selectedNotification"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+        @click.self="closeNotificationModal"
+    >
+        <div class="bg-card rounded-lg border border-border shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Заголовок модального окна -->
+            <div class="flex items-center justify-between p-6 border-b border-border">
+                <div>
+                    <h2 class="text-2xl font-semibold text-foreground">{{ selectedNotification.title }}</h2>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span
+                            :class="[
+                                'px-2 py-1 text-xs rounded',
+                                getTypeClass(selectedNotification.type)
+                            ]"
+                        >
+                            {{ getTypeLabel(selectedNotification.type) }}
+                        </span>
+                        <span class="text-xs text-muted-foreground">
+                            {{ formatDate(selectedNotification.created_at) }}
+                        </span>
+                    </div>
+                </div>
+                <button
+                    @click="closeNotificationModal"
+                    class="p-2 hover:bg-muted/10 rounded-lg transition-colors"
+                    title="Закрыть"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Содержимое модального окна -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="space-y-6">
+                    <!-- Основное сообщение -->
+                    <div>
+                        <h3 class="text-sm font-medium text-muted-foreground mb-2">Сообщение</h3>
+                        <p class="text-foreground whitespace-pre-wrap">{{ selectedNotification.message }}</p>
+                    </div>
+
+                    <!-- Данные уведомления (если есть) -->
+                    <div v-if="selectedNotification.data" class="space-y-4">
+                        <!-- Данные о квизе -->
+                        <div v-if="selectedNotification.data.quiz_id" class="border-t border-border pt-4">
+                            <h3 class="text-sm font-medium text-muted-foreground mb-4">Детали квиза</h3>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="text-sm font-medium text-muted-foreground">Квиз:</span>
+                                    <span class="ml-2 text-foreground">{{ selectedNotification.data.quiz_title }}</span>
+                                </div>
+                                
+                                <div v-if="selectedNotification.data.contact" class="mt-4">
+                                    <h4 class="text-sm font-semibold text-foreground mb-2">Контактная информация:</h4>
+                                    <div class="bg-muted/50 rounded-lg p-4 space-y-2">
+                                        <div>
+                                            <span class="text-sm text-muted-foreground">Имя:</span>
+                                            <span class="ml-2 text-foreground">{{ selectedNotification.data.contact.name }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-muted-foreground">Email:</span>
+                                            <span class="ml-2 text-foreground">{{ selectedNotification.data.contact.email }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-muted-foreground">Телефон:</span>
+                                            <span class="ml-2 text-foreground">{{ selectedNotification.data.contact.phone }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="selectedNotification.data.answers && selectedNotification.data.answers.length > 0" class="mt-4">
+                                    <h4 class="text-sm font-semibold text-foreground mb-3">Ответы пользователя:</h4>
+                                    <div class="space-y-3">
+                                        <div
+                                            v-for="(answerItem, index) in selectedNotification.data.answers"
+                                            :key="index"
+                                            class="bg-muted/30 rounded-lg p-4 border-l-4 border-accent"
+                                        >
+                                            <div class="text-sm font-medium text-foreground mb-1">
+                                                {{ answerItem.question_text || `Вопрос ${index + 1}` }}
+                                            </div>
+                                            <div class="text-sm text-muted-foreground">
+                                                <strong>Ответ:</strong>
+                                                <span class="ml-2">
+                                                    {{ formatAnswer(answerItem.answer) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="selectedNotification.data.completed_at" class="mt-4">
+                                    <span class="text-sm text-muted-foreground">Завершено:</span>
+                                    <span class="ml-2 text-foreground">{{ formatDate(selectedNotification.data.completed_at) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Другие данные (JSON) -->
+                        <div v-else class="border-t border-border pt-4">
+                            <h3 class="text-sm font-medium text-muted-foreground mb-2">Дополнительные данные</h3>
+                            <pre class="bg-muted/50 rounded-lg p-4 text-xs overflow-auto">{{ JSON.stringify(selectedNotification.data, null, 2) }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Футер модального окна -->
+            <div class="flex items-center justify-between p-6 border-t border-border bg-muted/30">
+                <div class="text-sm text-muted-foreground">
+                    <span v-if="selectedNotification.read_at">
+                        Прочитано: {{ formatDate(selectedNotification.read_at) }}
+                    </span>
+                    <span v-else>
+                        Не прочитано
+                    </span>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        v-if="!selectedNotification.read"
+                        @click="markAsReadFromModal(selectedNotification.id)"
+                        class="px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                    >
+                        Отметить как прочитанное
+                    </button>
+                    <button
+                        @click="closeNotificationModal"
+                        class="px-4 py-2 text-sm border border-border bg-background hover:bg-muted/10 rounded-lg transition-colors"
+                    >
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -191,6 +339,8 @@ export default {
         const currentPage = ref(1)
         const perPage = ref(20)
         const searchTimeout = ref(null)
+        const selectedNotification = ref(null)
+        const loadingNotification = ref(false)
 
         const fetchNotifications = async (page = 1) => {
             loading.value = true
@@ -376,6 +526,72 @@ export default {
             return classes[type] || 'bg-muted text-muted-foreground'
         }
 
+        // Просмотр детальной информации об уведомлении
+        const viewNotification = async (notification) => {
+            loadingNotification.value = true
+            try {
+                const token = localStorage.getItem('token')
+                const headers = {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`
+                }
+                
+                const response = await fetch(`/api/notifications/${notification.id}`, {
+                    method: 'GET',
+                    headers,
+                })
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки уведомления')
+                }
+
+                const result = await response.json()
+                selectedNotification.value = result.data
+
+                // Отмечаем как прочитанное при открытии
+                if (!notification.read) {
+                    await markAsRead(notification.id)
+                }
+            } catch (err) {
+                console.error('Error loading notification:', err)
+                // Если не удалось загрузить детали, показываем то что есть
+                selectedNotification.value = notification
+            } finally {
+                loadingNotification.value = false
+            }
+        }
+
+        const closeNotificationModal = () => {
+            selectedNotification.value = null
+        }
+
+        const markAsReadFromModal = async (id) => {
+            await markAsRead(id)
+            if (selectedNotification.value) {
+                selectedNotification.value.read = true
+                selectedNotification.value.read_at = new Date().toISOString()
+            }
+        }
+
+        // Форматирование ответа для отображения
+        const formatAnswer = (answer) => {
+            if (answer === null || answer === undefined) {
+                return 'Нет ответа'
+            }
+            if (typeof answer === 'object') {
+                if (answer.name) return answer.name
+                if (answer.title) return answer.title
+                if (Array.isArray(answer)) {
+                    return answer.map(a => typeof a === 'object' ? (a.name || a.title || JSON.stringify(a)) : a).join(', ')
+                }
+                return JSON.stringify(answer, null, 2)
+            }
+            return String(answer)
+        }
+
         const getPageNumbers = (currentPage, lastPage) => {
             const pages = []
             const maxVisible = 5
@@ -421,7 +637,13 @@ export default {
             formatDate,
             getTypeLabel,
             getTypeClass,
-            getPageNumbers
+            getPageNumbers,
+            selectedNotification,
+            loadingNotification,
+            viewNotification,
+            closeNotificationModal,
+            markAsReadFromModal,
+            formatAnswer
         }
     }
 }

@@ -113,20 +113,74 @@ class QuizSubmissionController extends Controller
             }
 
             // Отправляем email с результатами
+            $emailSent = false;
+            $emailError = null;
             try {
-                Mail::to($request->contact['email'])
-                    ->send(new QuizCompletionMail($quiz, $request->answers, $request->contact));
-            } catch (\Exception $e) {
-                Log::error('Ошибка отправки email с результатами квиза', [
-                    'email' => $request->contact['email'],
-                    'error' => $e->getMessage(),
+                // Перезагружаем квиз с вопросами для email (важно для правильного отображения)
+                $quizForEmail = Quiz::with(['questions' => function($query) {
+                    $query->where('is_active', true)->orderBy('order');
+                }])->findOrFail($quiz->id);
+
+                // Формируем детальные ответы для email (соответствующие вопросам)
+                // Важно: ответы должны быть в том же порядке, что и вопросы
+                $emailAnswers = [];
+                foreach ($detailedAnswers as $answerData) {
+                    $emailAnswers[] = $answerData['answer'];
+                }
+                
+                // Логируем для отладки
+                Log::debug('Данные для email', [
+                    'answers_count' => count($emailAnswers),
+                    'questions_count' => $quizForEmail->questions->count(),
+                    'quiz_id' => $quizForEmail->id,
                 ]);
+
+                // Проверяем настройки почты перед отправкой
+                $mailConfig = config('mail.default');
+                Log::info('Попытка отправки email', [
+                    'email' => $request->contact['email'],
+                    'mailer' => $mailConfig,
+                    'host' => config('mail.mailers.smtp.host'),
+                ]);
+
+                Mail::to($request->contact['email'])
+                    ->send(new QuizCompletionMail($quizForEmail, $emailAnswers, $request->contact));
+                
+                $emailSent = true;
+                Log::info('✅ Email с результатами квиза успешно отправлен', [
+                    'email' => $request->contact['email'],
+                    'quiz_id' => $quiz->id,
+                ]);
+            } catch (\Exception $e) {
+                $emailError = $e->getMessage();
+                Log::error('❌ Ошибка отправки email с результатами квиза', [
+                    'email' => $request->contact['email'],
+                    'quiz_id' => $quiz->id,
+                    'error' => $emailError,
+                    'error_class' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                
+                // Не прерываем выполнение - уведомление уже создано
             }
 
-            return response()->json([
+            // Формируем ответ
+            $response = [
                 'success' => true,
                 'message' => 'Спасибо за прохождение квиза! Результаты отправлены на вашу почту.',
-            ]);
+            ];
+            
+            // Добавляем информацию об отправке email (только для логирования в dev режиме)
+            if (config('app.debug')) {
+                $response['email_sent'] = $emailSent;
+                if ($emailError) {
+                    $response['email_error'] = $emailError;
+                }
+            }
+            
+            return response()->json($response);
 
         } catch (\Exception $e) {
             Log::error('Ошибка обработки прохождения квиза', [
