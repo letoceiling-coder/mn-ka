@@ -60,6 +60,9 @@ class DeployController extends Controller
                 throw new \Exception("Ошибка composer install: {$composerResult['error']}");
             }
 
+            // 2.5. Очистка кешей после composer install (важно: удаляет кеш провайдеров dev-пакетов)
+            $this->clearPackageDiscoveryCache();
+
             // 3. Миграции
             $migrationsResult = $this->runMigrations();
             $result['data']['migrations'] = $migrationsResult;
@@ -461,6 +464,57 @@ class DeployController extends Controller
                 'status' => 'error',
                 'error' => $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Очистить кеш package discovery
+     * Важно: после удаления dev-пакетов нужно очистить кеш провайдеров
+     */
+    protected function clearPackageDiscoveryCache(): void
+    {
+        try {
+            // Удаляем кеш package discovery
+            $packagesCachePath = $this->basePath . '/bootstrap/cache/packages.php';
+            if (file_exists($packagesCachePath)) {
+                unlink($packagesCachePath);
+                Log::info('Кеш package discovery удален');
+            }
+
+            // Удаляем кеш сервис-провайдеров (если существует)
+            $servicesCachePath = $this->basePath . '/bootstrap/cache/services.php';
+            if (file_exists($servicesCachePath)) {
+                unlink($servicesCachePath);
+                Log::info('Кеш сервис-провайдеров удален');
+            }
+
+            // Очищаем кеш конфигурации (может содержать ссылки на удаленные провайдеры)
+            $process = Process::path($this->basePath)
+                ->run("{$this->phpPath} artisan config:clear");
+
+            if (!$process->successful()) {
+                Log::warning('Не удалось очистить кеш конфигурации', [
+                    'error' => $process->errorOutput(),
+                ]);
+            }
+
+            // Переобнаруживаем пакеты (только установленные, без dev-зависимостей)
+            $discoverProcess = Process::path($this->basePath)
+                ->timeout(60)
+                ->run("{$this->phpPath} artisan package:discover --ansi");
+
+            if (!$discoverProcess->successful()) {
+                Log::warning('Не удалось переобнаружить пакеты', [
+                    'error' => $discoverProcess->errorOutput(),
+                ]);
+            } else {
+                Log::info('Пакеты успешно переобнаружены');
+            }
+        } catch (\Exception $e) {
+            Log::warning('Ошибка при очистке кеша package discovery', [
+                'error' => $e->getMessage(),
+            ]);
+            // Не бросаем исключение, чтобы не прерывать деплой
         }
     }
 
