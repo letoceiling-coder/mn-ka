@@ -292,7 +292,7 @@ class DeployController extends Controller
             Log::info("📦 Commit после обновления: " . ($afterCommit ?: 'не определен'));
             
             // 4. Проверяем, обновились ли файлы
-            if ($beforeCommit !== $afterCommit) {
+            if ($beforeCommit && $afterCommit && $beforeCommit !== $afterCommit) {
                 Log::info("✅ Код успешно обновлен: {$beforeCommit} -> {$afterCommit}");
                 
                 // Показываем измененные файлы
@@ -313,8 +313,36 @@ class DeployController extends Controller
                         'error' => $e->getMessage(),
                     ]);
                 }
-            } else {
+            } elseif ($beforeCommit && $afterCommit && $beforeCommit === $afterCommit) {
                 Log::info("ℹ️ Код уже актуален, изменений нет");
+            } else {
+                Log::warning("⚠️ Не удалось определить состояние коммитов", [
+                    'before' => $beforeCommit,
+                    'after' => $afterCommit,
+                    'message' => 'Возможно, Git репозиторий не инициализирован или есть проблемы с доступом',
+                ]);
+                
+                // Дополнительная проверка: проверяем, что это Git репозиторий
+                $gitCheckProcess = Process::path($this->basePath)
+                    ->run("git rev-parse --is-inside-work-tree 2>&1");
+                
+                if (!$gitCheckProcess->successful() || trim($gitCheckProcess->output()) !== 'true') {
+                    Log::error("❌ Это не Git репозиторий! Путь: {$this->basePath}");
+                } else {
+                    Log::info("✅ Это Git репозиторий, но commit hash не определен");
+                }
+            }
+            
+            // 5. Дополнительная проверка: список последних коммитов
+            try {
+                $logProcess = Process::path($this->basePath)
+                    ->run("git log --oneline -3 2>&1");
+                $lastCommits = trim($logProcess->output());
+                if ($lastCommits) {
+                    Log::info("📋 Последние 3 коммита:\n{$lastCommits}");
+                }
+            } catch (\Exception $e) {
+                // Ignore
             }
 
             if ($process->successful()) {
