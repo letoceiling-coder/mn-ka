@@ -139,6 +139,25 @@ class AdminMenu
                     ],
                 ],
             ],
+            [
+                'title' => 'Квизы',
+                'icon' => 'help-circle',
+                'roles' => ['admin', 'manager'],
+                'children' => [
+                    [
+                        'title' => 'Список квизов',
+                        'route' => 'admin.quizzes.index',
+                        'icon' => 'list',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                    [
+                        'title' => 'Настройки блока',
+                        'route' => 'admin.quizzes.settings',
+                        'icon' => 'settings',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                ],
+            ],
         ]);
 
         if (!$user) {

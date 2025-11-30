@@ -327,6 +327,31 @@ const routes = [
                 component: () => import('./pages/admin/decisions/Settings.vue'),
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
+            // Quiz routes
+            {
+                path: 'quizzes',
+                name: 'admin.quizzes.index',
+                component: () => import('./pages/admin/quizzes/Quizzes.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'quizzes/create',
+                name: 'admin.quizzes.create',
+                component: () => import('./pages/admin/quizzes/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'quizzes/:id/edit',
+                name: 'admin.quizzes.edit',
+                component: () => import('./pages/admin/quizzes/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'quizzes/settings',
+                name: 'admin.quizzes.settings',
+                component: () => import('./pages/admin/quizzes/Settings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
         ],
     },
 ];

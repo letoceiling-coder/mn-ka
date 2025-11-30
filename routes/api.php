@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\ChapterController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ServiceController;
 use App\Http\Controllers\Api\DecisionBlockSettingsController;
+use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\QuizBlockSettingsController;
+use App\Http\Controllers\Api\QuizSubmissionController;
 use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\v1\FolderController;
 use App\Http\Controllers\Api\v1\MediaController;
@@ -71,6 +74,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::apiResource('services', ServiceController::class);
             Route::get('decision-block-settings', [DecisionBlockSettingsController::class, 'show']);
             Route::put('decision-block-settings', [DecisionBlockSettingsController::class, 'update']);
+            Route::apiResource('quizzes', QuizController::class);
+            Route::get('quiz-block-settings', [QuizBlockSettingsController::class, 'show']);
+            Route::put('quiz-block-settings', [QuizBlockSettingsController::class, 'update']);
         });
     });
 });
@@ -84,6 +90,11 @@ Route::get('/public/banners/{slug}', [BannerController::class, 'getBySlug']);
 // Публичные маршруты для Decision Block (без авторизации)
 Route::get('/public/decision-block/chapters', [ChapterController::class, 'index']);
 Route::get('/public/decision-block/settings', [DecisionBlockSettingsController::class, 'show']);
+
+// Публичные маршруты для Quiz Block (без авторизации)
+Route::get('/public/quiz-block/settings', [QuizBlockSettingsController::class, 'show']);
+Route::get('/public/quiz-block/quiz/{id}', [QuizController::class, 'showPublic']);
+Route::post('/public/quiz/submit', [QuizSubmissionController::class, 'submit']);
 
 // Маршрут для деплоя (защищен токеном)
 Route::post('/deploy', [DeployController::class, 'deploy'])

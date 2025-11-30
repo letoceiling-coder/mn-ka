@@ -42,13 +42,14 @@ class NotificationTool
      * @param string|null $type
      * @return Notification
      */
-    public function addNotification(User $user, string $title, string $message, ?string $type = 'info'): Notification
+    public function addNotification(User $user, string $title, string $message, ?string $type = 'info', ?array $data = null): Notification
     {
         return Notification::create([
             'user_id' => $user->id,
             'title' => $title,
             'message' => $message,
             'type' => $type,
+            'data' => $data,
             'read' => false,
         ]);
     }
@@ -164,6 +165,7 @@ class NotificationTool
                 'title' => $notification->title,
                 'message' => $notification->message,
                 'type' => $notification->type,
+                'data' => $notification->data,
                 'read' => $notification->read,
                 'created_at' => $notification->created_at->toDateTimeString(),
                 'created_at_human' => $notification->created_at->diffForHumans(),

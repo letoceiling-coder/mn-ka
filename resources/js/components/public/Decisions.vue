@@ -176,6 +176,7 @@ export default {
         return {
             title,
             chapters,
+            activeChapter,
             activeItems,
             setActiveChapter,
             loading,
