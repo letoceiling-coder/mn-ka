@@ -375,6 +375,12 @@ const routes = [
                 component: () => import('./pages/admin/blocks/HowWorkSettings.vue'),
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
+            {
+                path: 'blocks/faq',
+                name: 'admin.blocks.faq',
+                component: () => import('./pages/admin/blocks/FaqSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
         ],
     },
 ];

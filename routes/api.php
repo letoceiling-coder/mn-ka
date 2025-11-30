@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\QuizBlockSettingsController;
 use App\Http\Controllers\Api\QuizSubmissionController;
 use App\Http\Controllers\Api\HowWorkBlockSettingsController;
+use App\Http\Controllers\Api\FaqBlockSettingsController;
 use App\Http\Controllers\Api\DeployController;
 use App\Http\Controllers\Api\TelegramSettingsController;
 use App\Http\Controllers\Api\TelegramWebhookController;
@@ -85,6 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('quiz-block-settings', [QuizBlockSettingsController::class, 'update']);
             Route::get('how-work-block-settings', [HowWorkBlockSettingsController::class, 'show']);
             Route::put('how-work-block-settings', [HowWorkBlockSettingsController::class, 'update']);
+            Route::get('faq-block-settings', [FaqBlockSettingsController::class, 'show']);
+            Route::put('faq-block-settings', [FaqBlockSettingsController::class, 'update']);
             Route::get('telegram-settings', [TelegramSettingsController::class, 'show']);
             Route::put('telegram-settings', [TelegramSettingsController::class, 'update']);
             Route::post('telegram-settings/test', [TelegramSettingsController::class, 'testConnection']);
@@ -113,6 +116,9 @@ Route::post('/public/quiz/submit', [QuizSubmissionController::class, 'submit']);
 
 // Публичные маршруты для HowWork Block (без авторизации)
 Route::get('/public/how-work-block/settings', [HowWorkBlockSettingsController::class, 'show']);
+
+// Публичные маршруты для FAQ Block (без авторизации)
+Route::get('/public/faq-block/settings', [FaqBlockSettingsController::class, 'show']);
 
 // Публичный webhook для Telegram (без авторизации)
 Route::post('/telegram/webhook', [TelegramWebhookController::class, 'handle']);

@@ -175,6 +175,12 @@ class AdminMenu
                         'icon' => 'settings',
                         'roles' => ['admin', 'manager'],
                     ],
+                    [
+                        'title' => 'FAQ',
+                        'route' => 'admin.blocks.faq',
+                        'icon' => 'help-circle',
+                        'roles' => ['admin', 'manager'],
+                    ],
                 ],
             ],
         ]);

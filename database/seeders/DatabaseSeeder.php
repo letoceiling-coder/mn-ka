@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             QuizImagesSeeder::class,
             QuizSeeder::class,
             HowWorkBlockSettingsSeeder::class,
+            FaqBlockSettingsSeeder::class,
         ]);
     }
 }
