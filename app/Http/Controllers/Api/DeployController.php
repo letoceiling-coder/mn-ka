@@ -15,6 +15,28 @@ class DeployController extends Controller
     protected $phpVersion;
     protected $basePath;
 
+    /**
+     * Таблицы, которые нужно исключить из синхронизации
+     */
+    protected $excludedTables = [
+        'users',
+        'telegraph_chats',
+        'telegraph_bots',
+        'telegram_settings',
+        'telegram_admin_requests',
+        'sessions',
+        'role_user',
+        'roles',
+        'request_history',
+        'product_requests',
+        'personal_access_tokens',
+        'password_reset_tokens',
+        'notifications',
+        'job_batches',
+        'jobs',
+        'migrations',
+    ];
+
     public function __construct()
     {
         $this->basePath = base_path();
@@ -1000,19 +1022,26 @@ class DeployController extends Controller
         // Читаем и выполняем SQL дамп
         $sql = file_get_contents($dumpPath);
         
-        // Разбиваем на отдельные запросы
-        $statements = array_filter(
-            array_map('trim', explode(';', $sql)),
-            function($stmt) {
-                return !empty($stmt) && !preg_match('/^--/', $stmt);
-            }
-        );
-        
-        foreach ($statements as $statement) {
-            if (!empty(trim($statement))) {
+            // Разбиваем на отдельные запросы
+            $statements = array_filter(
+                array_map('trim', explode(';', $sql)),
+                function($stmt) {
+                    return !empty($stmt) && !preg_match('/^--/', $stmt);
+                }
+            );
+            
+            foreach ($statements as $statement) {
+                if (empty(trim($statement))) {
+                    continue;
+                }
+                
+                // Пропускаем запросы для исключенных таблиц
+                if ($this->shouldSkipStatement($statement)) {
+                    continue;
+                }
+                
                 $db->exec($statement);
             }
-        }
     }
 
     /**
@@ -1104,12 +1133,22 @@ class DeployController extends Controller
             $sql = preg_replace('/\/\*.*?\*\//s', '', $sql); // Удаляем многострочные комментарии
             
             // Разбиваем на отдельные запросы
-            $statements = array_filter(
+            $allStatements = array_filter(
                 array_map('trim', preg_split('/;\s*$/m', $sql)),
                 function($stmt) {
                     return !empty($stmt) && !preg_match('/^(SET|USE)/i', $stmt);
                 }
             );
+            
+            // Фильтруем исключенные таблицы
+            $statements = array_filter($allStatements, function($stmt) {
+                return !$this->shouldSkipStatement($stmt);
+            });
+            
+            $excludedCount = count($allStatements) - count($statements);
+            if ($excludedCount > 0) {
+                Log::info("Исключено SQL запросов: {$excludedCount}");
+            }
             
             // Выполняем запросы по частям (батчами для больших дампов)
             $batchSize = 100;
@@ -1294,6 +1333,37 @@ class DeployController extends Controller
         }
 
         return $hashes;
+    }
+
+    /**
+     * Проверить, нужно ли пропустить SQL запрос (для исключенных таблиц)
+     */
+    protected function shouldSkipStatement(string $statement): bool
+    {
+        $statement = trim($statement);
+        if (empty($statement)) {
+            return true;
+        }
+        
+        // Проверяем каждый исключенный таблицу
+        foreach ($this->excludedTables as $excludedTable) {
+            // Проверяем различные типы SQL запросов
+            $patterns = [
+                "/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`'\"]?{$excludedTable}[`'\"]?/i",
+                "/INSERT\s+INTO\s+[`'\"]?{$excludedTable}[`'\"]?/i",
+                "/DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?[`'\"]?{$excludedTable}[`'\"]?/i",
+                "/ALTER\s+TABLE\s+[`'\"]?{$excludedTable}[`'\"]?/i",
+                "/TRUNCATE\s+TABLE\s+[`'\"]?{$excludedTable}[`'\"]?/i",
+            ];
+            
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $statement)) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     /**

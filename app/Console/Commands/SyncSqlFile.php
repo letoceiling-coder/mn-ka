@@ -28,6 +28,28 @@ class SyncSqlFile extends Command
      */
     protected $description = 'Синхронизация базы данных и файлов public/upload с сервером';
 
+    /**
+     * Таблицы, которые нужно исключить из синхронизации
+     */
+    protected $excludedTables = [
+        'users',
+        'telegraph_chats',
+        'telegraph_bots',
+        'telegram_settings',
+        'telegram_admin_requests',
+        'sessions',
+        'role_user',
+        'roles',
+        'request_history',
+        'product_requests',
+        'personal_access_tokens',
+        'password_reset_tokens',
+        'notifications',
+        'job_batches',
+        'jobs',
+        'migrations',
+    ];
+
     protected $tempDir;
     protected $sqlFile;
     protected $filesArchive;
@@ -158,8 +180,12 @@ class SyncSqlFile extends Command
         // Получаем все таблицы
         $tables = $db->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(\PDO::FETCH_COLUMN);
         
+        // Фильтруем исключенные таблицы
+        $tables = array_filter($tables, function($table) {
+            return !in_array($table, $this->excludedTables) && $table !== 'sqlite_sequence';
+        });
+        
         foreach ($tables as $table) {
-            if ($table === 'sqlite_sequence') continue;
             
             // Получаем структуру таблицы
             $createTable = $db->query("SELECT sql FROM sqlite_master WHERE type='table' AND name=" . $db->quote($table))->fetchColumn();
@@ -197,12 +223,19 @@ class SyncSqlFile extends Command
         $mysqldumpAvailable = $this->checkMysqldumpAvailable();
         
         if ($mysqldumpAvailable) {
+            // Формируем список исключаемых таблиц для mysqldump
+            $ignoreTables = '';
+            if (!empty($this->excludedTables)) {
+                $ignoreTables = '--ignore-table=' . $database . '.' . implode(' --ignore-table=' . $database . '.', $this->excludedTables);
+            }
+            
             $command = sprintf(
-                'mysqldump --host=%s --port=%s --user=%s --password=%s --single-transaction --routines --triggers %s > %s',
+                'mysqldump --host=%s --port=%s --user=%s --password=%s --single-transaction --routines --triggers %s %s > %s',
                 escapeshellarg($host),
                 escapeshellarg($port),
                 escapeshellarg($username),
                 escapeshellarg($password),
+                $ignoreTables,
                 escapeshellarg($database),
                 escapeshellarg($outputFile)
             );
@@ -210,6 +243,9 @@ class SyncSqlFile extends Command
             $process = Process::run($command);
             
             if ($process->successful()) {
+                if (!empty($this->excludedTables)) {
+                    $this->line('  ℹ️  Исключено таблиц из дампа: ' . count($this->excludedTables));
+                }
                 return; // Успешно создан через mysqldump
             }
             
@@ -264,7 +300,17 @@ class SyncSqlFile extends Command
             fwrite($output, "SET time_zone = \"+00:00\";\n\n");
             
             // Получаем все таблицы
-            $tables = $pdo->query("SHOW TABLES")->fetchAll(\PDO::FETCH_COLUMN);
+            $allTables = $pdo->query("SHOW TABLES")->fetchAll(\PDO::FETCH_COLUMN);
+            
+            // Фильтруем исключенные таблицы
+            $tables = array_filter($allTables, function($table) {
+                return !in_array($table, $this->excludedTables);
+            });
+            
+            $excludedCount = count($allTables) - count($tables);
+            if ($excludedCount > 0) {
+                $this->line("  ℹ️  Исключено таблиц из дампа: {$excludedCount}");
+            }
             
             foreach ($tables as $table) {
                 // Получаем структуру таблицы
