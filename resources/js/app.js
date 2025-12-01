@@ -166,6 +166,36 @@ const routes = [
                 name: 'home',
                 component: () => import('./pages/Home.vue'),
             },
+            {
+                path: 'products',
+                name: 'products',
+                component: () => import('./pages/ProductsPage.vue'),
+            },
+            {
+                path: 'products/:slug',
+                name: 'product',
+                component: () => import('./pages/ProductPage.vue'),
+            },
+            {
+                path: 'services',
+                name: 'services',
+                component: () => import('./pages/ServicesPage.vue'),
+            },
+            {
+                path: 'services/:slug',
+                name: 'service',
+                component: () => import('./pages/ServicePage.vue'),
+            },
+            {
+                path: 'contacts',
+                name: 'contacts',
+                component: () => import('./pages/ContactPage.vue'),
+            },
+            {
+                path: 'about',
+                name: 'about',
+                component: () => import('./pages/AboutPage.vue'),
+            },
         ],
     },
     {
@@ -223,6 +253,12 @@ const routes = [
                 component: () => import('./pages/admin/Services.vue'),
             },
             {
+                path: 'cases',
+                name: 'admin.cases',
+                component: () => import('./pages/admin/Cases.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
                 path: 'media',
                 name: 'admin.media',
                 component: () => import('./pages/admin/Media.vue'),
@@ -258,6 +294,18 @@ const routes = [
                 path: 'settings/telegram',
                 name: 'admin.settings.telegram',
                 component: () => import('./pages/admin/settings/TelegramSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin'] },
+            },
+            {
+                path: 'settings/contacts',
+                name: 'admin.settings.contacts',
+                component: () => import('./pages/admin/settings/ContactSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin'] },
+            },
+            {
+                path: 'settings/about',
+                name: 'admin.settings.about',
+                component: () => import('./pages/admin/settings/AboutSettings.vue'),
                 meta: { requiresAuth: true, requiresRole: ['admin'] },
             },
             {
@@ -338,6 +386,60 @@ const routes = [
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
             {
+                path: 'decisions/options',
+                name: 'admin.decisions.options',
+                component: () => import('./pages/admin/decisions/Options.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/options/create',
+                name: 'admin.decisions.options.create',
+                component: () => import('./pages/admin/decisions/options/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/options/:id/edit',
+                name: 'admin.decisions.options.edit',
+                component: () => import('./pages/admin/decisions/options/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/option-trees',
+                name: 'admin.decisions.option-trees',
+                component: () => import('./pages/admin/decisions/OptionTrees.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/option-trees/create',
+                name: 'admin.decisions.option-trees.create',
+                component: () => import('./pages/admin/decisions/option-trees/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/option-trees/:id/edit',
+                name: 'admin.decisions.option-trees.edit',
+                component: () => import('./pages/admin/decisions/option-trees/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/instances',
+                name: 'admin.decisions.instances',
+                component: () => import('./pages/admin/decisions/Instances.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/instances/create',
+                name: 'admin.decisions.instances.create',
+                component: () => import('./pages/admin/decisions/instances/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'decisions/instances/:id/edit',
+                name: 'admin.decisions.instances.edit',
+                component: () => import('./pages/admin/decisions/instances/Form.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
                 path: 'decisions/settings',
                 name: 'admin.decisions.settings',
                 component: () => import('./pages/admin/decisions/Settings.vue'),
@@ -381,6 +483,18 @@ const routes = [
                 component: () => import('./pages/admin/blocks/FaqSettings.vue'),
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
+            {
+                path: 'modal-settings',
+                name: 'admin.modal-settings',
+                component: () => import('./pages/admin/ModalSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
+                path: 'product-requests',
+                name: 'admin.product-requests',
+                component: () => import('./pages/admin/ProductRequests.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
         ],
     },
 ];
@@ -388,6 +502,25 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior(to, from, savedPosition) {
+        // Если есть сохраненная позиция (например, при использовании кнопки "назад")
+        if (savedPosition) {
+            return savedPosition;
+        }
+        // Если есть хеш в URL, скроллим к элементу
+        if (to.hash) {
+            return {
+                el: to.hash,
+                behavior: 'smooth',
+            };
+        }
+        // Иначе скроллим в начало страницы
+        return {
+            top: 0,
+            left: 0,
+            behavior: 'smooth',
+        };
+    },
 });
 
 // Navigation guard

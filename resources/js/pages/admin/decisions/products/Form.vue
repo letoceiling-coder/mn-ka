@@ -98,6 +98,7 @@ export default {
                         icon: data.data.icon || null,
                         order: data.data.order ?? 0,
                         is_active: data.data.is_active !== false,
+                        services: data.data.services || [],
                     };
                 }
             } catch (err) {

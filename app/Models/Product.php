@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 class Product extends Model
 {
@@ -30,7 +30,66 @@ class Product extends Model
     ];
 
     /**
-     * Раздел, к которому относится продукт
+     * Boot method для автоматической очистки кеша при изменении модели
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($product) {
+            $product->clearCache();
+        });
+
+        static::deleted(function ($product) {
+            $product->clearCache();
+        });
+    }
+
+    /**
+     * Очистить кеш продукта
+     */
+    public function clearCache()
+    {
+        // Очищаем кеш конкретного продукта
+        $slug = trim($this->slug, '/');
+        Cache::forget("product_slug_{$slug}");
+        
+        // Очищаем кеш списков продуктов (по шаблону)
+        $keys = [
+            'products_' . md5(json_encode(['active' => 1])),
+            'products_' . md5(json_encode(['active' => true])),
+            'products_' . md5(json_encode([])),
+        ];
+        
+        foreach ($keys as $key) {
+            Cache::forget($key);
+        }
+        
+        // Очищаем все кеши продуктов (если нужно)
+        // Можно улучшить, используя теги кеширования, если драйвер поддерживает
+        if (config('cache.default') === 'redis') {
+            Cache::tags(['products'])->flush();
+        }
+    }
+
+    /**
+     * Изображение продукта
+     */
+    public function image(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'image_id');
+    }
+
+    /**
+     * Иконка продукта
+     */
+    public function icon(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'icon_id');
+    }
+
+    /**
+     * Глава/категория
      */
     public function chapter(): BelongsTo
     {
@@ -38,28 +97,11 @@ class Product extends Model
     }
 
     /**
-     * Основное изображение
-     */
-    public function image(): HasOne
-    {
-        return $this->hasOne(Media::class, 'id', 'image_id');
-    }
-
-    /**
-     * Иконка
-     */
-    public function icon(): HasOne
-    {
-        return $this->hasOne(Media::class, 'id', 'icon_id');
-    }
-
-    /**
-     * Связанные услуги
+     * Услуги, связанные с продуктом
      */
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class, 'product_service')
-            ->withTimestamps();
+        return $this->belongsToMany(Service::class, 'product_service');
     }
 
     /**
@@ -75,6 +117,18 @@ class Product extends Model
      */
     public function scopeOrdered($query)
     {
-        return $query->orderBy('order');
+        return $query->orderBy('order', 'asc')->orderBy('name', 'asc');
+    }
+
+    /**
+     * Scope для поиска по slug
+     */
+    public function scopeBySlug($query, string $slug)
+    {
+        $cleanSlug = trim($slug, '/');
+        return $query->where(function($q) use ($cleanSlug) {
+            $q->where('slug', $cleanSlug)
+              ->orWhere('slug', '/' . $cleanSlug);
+        });
     }
 }

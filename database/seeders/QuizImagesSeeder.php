@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Folder;
 use App\Models\Media;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -176,6 +177,9 @@ class QuizImagesSeeder extends Seeder
                 }
             }
 
+            // Получаем общую папку (обходим UserScope, так как это системная папка)
+            $commonFolder = Folder::withoutUserScope()->where('slug', 'common')->first();
+            
             // Создаем или обновляем запись в медиа-библиотеке
             Media::updateOrCreate(
                 [
@@ -189,7 +193,7 @@ class QuizImagesSeeder extends Seeder
                     'height' => $height,
                     'type' => 'photo',
                     'size' => $fileSize,
-                    'folder_id' => null,
+                    'folder_id' => $commonFolder ? $commonFolder->id : null,
                     'user_id' => null,
                     'temporary' => false,
                     'metadata' => json_encode([

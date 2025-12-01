@@ -22,6 +22,12 @@ class DatabaseSeeder extends Seeder
             QuizSeeder::class,
             HowWorkBlockSettingsSeeder::class,
             FaqBlockSettingsSeeder::class,
+            CopyMediaFilesSeeder::class,
+            ProductsServicesOptionsCasesSeeder::class,
+            AboutSettingsSeeder::class,
+            ContactSettingsSeeder::class,
+            RegisterAllMediaFilesSeeder::class, // Регистрируем все медиа файлы в таблицу media
+            UpdateMediaFolderSeeder::class, // Обновляем папки для всех медиа файлов
         ]);
     }
 }

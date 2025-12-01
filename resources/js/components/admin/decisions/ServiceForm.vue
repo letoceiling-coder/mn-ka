@@ -99,6 +99,110 @@
                 class="w-full h-10 px-3 border border-border rounded bg-background focus:outline-none focus:ring-2 focus:ring-accent"
             />
         </div>
+        <div>
+            <label class="text-sm font-medium mb-1 block">Продукты</label>
+            <div class="border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div v-if="loadingProducts" class="text-sm text-muted-foreground">
+                    Загрузка продуктов...
+                </div>
+                <div v-else-if="products.length === 0" class="text-sm text-muted-foreground">
+                    Продукты не найдены
+                </div>
+                <div v-else class="space-y-2">
+                    <label
+                        v-for="product in products"
+                        :key="product.id"
+                        class="flex items-center gap-2 cursor-pointer hover:bg-muted/10 p-2 rounded"
+                    >
+                        <input
+                            type="checkbox"
+                            :value="product.id"
+                            v-model="selectedProducts"
+                            class="w-4 h-4 rounded border-border"
+                        />
+                        <span class="text-sm">{{ product.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label class="text-sm font-medium mb-1 block">Опции</label>
+            <div class="border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div v-if="loadingOptions" class="text-sm text-muted-foreground">
+                    Загрузка опций...
+                </div>
+                <div v-else-if="options.length === 0" class="text-sm text-muted-foreground">
+                    Опции не найдены
+                </div>
+                <div v-else class="space-y-2">
+                    <label
+                        v-for="option in options"
+                        :key="option.id"
+                        class="flex items-center gap-2 cursor-pointer hover:bg-muted/10 p-2 rounded"
+                    >
+                        <input
+                            type="checkbox"
+                            :value="option.id"
+                            v-model="selectedOptions"
+                            class="w-4 h-4 rounded border-border"
+                        />
+                        <span class="text-sm">{{ option.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label class="text-sm font-medium mb-1 block">Деревья опций</label>
+            <div class="border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div v-if="loadingOptionTrees" class="text-sm text-muted-foreground">
+                    Загрузка деревьев опций...
+                </div>
+                <div v-else-if="optionTrees.length === 0" class="text-sm text-muted-foreground">
+                    Деревья опций не найдены
+                </div>
+                <div v-else class="space-y-2">
+                    <label
+                        v-for="tree in optionTrees"
+                        :key="tree.id"
+                        class="flex items-center gap-2 cursor-pointer hover:bg-muted/10 p-2 rounded"
+                    >
+                        <input
+                            type="checkbox"
+                            :value="tree.id"
+                            v-model="selectedOptionTrees"
+                            class="w-4 h-4 rounded border-border"
+                        />
+                        <span class="text-sm">{{ tree.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label class="text-sm font-medium mb-1 block">Экземпляры</label>
+            <div class="border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div v-if="loadingInstances" class="text-sm text-muted-foreground">
+                    Загрузка экземпляров...
+                </div>
+                <div v-else-if="instances.length === 0" class="text-sm text-muted-foreground">
+                    Экземпляры не найдены
+                </div>
+                <div v-else class="space-y-2">
+                    <label
+                        v-for="instance in instances"
+                        :key="instance.id"
+                        class="flex items-center gap-2 cursor-pointer hover:bg-muted/10 p-2 rounded"
+                    >
+                        <input
+                            type="checkbox"
+                            :value="instance.id"
+                            v-model="selectedInstances"
+                            class="w-4 h-4 rounded border-border"
+                        />
+                        <span class="text-sm">{{ instance.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
         <div class="flex items-center gap-2">
             <input
                 v-model="localForm.is_active"
@@ -211,6 +315,18 @@ export default {
     emits: ['submit', 'cancel'],
     setup(props, { emit }) {
         const chapters = ref([]);
+        const products = ref([]);
+        const options = ref([]);
+        const optionTrees = ref([]);
+        const instances = ref([]);
+        const loadingProducts = ref(false);
+        const loadingOptions = ref(false);
+        const loadingOptionTrees = ref(false);
+        const loadingInstances = ref(false);
+        const selectedProducts = ref([]);
+        const selectedOptions = ref([]);
+        const selectedOptionTrees = ref([]);
+        const selectedInstances = ref([]);
         const showImageMediaModal = ref(false);
         const showIconMediaModal = ref(false);
         const selectedImage = ref(null);
@@ -234,6 +350,66 @@ export default {
                 }
             } catch (err) {
                 console.error('Error fetching chapters:', err);
+            }
+        };
+
+        const fetchProducts = async () => {
+            loadingProducts.value = true;
+            try {
+                const response = await apiGet('/products?active=1');
+                if (response.ok) {
+                    const data = await response.json();
+                    products.value = data.data || [];
+                }
+            } catch (err) {
+                console.error('Error fetching products:', err);
+            } finally {
+                loadingProducts.value = false;
+            }
+        };
+
+        const fetchOptions = async () => {
+            loadingOptions.value = true;
+            try {
+                const response = await apiGet('/options?active=1');
+                if (response.ok) {
+                    const data = await response.json();
+                    options.value = data.data || [];
+                }
+            } catch (err) {
+                console.error('Error fetching options:', err);
+            } finally {
+                loadingOptions.value = false;
+            }
+        };
+
+        const fetchOptionTrees = async () => {
+            loadingOptionTrees.value = true;
+            try {
+                const response = await apiGet('/option-trees?active=1');
+                if (response.ok) {
+                    const data = await response.json();
+                    optionTrees.value = data.data || [];
+                }
+            } catch (err) {
+                console.error('Error fetching option trees:', err);
+            } finally {
+                loadingOptionTrees.value = false;
+            }
+        };
+
+        const fetchInstances = async () => {
+            loadingInstances.value = true;
+            try {
+                const response = await apiGet('/instances?active=1');
+                if (response.ok) {
+                    const data = await response.json();
+                    instances.value = data.data || [];
+                }
+            } catch (err) {
+                console.error('Error fetching instances:', err);
+            } finally {
+                loadingInstances.value = false;
             }
         };
 
@@ -285,6 +461,18 @@ export default {
             if (newData.icon) {
                 selectedIcon.value = newData.icon;
             }
+            if (newData.products && Array.isArray(newData.products)) {
+                selectedProducts.value = newData.products.map(p => p.id || p);
+            }
+            if (newData.options && Array.isArray(newData.options)) {
+                selectedOptions.value = newData.options.map(o => o.id || o);
+            }
+            if (newData.option_trees && Array.isArray(newData.option_trees)) {
+                selectedOptionTrees.value = newData.option_trees.map(t => t.id || t);
+            }
+            if (newData.instances && Array.isArray(newData.instances)) {
+                selectedInstances.value = newData.instances.map(i => i.id || i);
+            }
         }, { deep: true });
 
         const handleSubmit = () => {
@@ -296,6 +484,10 @@ export default {
                 icon_id: localForm.value.icon_id || null,
                 order: localForm.value.order,
                 is_active: localForm.value.is_active,
+                products: selectedProducts.value,
+                options: selectedOptions.value,
+                option_trees: selectedOptionTrees.value,
+                instances: selectedInstances.value,
             });
         };
 
@@ -305,16 +497,44 @@ export default {
 
         onMounted(() => {
             fetchChapters();
+            fetchProducts();
+            fetchOptions();
+            fetchOptionTrees();
+            fetchInstances();
             if (props.initialData.image) {
                 selectedImage.value = props.initialData.image;
             }
             if (props.initialData.icon) {
                 selectedIcon.value = props.initialData.icon;
             }
+            if (props.initialData.products && Array.isArray(props.initialData.products)) {
+                selectedProducts.value = props.initialData.products.map(p => p.id || p);
+            }
+            if (props.initialData.options && Array.isArray(props.initialData.options)) {
+                selectedOptions.value = props.initialData.options.map(o => o.id || o);
+            }
+            if (props.initialData.option_trees && Array.isArray(props.initialData.option_trees)) {
+                selectedOptionTrees.value = props.initialData.option_trees.map(t => t.id || t);
+            }
+            if (props.initialData.instances && Array.isArray(props.initialData.instances)) {
+                selectedInstances.value = props.initialData.instances.map(i => i.id || i);
+            }
         });
 
         return {
             chapters,
+            products,
+            options,
+            optionTrees,
+            instances,
+            loadingProducts,
+            loadingOptions,
+            loadingOptionTrees,
+            loadingInstances,
+            selectedProducts,
+            selectedOptions,
+            selectedOptionTrees,
+            selectedInstances,
             localForm,
             showImageMediaModal,
             showIconMediaModal,

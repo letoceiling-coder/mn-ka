@@ -172,11 +172,20 @@ class ProductsImport
                 }
 
                 // Создаем или обновляем продукт
+                $servicesIds = $data['services'] ?? null;
+                unset($data['services']); // Убираем из данных для создания/обновления
+
                 if (!empty($data['id']) && Product::find($data['id'])) {
                     $product = Product::find($data['id']);
                     $product->update($data);
                 } else {
-                    Product::create($data);
+                    $product = Product::create($data);
+                }
+
+                // Синхронизируем услуги
+                if ($servicesIds !== null) {
+                    $ids = array_filter(array_map('intval', explode(',', $servicesIds)));
+                    $product->services()->sync($ids);
                 }
 
                 $this->successCount++;
@@ -300,6 +309,11 @@ class ProductsImport
                     break;
                 case 'Активен':
                     $data['is_active'] = ($value === '1' || $value === 'true' || $value === 'да');
+                    break;
+                case 'Услуги (ID через запятую)':
+                case 'Услуги':
+                case 'Services':
+                    $data['services'] = !empty($value) ? trim($value) : null;
                     break;
             }
         }

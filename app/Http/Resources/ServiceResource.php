@@ -32,6 +32,44 @@ class ServiceResource extends JsonResource
             'is_active' => $this->is_active,
             'category' => 'services', // Для фронтенда
             'products' => ProductResource::collection($this->whenLoaded('products')),
+            'options' => $this->whenLoaded('options', function() {
+                return $this->options->map(function($option) {
+                    return [
+                        'id' => $option->id,
+                        'name' => $option->name,
+                    ];
+                })->toArray();
+            }),
+            'option_trees' => $this->whenLoaded('optionTrees', function() {
+                return $this->optionTrees->map(function($tree) {
+                    $items = [];
+                    if ($tree->relationLoaded('items') && $tree->items) {
+                        $items = $tree->items->map(function($item) {
+                            return [
+                                'id' => $item->id,
+                                'name' => $item->name,
+                                'parent' => $item->parent,
+                                'sort' => $item->sort,
+                            ];
+                        })->toArray();
+                    }
+                    return [
+                        'id' => $tree->id,
+                        'name' => $tree->name,
+                        'parent' => $tree->parent,
+                        'sort' => $tree->sort,
+                        'items' => $items,
+                    ];
+                })->toArray();
+            }),
+            'instances' => $this->whenLoaded('instances', function() {
+                return $this->instances->map(function($instance) {
+                    return [
+                        'id' => $instance->id,
+                        'name' => $instance->name,
+                    ];
+                })->toArray();
+            }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

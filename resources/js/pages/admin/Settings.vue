@@ -27,20 +27,47 @@
                 </p>
             </router-link>
 
-            <!-- Placeholder for future settings -->
-            <div class="bg-card rounded-lg border border-border p-6 opacity-50">
+            <!-- Contact Settings Card -->
+            <router-link
+                to="/admin/settings/contacts"
+                class="bg-card rounded-lg border border-border p-6 hover:border-accent transition-colors cursor-pointer"
+            >
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-foreground">Дополнительно</h2>
-                        <p class="text-sm text-muted-foreground">Скоро</p>
+                        <h2 class="text-lg font-semibold text-foreground">Контакты</h2>
+                        <p class="text-sm text-muted-foreground">Настройка контактной информации</p>
                     </div>
                 </div>
-            </div>
+                <p class="text-sm text-muted-foreground">
+                    Редактирование контактных данных для страницы контактов
+                </p>
+            </router-link>
+
+            <!-- About Settings Card -->
+            <router-link
+                to="/admin/settings/about"
+                class="bg-card rounded-lg border border-border p-6 hover:border-accent transition-colors cursor-pointer"
+            >
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-foreground">О нас</h2>
+                        <p class="text-sm text-muted-foreground">Настройка страницы О компании</p>
+                    </div>
+                </div>
+                <p class="text-sm text-muted-foreground">
+                    Редактирование контента для страницы "О нас"
+                </p>
+            </router-link>
         </div>
     </div>
 </template>

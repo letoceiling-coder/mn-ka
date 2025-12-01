@@ -14,7 +14,7 @@ class ProductsExport
      */
     public function exportToZip(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $products = Product::with(['chapter', 'image', 'icon'])->orderBy('order')->get();
+        $products = Product::with(['chapter', 'image', 'icon', 'services'])->orderBy('order')->get();
 
         $filename = 'products_' . date('Y-m-d_His') . '.zip';
 
@@ -59,6 +59,7 @@ class ProductsExport
                     'ID иконки',
                     'Путь иконки',
                     'URL иконки',
+                    'Услуги (ID через запятую)',
                     'Порядок',
                     'Активен',
                 ], ';');
@@ -118,6 +119,9 @@ class ProductsExport
                         }
                     }
 
+                    // Получаем ID услуг
+                    $servicesIds = $product->services ? $product->services->pluck('id')->implode(',') : '';
+
                     // Записываем строку в CSV
                     fputcsv($csvFile, [
                         $product->id,
@@ -132,6 +136,7 @@ class ProductsExport
                         $product->icon_id ?? '',
                         $iconPath,
                         $product->icon?->url ?? '',
+                        $servicesIds,
                         $product->order ?? 0,
                         $product->is_active ? '1' : '0',
                     ], ';');
@@ -212,7 +217,7 @@ class ProductsExport
      */
     public function exportToCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $products = Product::with(['chapter', 'image', 'icon'])->orderBy('order')->get();
+        $products = Product::with(['chapter', 'image', 'icon', 'services'])->orderBy('order')->get();
 
         $filename = 'products_' . date('Y-m-d_His') . '.csv';
 
@@ -244,6 +249,7 @@ class ProductsExport
                 'ID иконки',
                 'Путь иконки',
                 'URL иконки',
+                'Услуги (ID через запятую)',
                 'Порядок',
                 'Активен',
             ], ';');
@@ -263,6 +269,9 @@ class ProductsExport
                     $iconPath = 'images/icons/' . $iconPath;
                 }
                 
+                // Получаем ID услуг
+                $servicesIds = $product->services ? $product->services->pluck('id')->implode(',') : '';
+
                 fputcsv($file, [
                     $product->id,
                     $product->name,
@@ -276,6 +285,7 @@ class ProductsExport
                     $product->icon_id ?? '',
                     $iconPath,
                     $product->icon?->url ?? '',
+                    $servicesIds,
                     $product->order ?? 0,
                     $product->is_active ? '1' : '0',
                 ], ';');

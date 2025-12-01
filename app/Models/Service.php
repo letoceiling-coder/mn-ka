@@ -63,6 +63,33 @@ class Service extends Model
     }
 
     /**
+     * Простые опции услуги
+     */
+    public function options(): BelongsToMany
+    {
+        return $this->belongsToMany(Option::class, 'option_service')
+            ->withTimestamps();
+    }
+
+    /**
+     * Древовидные опции услуги
+     */
+    public function optionTrees(): BelongsToMany
+    {
+        return $this->belongsToMany(OptionTree::class, 'option_tree_service')
+            ->withTimestamps();
+    }
+
+    /**
+     * Экземпляры услуги
+     */
+    public function instances(): BelongsToMany
+    {
+        return $this->belongsToMany(Instance::class, 'instance_service')
+            ->withTimestamps();
+    }
+
+    /**
      * Scope для активных услуг
      */
     public function scopeActive($query)

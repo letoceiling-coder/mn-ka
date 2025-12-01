@@ -99,6 +99,32 @@
                 class="w-full h-10 px-3 border border-border rounded bg-background focus:outline-none focus:ring-2 focus:ring-accent"
             />
         </div>
+        <div>
+            <label class="text-sm font-medium mb-1 block">Услуги</label>
+            <div class="border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div v-if="loadingServices" class="text-sm text-muted-foreground">
+                    Загрузка услуг...
+                </div>
+                <div v-else-if="services.length === 0" class="text-sm text-muted-foreground">
+                    Услуги не найдены
+                </div>
+                <div v-else class="space-y-2">
+                    <label
+                        v-for="service in services"
+                        :key="service.id"
+                        class="flex items-center gap-2 cursor-pointer hover:bg-muted/10 p-2 rounded"
+                    >
+                        <input
+                            type="checkbox"
+                            :value="service.id"
+                            v-model="selectedServices"
+                            class="w-4 h-4 rounded border-border"
+                        />
+                        <span class="text-sm">{{ service.name }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
         <div class="flex items-center gap-2">
             <input
                 v-model="localForm.is_active"
@@ -211,6 +237,9 @@ export default {
     emits: ['submit', 'cancel'],
     setup(props, { emit }) {
         const chapters = ref([]);
+        const services = ref([]);
+        const loadingServices = ref(false);
+        const selectedServices = ref([]);
         const showImageMediaModal = ref(false);
         const showIconMediaModal = ref(false);
         const selectedImage = ref(null);
@@ -234,6 +263,21 @@ export default {
                 }
             } catch (err) {
                 console.error('Error fetching chapters:', err);
+            }
+        };
+
+        const fetchServices = async () => {
+            loadingServices.value = true;
+            try {
+                const response = await apiGet('/services?active=1');
+                if (response.ok) {
+                    const data = await response.json();
+                    services.value = data.data || [];
+                }
+            } catch (err) {
+                console.error('Error fetching services:', err);
+            } finally {
+                loadingServices.value = false;
             }
         };
 
@@ -285,6 +329,9 @@ export default {
             if (newData.icon) {
                 selectedIcon.value = newData.icon;
             }
+            if (newData.services && Array.isArray(newData.services)) {
+                selectedServices.value = newData.services.map(s => s.id || s);
+            }
         }, { deep: true });
 
         const handleSubmit = () => {
@@ -296,6 +343,7 @@ export default {
                 icon_id: localForm.value.icon_id || null,
                 order: localForm.value.order,
                 is_active: localForm.value.is_active,
+                services: selectedServices.value,
             });
         };
 
@@ -305,16 +353,23 @@ export default {
 
         onMounted(() => {
             fetchChapters();
+            fetchServices();
             if (props.initialData.image) {
                 selectedImage.value = props.initialData.image;
             }
             if (props.initialData.icon) {
                 selectedIcon.value = props.initialData.icon;
             }
+            if (props.initialData.services && Array.isArray(props.initialData.services)) {
+                selectedServices.value = props.initialData.services.map(s => s.id || s);
+            }
         });
 
         return {
             chapters,
+            services,
+            loadingServices,
+            selectedServices,
             localForm,
             showImageMediaModal,
             showIconMediaModal,

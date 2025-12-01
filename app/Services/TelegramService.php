@@ -157,6 +157,12 @@ class TelegramService
                 $text .= "\n👤 <b>Пользователь:</b> " . ($data['contact']['name'] ?? 'Неизвестно');
                 $text .= "\n📧 <b>Email:</b> " . ($data['contact']['email'] ?? 'Неизвестно');
             }
+            if (isset($data['type']) && $data['type'] === 'product_request') {
+                $text .= "\n\n📦 <b>Продукт:</b> " . ($data['product_name'] ?? 'Неизвестно');
+                if (isset($data['request_id'])) {
+                    $text .= "\n🆔 <b>ID заявки:</b> #" . $data['request_id'];
+                }
+            }
         }
 
         return $this->sendMessage($text, $chatId, ['parse_mode' => 'HTML']);

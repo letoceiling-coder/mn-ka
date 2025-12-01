@@ -138,6 +138,24 @@ class AdminMenu
                         'roles' => ['admin', 'manager'],
                     ],
                     [
+                        'title' => 'Опции',
+                        'route' => 'admin.decisions.options',
+                        'icon' => 'list',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                    [
+                        'title' => 'Деревья опций',
+                        'route' => 'admin.decisions.option-trees',
+                        'icon' => 'git-branch',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                    [
+                        'title' => 'Экземпляры',
+                        'route' => 'admin.decisions.instances',
+                        'icon' => 'box',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                    [
                         'title' => 'Настройки блока',
                         'route' => 'admin.decisions.settings',
                         'icon' => 'settings',
@@ -182,6 +200,24 @@ class AdminMenu
                         'roles' => ['admin', 'manager'],
                     ],
                 ],
+            ],
+            [
+                'title' => 'Кейсы',
+                'route' => 'admin.cases',
+                'icon' => 'briefcase',
+                'roles' => ['admin', 'manager'],
+            ],
+            [
+                'title' => 'Модальные окна',
+                'route' => 'admin.modal-settings',
+                'icon' => 'square',
+                'roles' => ['admin', 'manager'],
+            ],
+            [
+                'title' => 'Заявки',
+                'route' => 'admin.product-requests',
+                'icon' => 'file-text',
+                'roles' => ['admin', 'manager'],
             ],
         ]);
 

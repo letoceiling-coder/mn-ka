@@ -1,68 +1,115 @@
 <template>
-    <section v-if="settings && settings.is_active" class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20">
+    <section 
+        v-if="settings && settings.is_active" 
+        class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-b from-[#F4F6FC] to-white"
+        aria-label="Часто задаваемые вопросы"
+    >
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
-            <div v-if="settings.title" class="flex justify-center mb-8 sm:mb-12">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
+            <div v-if="settings.title" class="text-center mb-10 sm:mb-12 md:mb-16">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#424448] mb-3 sm:mb-4">
                     {{ settings.title }}
                 </h2>
+                <div class="w-20 h-1 bg-[#306221] mx-auto rounded-full"></div>
+            </div>
+
+            <!-- Loading State -->
+            <div v-if="loading" class="flex items-center justify-center py-16">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="w-12 h-12 border-4 border-[#306221] border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-[#6C7B6D] text-sm">Загрузка вопросов...</p>
+                </div>
             </div>
 
             <!-- FAQ Items -->
-            <div v-if="settings.faq_items && settings.faq_items.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div 
+                v-else-if="settings.faq_items && settings.faq_items.length > 0" 
+                class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6"
+                role="list"
+            >
                 <div
                     v-for="(item, index) in settings.faq_items"
-                    :key="index"
-                    class="bg-[rgba(244,246,252,0.8)] backdrop-blur-[25.73px] rounded-[10px] sm:rounded-lg p-4 sm:p-6"
+                    :key="`faq-${index}-${item.question}`"
+                    class="group"
+                    role="listitem"
                 >
-                    <!-- Question -->
-                    <button
-                        @click="toggleAnswer(index)"
-                        class="w-full flex items-center justify-between gap-4 cursor-pointer text-left"
-                    >
-                        <div class="flex-1 text-base sm:text-lg font-normal text-foreground leading-[22px]">
-                            {{ item.question }}
-                        </div>
-                        <svg
-                            :class="[
-                                'w-3 h-3 flex-shrink-0 transition-transform duration-300',
-                                openItems[index] ? 'rotate-180' : ''
-                            ]"
-                            width="11"
-                            height="12"
-                            viewBox="0 0 11 12"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <mask id="mask0_230_3650" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="11" height="12">
-                                <rect x="10.9831" y="0.949219" width="10.9398" height="10.9398" transform="rotate(90 10.9831 0.949219)" fill="#000"/>
-                            </mask>
-                            <g mask="url(#mask0_230_3650)">
-                                <path d="M0.954872 8.24186L5.51314 3.68359L10.0714 8.24186L9.26232 9.05096L5.51314 5.30178L1.76396 9.05096L0.954872 8.24186Z" fill="currentColor" class="text-foreground"/>
-                            </g>
-                        </svg>
-                    </button>
-
-                    <!-- Answer -->
                     <div
-                        v-show="openItems[index]"
-                        class="mt-4 text-sm sm:text-base font-medium text-foreground leading-[15px] sm:leading-[20px]"
+                        class="bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:border-[#657C6C] h-full flex flex-col overflow-hidden"
+                        :class="openItems[index] ? 'border-[#306221] shadow-md' : ''"
                     >
-                        {{ item.answer }}
+                        <!-- Question Button -->
+                        <button
+                            @click="toggleAnswer(index)"
+                            @keydown.enter.prevent="toggleAnswer(index)"
+                            @keydown.space.prevent="toggleAnswer(index)"
+                            :aria-expanded="openItems[index]"
+                            :aria-controls="`faq-answer-${index}`"
+                            class="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left focus:outline-none focus:ring-2 focus:ring-[#306221] focus:ring-offset-2 transition-colors hover:bg-[#F4F6FC]/50 flex-shrink-0"
+                            :class="openItems[index] ? 'bg-[#F9FAFB]' : ''"
+                        >
+                            <h3 class="flex-1 text-base sm:text-lg md:text-xl font-semibold text-[#424448] leading-relaxed pr-4">
+                                {{ item.question }}
+                            </h3>
+                            <div 
+                                class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-[#F4F6FC] group-hover:bg-[#657C6C]/10 transition-all duration-300"
+                                :class="openItems[index] ? 'bg-[#306221]/10' : ''"
+                            >
+                                <svg
+                                    class="w-5 h-5 text-[#6C7B6D] transition-transform duration-300 ease-in-out"
+                                    :class="openItems[index] ? 'rotate-180 text-[#306221]' : ''"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2.5"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </button>
+
+                        <!-- Answer with smooth animation -->
+                        <Transition
+                            name="faq-accordion"
+                            @enter="onEnter"
+                            @after-enter="onAfterEnter"
+                            @leave="onLeave"
+                            @after-leave="onAfterLeave"
+                        >
+                            <div
+                                v-if="openItems[index]"
+                                :id="`faq-answer-${index}`"
+                                class="overflow-hidden"
+                                role="region"
+                                :aria-labelledby="`faq-question-${index}`"
+                            >
+                                <div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-4">
+                                    <div 
+                                        class="text-sm sm:text-base text-[#424448] leading-relaxed prose prose-sm max-w-none"
+                                        v-html="formatAnswer(item.answer)"
+                                    ></div>
+                                </div>
+                            </div>
+                        </Transition>
                     </div>
                 </div>
             </div>
 
-            <!-- Пустое состояние -->
-            <div v-else class="text-center py-12 text-muted-foreground">
-                <p>Вопросы не настроены. Добавьте вопросы в настройках блока.</p>
+            <!-- Empty State -->
+            <div v-else-if="!loading" class="text-center py-16">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F4F6FC] mb-4">
+                    <svg class="w-8 h-8 text-[#6C7B6D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <p class="text-[#6C7B6D] text-base">Вопросы не настроены. Добавьте вопросы в настройках блока.</p>
             </div>
         </div>
     </section>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 
 export default {
     name: 'Faq',
@@ -79,7 +126,7 @@ export default {
                     if (data.data) {
                         settings.value = data.data;
                         // Инициализируем состояние открытых элементов
-                        if (data.data.faq_items) {
+                        if (data.data.faq_items && Array.isArray(data.data.faq_items)) {
                             data.data.faq_items.forEach((_, index) => {
                                 openItems.value[index] = false;
                             });
@@ -94,7 +141,52 @@ export default {
         };
 
         const toggleAnswer = (index) => {
+            // Опционально: закрывать другие открытые элементы (accordion mode)
+            // const wasOpen = openItems.value[index];
+            // if (!wasOpen) {
+            //     Object.keys(openItems.value).forEach(key => {
+            //         openItems.value[key] = false;
+            //     });
+            // }
             openItems.value[index] = !openItems.value[index];
+        };
+
+        // Форматирование ответа (поддержка HTML)
+        const formatAnswer = (answer) => {
+            if (!answer) return '';
+            // Если ответ уже содержит HTML теги, возвращаем как есть
+            if (/<[a-z][\s\S]*>/i.test(answer)) {
+                return answer;
+            }
+            // Иначе конвертируем переносы строк в <br>
+            return answer.replace(/\n/g, '<br>');
+        };
+
+        // Анимации для аккордеона
+        const onEnter = (el) => {
+            el.style.height = '0';
+            el.style.opacity = '0';
+        };
+
+        const onAfterEnter = (el) => {
+            nextTick(() => {
+                el.style.height = `${el.scrollHeight}px`;
+                el.style.opacity = '1';
+            });
+        };
+
+        const onLeave = (el) => {
+            el.style.height = `${el.scrollHeight}px`;
+            el.style.opacity = '1';
+            nextTick(() => {
+                el.style.height = '0';
+                el.style.opacity = '0';
+            });
+        };
+
+        const onAfterLeave = (el) => {
+            el.style.height = '';
+            el.style.opacity = '';
         };
 
         onMounted(() => {
@@ -106,12 +198,89 @@ export default {
             loading,
             openItems,
             toggleAnswer,
+            formatAnswer,
+            onEnter,
+            onAfterEnter,
+            onLeave,
+            onAfterLeave,
         };
     },
 };
 </script>
 
 <style scoped>
-/* Дополнительные стили при необходимости */
+/* Плавные анимации для аккордеона */
+.faq-accordion-enter-active {
+    transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.faq-accordion-leave-active {
+    transition: height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+    overflow: hidden;
+}
+
+.faq-accordion-enter-from,
+.faq-accordion-leave-to {
+    height: 0 !important;
+    opacity: 0;
+}
+
+/* Стили для HTML контента в ответах */
+:deep(.prose) {
+    color: #424448;
+}
+
+:deep(.prose p) {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+:deep(.prose p:first-child) {
+    margin-top: 0;
+}
+
+:deep(.prose p:last-child) {
+    margin-bottom: 0;
+}
+
+:deep(.prose ul),
+:deep(.prose ol) {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 1.5em;
+}
+
+:deep(.prose li) {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+}
+
+:deep(.prose strong) {
+    font-weight: 600;
+    color: #424448;
+}
+
+:deep(.prose a) {
+    color: #306221;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+:deep(.prose a:hover) {
+    opacity: 0.8;
+    color: #657C6C;
+}
+
+/* Улучшенная доступность для фокуса */
+button:focus-visible {
+    outline: 2px solid #306221;
+    outline-offset: 2px;
+}
+
+/* Плавная анимация для карточек */
+.group:hover .group-hover\:bg-accent\/10 {
+    transition: background-color 0.2s ease-in-out;
+}
 </style>
 

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\HowWorkBlockSettings;
 use App\Models\Media;
+use Database\Seeders\Traits\MediaRegistrationTrait;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class HowWorkBlockSettingsSeeder extends Seeder
 {
-    use WithoutModelEvents;
+    use WithoutModelEvents, MediaRegistrationTrait;
 
     /**
      * Путь к старому проекту
@@ -160,36 +161,12 @@ class HowWorkBlockSettingsSeeder extends Seeder
             $this->command->error("✗ Не удалось скопировать изображение");
         }
 
-        // Создаем запись в медиа-библиотеке
+        // Регистрируем изображение в медиа-библиотеке
         $media = null;
         if ($imageCopied && File::exists(public_path($imageTarget))) {
-            try {
-                $imageInfo = @getimagesize(public_path($imageTarget));
-                $width = $imageInfo ? $imageInfo[0] : null;
-                $height = $imageInfo ? $imageInfo[1] : null;
-                $fileSize = File::size(public_path($imageTarget));
-
-                $media = Media::create([
-                    'name' => 'image-11.png',
-                    'original_name' => 'image-11.png',
-                    'extension' => 'png',
-                    'disk' => 'upload/how-work',
-                    'width' => $width,
-                    'height' => $height,
-                    'type' => 'photo',
-                    'size' => $fileSize,
-                    'folder_id' => null,
-                    'user_id' => null,
-                    'temporary' => false,
-                    'metadata' => json_encode([
-                        'path' => $imageTarget,
-                        'mime_type' => $imageInfo ? $imageInfo['mime'] : 'image/png'
-                    ])
-                ]);
-
+            $media = $this->registerMediaByPath($imageTarget, 'how-work');
+            if ($media) {
                 $this->command->info("✓ Запись в медиа-библиотеке создана (ID: {$media->id})");
-            } catch (\Exception $e) {
-                $this->command->warn("Не удалось создать запись в медиа-библиотеке: " . $e->getMessage());
             }
         }
 
