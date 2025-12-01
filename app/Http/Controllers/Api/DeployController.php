@@ -1182,30 +1182,25 @@ class DeployController extends Controller
      */
     protected function executeBatch(\PDO $pdo, array $statements): void
     {
-        $pdo->beginTransaction();
-        
-        try {
-            foreach ($statements as $statement) {
-                if (!empty(trim($statement))) {
-                    $pdo->exec($statement);
-                }
+        // Выполняем запросы по одному, так как некоторые могут быть DDL (CREATE TABLE и т.д.)
+        // которые не поддерживают транзакции в MySQL
+        foreach ($statements as $statement) {
+            $statement = trim($statement);
+            if (empty($statement)) {
+                continue;
             }
-            $pdo->commit();
-        } catch (\Exception $e) {
-            $pdo->rollBack();
-            // Пробуем выполнить по одному для определения проблемного запроса
-            foreach ($statements as $statement) {
-                if (!empty(trim($statement))) {
-                    try {
-                        $pdo->exec($statement);
-                    } catch (\Exception $singleError) {
-                        // Логируем ошибку, но продолжаем
-                        Log::warning('Ошибка выполнения SQL запроса', [
-                            'error' => $singleError->getMessage(),
-                            'statement' => substr($statement, 0, 200),
-                        ]);
-                    }
-                }
+            
+            try {
+                $pdo->exec($statement);
+            } catch (\Exception $e) {
+                // Логируем ошибку, но продолжаем выполнение остальных запросов
+                Log::warning('Ошибка выполнения SQL запроса', [
+                    'error' => $e->getMessage(),
+                    'statement' => substr($statement, 0, 200),
+                ]);
+                
+                // Пропускаем проблемный запрос и продолжаем
+                continue;
             }
         }
     }
