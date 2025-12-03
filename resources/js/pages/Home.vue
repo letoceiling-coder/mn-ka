@@ -50,9 +50,6 @@ export default {
         SEOHead,
     },
     setup() {
-        console.log('[SEO DEBUG] Home.setup: начало setup');
-        console.log('[SEO DEBUG] Home.setup: текущий title при setup:', document.title);
-        
         const { hidePreloader } = usePreloader();
         const blocks = ref([]);
         const loading = ref(true);
@@ -67,8 +64,6 @@ export default {
         };
         
         const seoSettings = ref(defaultSeoSettings);
-        console.log('[SEO DEBUG] Home.setup: seoSettings инициализирован:', seoSettings.value);
-        console.log('[SEO DEBUG] Home.setup: title после инициализации:', document.title);
 
         const orderedBlocks = computed(() => {
             return blocks.value
@@ -148,17 +143,11 @@ export default {
         });
 
         const fetchSeoSettings = async () => {
-            console.log('[SEO DEBUG] Home.fetchSeoSettings: начало загрузки SEO настроек');
-            console.log('[SEO DEBUG] Home.fetchSeoSettings: текущий title до запроса:', document.title);
-            console.log('[SEO DEBUG] Home.fetchSeoSettings: текущие seoSettings:', seoSettings.value);
-            
             try {
                 const response = await fetch('/api/public/seo-settings');
-                console.log('[SEO DEBUG] Home.fetchSeoSettings: ответ получен, status:', response.status);
                 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('[SEO DEBUG] Home.fetchSeoSettings: данные получены:', data.data);
                     
                     if (data.data) {
                         // Проверяем, что site_name не пустой и не равен 'Laravel' (дефолтное значение Laravel)
@@ -170,9 +159,6 @@ export default {
                         // Проверяем, что site_description не пустой
                         const isValidDescription = data.data.site_description && 
                                                    data.data.site_description.trim() !== '';
-                        
-                        console.log('[SEO DEBUG] Home.fetchSeoSettings: isValidSiteName:', isValidSiteName, 'site_name:', data.data.site_name);
-                        console.log('[SEO DEBUG] Home.fetchSeoSettings: isValidDescription:', isValidDescription);
                         
                         // Объединяем загруженные данные с дефолтными, но используем дефолтные значения
                         // если API вернул пустые или некорректные данные
@@ -187,67 +173,46 @@ export default {
                                 : defaultSeoSettings.site_keywords,
                         };
                         
-                        console.log('[SEO DEBUG] Home.fetchSeoSettings: новые seoSettings:', newSeoSettings);
-                        console.log('[SEO DEBUG] Home.fetchSeoSettings: title до обновления seoSettings:', document.title);
-                        
                         seoSettings.value = newSeoSettings;
-                        
-                        console.log('[SEO DEBUG] Home.fetchSeoSettings: seoSettings обновлен');
-                        console.log('[SEO DEBUG] Home.fetchSeoSettings: title после обновления seoSettings:', document.title);
                     }
                 }
             } catch (error) {
-                console.error('[SEO DEBUG] Home.fetchSeoSettings: ошибка загрузки:', error);
+                console.error('Error fetching SEO settings:', error);
                 // Значения по умолчанию уже установлены при инициализации
                 // Не сбрасываем их, чтобы избежать мерцания title/description
             }
         };
 
         onMounted(() => {
-            console.log('[SEO DEBUG] Home.onMounted: компонент смонтирован');
-            console.log('[SEO DEBUG] Home.onMounted: текущий title:', document.title);
-            console.log('[SEO DEBUG] Home.onMounted: текущие seoSettings:', seoSettings.value);
-            
             fetchSeoSettings();
             fetchBlocks();
-            
-            console.log('[SEO DEBUG] Home.onMounted: запросы отправлены');
         });
 
         // Computed свойства для SEO с защитой от некорректных значений
         const seoTitle = computed(() => {
             const title = seoSettings.value.site_name;
-            console.log('[SEO DEBUG] Home.seoTitle computed: исходное значение:', title);
             // Проверяем, что title валидный
             if (!title || title.trim() === '' || title === 'Laravel' || title.toLowerCase() === 'laravel') {
-                console.log('[SEO DEBUG] Home.seoTitle computed: используем дефолтное значение:', defaultSeoSettings.site_name);
                 return defaultSeoSettings.site_name;
             }
-            console.log('[SEO DEBUG] Home.seoTitle computed: используем значение из seoSettings:', title);
             return title;
         });
         
         const seoDescription = computed(() => {
             const desc = seoSettings.value.site_description;
-            console.log('[SEO DEBUG] Home.seoDescription computed: исходное значение:', desc);
             // Проверяем, что description валидный
             if (!desc || desc.trim() === '') {
-                console.log('[SEO DEBUG] Home.seoDescription computed: используем дефолтное значение:', defaultSeoSettings.site_description);
                 return defaultSeoSettings.site_description;
             }
-            console.log('[SEO DEBUG] Home.seoDescription computed: используем значение из seoSettings:', desc);
             return desc;
         });
         
         const seoKeywords = computed(() => {
             const keywords = seoSettings.value.site_keywords;
-            console.log('[SEO DEBUG] Home.seoKeywords computed: исходное значение:', keywords);
             // Проверяем, что keywords валидные
             if (!keywords || keywords.trim() === '') {
-                console.log('[SEO DEBUG] Home.seoKeywords computed: используем дефолтное значение:', defaultSeoSettings.site_keywords);
                 return defaultSeoSettings.site_keywords;
             }
-            console.log('[SEO DEBUG] Home.seoKeywords computed: используем значение из seoSettings:', keywords);
             return keywords;
         });
 

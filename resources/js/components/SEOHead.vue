@@ -100,35 +100,19 @@ export default {
         };
 
         const updateMeta = () => {
-            console.log('[SEO DEBUG] SEOHead.updateMeta вызван, текущий title:', document.title);
-            console.log('[SEO DEBUG] props.title:', props.title);
-            console.log('[SEO DEBUG] props.description:', props.description);
-            console.log('[SEO DEBUG] lastTitle:', lastTitle);
-            
             // Title - обновляем всегда, даже если пустой
             const titleToSet = props.title || 'Lagom - Профессиональные услуги по работе с земельными участками';
             
             // Description - обновляем всегда
             const descriptionToSet = props.description || 'Профессиональные услуги по подбору и оформлению земельных участков';
             
-            console.log('[SEO DEBUG] titleToSet:', titleToSet);
-            console.log('[SEO DEBUG] descriptionToSet:', descriptionToSet);
+            // Обновляем title - всегда, даже если значение не изменилось
+            // Это важно для SPA, так как другие страницы могли изменить title
+            document.title = titleToSet;
             
-            // Проверяем, изменились ли значения, чтобы избежать лишних обновлений
-            // Но всегда обновляем при первом вызове (когда lastTitle пустой)
-            if (lastTitle && titleToSet === lastTitle && descriptionToSet === lastDescription) {
-                console.log('[SEO DEBUG] Значения не изменились, пропускаем обновление');
-                return; // Значения не изменились, не обновляем
-            }
-            
-            // Сохраняем текущие значения
+            // Сохраняем текущие значения для логирования
             lastTitle = titleToSet;
             lastDescription = descriptionToSet;
-            
-            console.log('[SEO DEBUG] Обновляем title с', document.title, 'на', titleToSet);
-            // Обновляем title - всегда, чтобы предотвратить сброс
-            document.title = titleToSet;
-            console.log('[SEO DEBUG] Title обновлен на:', document.title);
             
             setMetaTag({ name: 'description', content: descriptionToSet });
 
@@ -182,15 +166,12 @@ export default {
 
         // Обновляем метатеги сразу при создании компонента (до монтирования)
         // Это важно для предотвращения мерцания title
-        console.log('[SEO DEBUG] SEOHead setup: вызов updateMeta при создании компонента');
         updateMeta();
         
         // Используем watchEffect для отслеживания всех изменений props
-        // Отслеживаем все изменения props и обновляем метатеги
+        // watchEffect автоматически вызывается при изменении любого используемого значения
         watchEffect(() => {
-            console.log('[SEO DEBUG] SEOHead watchEffect: props изменились');
             // Обновляем метатеги при любом изменении props
-            // watchEffect автоматически отслеживает все используемые props
             const title = props.title;
             const description = props.description;
             const keywords = props.keywords;
@@ -198,13 +179,11 @@ export default {
             const ogImage = props.ogImage;
             const schema = props.schema;
             
-            console.log('[SEO DEBUG] SEOHead watchEffect: title =', title, 'description =', description);
-            // Обновляем метатеги при изменении
+            // Вызываем updateMeta при любом изменении
             updateMeta();
         });
 
         onMounted(() => {
-            console.log('[SEO DEBUG] SEOHead onMounted: компонент смонтирован');
             // Обновляем после монтирования для надежности
             updateMeta();
         });

@@ -36,66 +36,11 @@
         // Устанавливаем дефолтный title и метатеги сразу, чтобы избежать отображения "Laravel"
         // Vue компонент SEOHead обновит их при монтировании
         (function() {
-            console.log('[SEO DEBUG] 1. Начало установки title в app.blade.php, текущий title:', document.title);
             const defaultTitle = 'Lagom - Профессиональные услуги по работе с земельными участками';
             const defaultDescription = 'Профессиональные услуги по подбору и оформлению земельных участков';
             
             // Обновляем title сразу
             document.title = defaultTitle;
-            console.log('[SEO DEBUG] 2. Title установлен в app.blade.php:', document.title);
-            
-            // Отслеживаем изменения title
-            let lastTitle = document.title;
-            const titleObserver = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList' || document.title !== lastTitle) {
-                        console.log('[SEO DEBUG] Title изменен через DOM:', lastTitle, '->', document.title);
-                        console.trace('[SEO DEBUG] Stack trace изменения title:');
-                        lastTitle = document.title;
-                    }
-                });
-            });
-            
-            // Отслеживаем изменения в head
-            const headObserver = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList') {
-                        mutation.addedNodes.forEach(function(node) {
-                            if (node.tagName === 'TITLE' || (node.tagName === 'META' && node.getAttribute('property') === 'og:title')) {
-                                console.log('[SEO DEBUG] Обнаружено изменение в head:', node);
-                                console.trace('[SEO DEBUG] Stack trace:');
-                            }
-                        });
-                    }
-                });
-            });
-            
-            // Начинаем отслеживание после небольшой задержки
-            setTimeout(function() {
-                titleObserver.observe(document.querySelector('title') || document.head, {
-                    childList: true,
-                    subtree: true,
-                    characterData: true
-                });
-                
-                headObserver.observe(document.head, {
-                    childList: true,
-                    subtree: true
-                });
-                
-                // Отслеживаем прямые изменения document.title
-                const originalTitleSetter = Object.getOwnPropertyDescriptor(Document.prototype, 'title').set;
-                Object.defineProperty(document, 'title', {
-                    get: function() {
-                        return document.querySelector('title')?.textContent || '';
-                    },
-                    set: function(value) {
-                        console.log('[SEO DEBUG] document.title изменен напрямую:', document.title, '->', value);
-                        console.trace('[SEO DEBUG] Stack trace:');
-                        originalTitleSetter.call(document, value);
-                    }
-                });
-            }, 100);
             
             // Обновляем meta description
             let metaDesc = document.querySelector('meta[name="description"]');
