@@ -36,11 +36,19 @@ class TelegramSettings extends Model
      */
     public static function getSettings(): self
     {
-        return static::firstOrCreate([], [
+        $settings = static::firstOrCreate([], [
             'is_enabled' => false,
             'send_notifications' => true,
             'send_errors' => true,
             'parse_mode' => 'HTML',
         ]);
+        
+        // Автоматически включаем бота, если есть токен и chat_id
+        if (!$settings->is_enabled && !empty($settings->bot_token) && !empty($settings->chat_id)) {
+            $settings->is_enabled = true;
+            $settings->save();
+        }
+        
+        return $settings;
     }
 }

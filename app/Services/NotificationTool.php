@@ -63,6 +63,8 @@ class NotificationTool
                 \Illuminate\Support\Facades\Log::debug('Telegram notification check', [
                     'is_enabled' => $telegramSettings->is_enabled,
                     'send_notifications' => $telegramSettings->send_notifications,
+                    'has_bot_token' => !empty($telegramSettings->bot_token),
+                    'has_chat_id' => !empty($telegramSettings->chat_id),
                 ]);
                 
                 if ($telegramSettings->is_enabled && $telegramSettings->send_notifications) {
