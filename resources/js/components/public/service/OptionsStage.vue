@@ -1,24 +1,24 @@
 <template>
     <div class="w-full max-w-4xl mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <!-- Категория заявителя (options) -->
+            <!-- Категория заявителя (app_categories) -->
             <div class="md:col-span-1">
                 <div class="flex items-center gap-3 mb-3">
                     <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#688E67] text-white font-semibold text-sm flex-shrink-0">1</span>
                     <span class="text-sm md:text-base font-medium text-foreground">Категория заявителя</span>
                 </div>
                 <select
-                    v-model="selectedOption"
-                    @change="onOptionChange"
+                    v-model="selectedAppCategory"
+                    @change="onAppCategoryChange"
                     class="w-full h-12 px-4 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-[#688E67] focus:border-transparent transition-colors"
                 >
                     <option value="">Выберите категорию</option>
                     <option
-                        v-for="option in service.options"
-                        :key="option.id"
-                        :value="option.id"
+                        v-for="category in service.app_categories"
+                        :key="category.id"
+                        :value="category.id"
                     >
-                        {{ option.name }}
+                        {{ category.name }}
                     </option>
                 </select>
             </div>
@@ -83,6 +83,7 @@ export default {
     },
     emits: ['update-options'],
     setup(props, { emit }) {
+        const selectedAppCategory = ref(null);
         const selectedOption = ref(null);
         const selectedOptionTree = ref(null);
         const selectedInstance = ref(null);
@@ -109,9 +110,10 @@ export default {
             }));
         });
 
-        const onOptionChange = () => {
+        const onAppCategoryChange = () => {
             emitOptions();
         };
+
 
         const onOptionTreeChange = () => {
             // Сбрасываем instance при изменении optionTree
@@ -125,7 +127,7 @@ export default {
 
         const emitOptions = () => {
             emit('update-options', {
-                option: selectedOption.value,
+                appCategory: selectedAppCategory.value,
                 optionTree: selectedOptionTree.value,
                 instance: selectedInstance.value,
             });
@@ -133,17 +135,17 @@ export default {
 
         // Сбрасываем при изменении услуги
         watch(() => props.service?.id, () => {
-            selectedOption.value = null;
+            selectedAppCategory.value = null;
             selectedOptionTree.value = null;
             selectedInstance.value = null;
         });
 
         return {
-            selectedOption,
+            selectedAppCategory,
             selectedOptionTree,
             selectedInstance,
             availableInstances,
-            onOptionChange,
+            onAppCategoryChange,
             onOptionTreeChange,
             onInstanceChange,
         };

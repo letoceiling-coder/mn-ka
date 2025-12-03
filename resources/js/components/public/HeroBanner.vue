@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full px-3 sm:px-4 md:px-5 mt-3">
+    <div class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20">
         <section 
             v-if="banner && banner.is_active" 
             class="relative w-full max-w-[1200px] mx-auto rounded-lg overflow-hidden shadow-sm"

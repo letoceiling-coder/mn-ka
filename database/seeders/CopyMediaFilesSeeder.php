@@ -40,8 +40,12 @@ class CopyMediaFilesSeeder extends Seeder
         $this->command->info('🚀 Начало копирования медиа файлов из старого проекта...');
 
         try {
-            // Подключаемся к старой БД
-            $this->connectToOldDatabase();
+            // Подключаемся к старой БД (опционально)
+            if (!$this->connectToOldDatabase()) {
+                $this->command->info('ℹ️ Копирование медиа файлов из старой БД пропущено.');
+                $this->command->info('ℹ️ Используйте локальные файлы из public/img/ и public/upload/');
+                return;
+            }
 
             // Собираем все ID медиа файлов, которые используются
             $mediaIds = $this->collectAllMediaIds();
@@ -72,25 +76,29 @@ class CopyMediaFilesSeeder extends Seeder
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
+            // Не бросаем исключение, чтобы не прерывать другие seeders
+            $this->command->warn('⚠️ Продолжаем выполнение других seeders...');
         }
     }
 
     /**
      * Подключение к старой базе данных
      */
-    protected function connectToOldDatabase(): void
+    protected function connectToOldDatabase(): bool
     {
-        config(['database.connections.old_db' => $this->oldDbConnection]);
-        DB::purge('old_db');
-        DB::reconnect('old_db');
-        
-        // Проверяем подключение
         try {
+            config(['database.connections.old_db' => $this->oldDbConnection]);
+            DB::purge('old_db');
+            DB::reconnect('old_db');
+            
+            // Проверяем подключение
             DB::connection('old_db')->select('SELECT 1');
             $this->command->info('✅ Подключение к старой БД установлено');
+            return true;
         } catch (\Exception $e) {
-            throw new \Exception('Не удалось подключиться к старой БД: ' . $e->getMessage());
+            $this->command->warn('⚠️ Не удалось подключиться к старой БД: ' . $e->getMessage());
+            $this->command->info('ℹ️ Пропускаем копирование медиа файлов из старой БД.');
+            return false;
         }
     }
 
@@ -228,42 +236,81 @@ class CopyMediaFilesSeeder extends Seeder
     }
 
     /**
-     * Получить путь к медиа файлу в старом проекте
+     * Получить путь к медиа файлу (сначала проверяем локальные файлы)
      */
     protected function getOldMediaPath($oldMedia): ?string
     {
-        // Пробуем разные варианты путей
-        $possiblePaths = [];
+        // Сначала проверяем локальные файлы в текущем проекте
+        $localPaths = [];
 
         // Если есть metadata с путем
         if ($oldMedia->metadata) {
             $metadata = json_decode($oldMedia->metadata, true);
             if (isset($metadata['path'])) {
-                $possiblePaths[] = $this->oldProjectPath . '/public/' . ltrim($metadata['path'], '/');
+                $localPaths[] = public_path(ltrim($metadata['path'], '/'));
             }
         }
 
         // Путь через disk и name
         if ($oldMedia->disk && $oldMedia->name) {
-            $possiblePaths[] = $this->oldProjectPath . '/public/' . ltrim($oldMedia->disk, '/') . '/' . $oldMedia->name;
+            $localPaths[] = public_path(ltrim($oldMedia->disk, '/') . '/' . $oldMedia->name);
         }
 
-        // Стандартные пути
+        // Стандартные локальные пути
         if ($oldMedia->name) {
-            $possiblePaths[] = $this->oldProjectPath . '/public/upload/' . $oldMedia->name;
-            $possiblePaths[] = $this->oldProjectPath . '/public/uploads/' . $oldMedia->name;
+            $localPaths[] = public_path('upload/' . $oldMedia->name);
+            $localPaths[] = public_path('uploads/' . $oldMedia->name);
+            $localPaths[] = public_path('img/services/' . $oldMedia->name);
+            $localPaths[] = public_path('img/system/' . $oldMedia->name);
         }
 
         // Путь через original_name
         if ($oldMedia->original_name) {
-            $possiblePaths[] = $this->oldProjectPath . '/public/upload/' . $oldMedia->original_name;
-            $possiblePaths[] = $this->oldProjectPath . '/public/uploads/' . $oldMedia->original_name;
+            $localPaths[] = public_path('upload/' . $oldMedia->original_name);
+            $localPaths[] = public_path('uploads/' . $oldMedia->original_name);
         }
 
-        // Проверяем каждый путь
-        foreach ($possiblePaths as $path) {
+        // Проверяем локальные файлы
+        foreach ($localPaths as $path) {
             if (file_exists($path)) {
                 return $path;
+            }
+        }
+
+        // Если локально не найдено, пробуем старый проект (опционально)
+        if ($this->oldProjectPath && File::exists($this->oldProjectPath)) {
+            $oldPaths = [];
+
+            // Если есть metadata с путем
+            if ($oldMedia->metadata) {
+                $metadata = json_decode($oldMedia->metadata, true);
+                if (isset($metadata['path'])) {
+                    $oldPaths[] = $this->oldProjectPath . '/public/' . ltrim($metadata['path'], '/');
+                }
+            }
+
+            // Путь через disk и name
+            if ($oldMedia->disk && $oldMedia->name) {
+                $oldPaths[] = $this->oldProjectPath . '/public/' . ltrim($oldMedia->disk, '/') . '/' . $oldMedia->name;
+            }
+
+            // Стандартные пути
+            if ($oldMedia->name) {
+                $oldPaths[] = $this->oldProjectPath . '/public/upload/' . $oldMedia->name;
+                $oldPaths[] = $this->oldProjectPath . '/public/uploads/' . $oldMedia->name;
+            }
+
+            // Путь через original_name
+            if ($oldMedia->original_name) {
+                $oldPaths[] = $this->oldProjectPath . '/public/upload/' . $oldMedia->original_name;
+                $oldPaths[] = $this->oldProjectPath . '/public/uploads/' . $oldMedia->original_name;
+            }
+
+            // Проверяем каждый путь
+            foreach ($oldPaths as $path) {
+                if (file_exists($path)) {
+                    return $path;
+                }
             }
         }
 

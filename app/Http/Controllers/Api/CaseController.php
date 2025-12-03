@@ -28,7 +28,7 @@ class CaseController extends Controller
                 $with = ['image', 'icon', 'images'];
             }
             
-            $query->with($with)->ordered();
+            $query->with($with);
 
             if ($request->has('chapter_id')) {
                 $query->where('chapter_id', $request->chapter_id);
@@ -43,6 +43,20 @@ class CaseController extends Controller
             // Исключить определенный кейс
             if ($request->has('offerNot')) {
                 $query->where('id', '!=', $request->offerNot);
+            }
+
+            // Фильтр по ID (для блока кейсов на главной)
+            if ($request->has('ids')) {
+                $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+                $ids = array_filter(array_map('intval', $ids));
+                if (!empty($ids)) {
+                    $query->whereIn('id', $ids);
+                    // Сохраняем порядок из запроса
+                    $query->orderByRaw('FIELD(id, ' . implode(',', $ids) . ')');
+                }
+            } else {
+                // Применяем стандартную сортировку только если нет фильтра по ids
+                $query->ordered();
             }
 
             // Поиск по slug или id

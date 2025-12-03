@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\AppCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -70,6 +71,12 @@ class ServiceResource extends JsonResource
                     ];
                 })->toArray();
             }),
+            'app_categories' => AppCategory::all()->map(function($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ];
+            })->toArray(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

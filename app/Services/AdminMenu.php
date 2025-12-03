@@ -206,6 +206,12 @@ class AdminMenu
                         'roles' => ['admin', 'manager'],
                     ],
                     [
+                        'title' => 'Кейсы и объекты',
+                        'route' => 'admin.blocks.cases',
+                        'icon' => 'briefcase',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                    [
                         'title' => 'Футер',
                         'route' => 'admin.settings.footer',
                         'icon' => 'layout',

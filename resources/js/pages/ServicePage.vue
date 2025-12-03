@@ -203,7 +203,7 @@ export default {
         const loadingLists = ref(false);
         const stage = ref('options'); // options, forms, success
         const selectedOptions = ref({
-            option: null,
+            appCategory: null,
             optionTree: null,
             instance: null,
         });
@@ -230,7 +230,7 @@ export default {
 
         const canProceed = computed(() => {
             if (stage.value === 'options') {
-                return selectedOptions.value.option && selectedOptions.value.optionTree && selectedOptions.value.instance;
+                return selectedOptions.value.appCategory && selectedOptions.value.optionTree && selectedOptions.value.instance;
             }
             if (stage.value === 'forms') {
                 return formData.value.name.trim() !== '' && formData.value.phone.trim() !== '';
@@ -323,7 +323,7 @@ export default {
                         name: formData.value.name,
                         phone: formData.value.phone,
                         comment: formData.value.comment || '',
-                        option: selectedOptions.value.option,
+                        app_category: selectedOptions.value.appCategory,
                         option_tree: selectedOptions.value.optionTree,
                         instance: selectedOptions.value.instance,
                     }),
@@ -445,7 +445,7 @@ export default {
                 service.value = null;
                 servicesList.value = [];
                 stage.value = 'options';
-                selectedOptions.value = { option: null, optionTree: null, instance: null };
+                selectedOptions.value = { appCategory: null, optionTree: null, instance: null };
                 formData.value = { name: '', phone: '', comment: '' };
                 fetchService();
             }

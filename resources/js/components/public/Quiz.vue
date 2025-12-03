@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isActive" class="w-full px-3 sm:px-4 md:px-5 mt-8 sm:mt-12 mb-8 sm:mb-12">
+    <div v-if="isActive" class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20">
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
             <div class="flex flex-col items-center mb-6 sm:mb-8">

@@ -524,6 +524,12 @@ const routes = [
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
             {
+                path: 'blocks/cases',
+                name: 'admin.blocks.cases',
+                component: () => import('./pages/admin/blocks/CasesBlockSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
+            {
                 path: 'modal-settings',
                 name: 'admin.modal-settings',
                 component: () => import('./pages/admin/ModalSettings.vue'),

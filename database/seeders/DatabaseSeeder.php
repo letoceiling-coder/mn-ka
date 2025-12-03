@@ -18,12 +18,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             MenuSeeder::class,
+            AppCategorySeeder::class, // Категории заявителя
             QuizImagesSeeder::class,
             QuizSeeder::class,
             HowWorkBlockSettingsSeeder::class,
             CasesSeeder::class,
             FaqBlockSettingsSeeder::class,
             WhyChooseUsBlockSettingsSeeder::class,
+            CasesBlockSettingsSeeder::class,
             CopyMediaFilesSeeder::class,
             ProductsServicesOptionsCasesSeeder::class,
             AboutSettingsSeeder::class,

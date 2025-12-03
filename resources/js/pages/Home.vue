@@ -6,6 +6,7 @@
         <HowWork />
         <Faq />
         <WhyChooseUs />
+        <CasesBlock />
         <FeedbackForm
             title="Остались вопросы?"
             description="Напишите нам, и мы с удовольствием ответим на все ваши вопросы"
@@ -20,6 +21,7 @@ import Decisions from '../components/public/Decisions.vue';
 import Quiz from '../components/public/Quiz.vue';
 import Faq from '../components/public/Faq.vue';
 import WhyChooseUs from '../components/public/WhyChooseUs.vue';
+import CasesBlock from '../components/public/CasesBlock.vue';
 import FeedbackForm from '../components/public/FeedbackForm.vue';
 
 export default {
@@ -31,6 +33,7 @@ export default {
         Quiz,
         Faq,
         WhyChooseUs,
+        CasesBlock,
         FeedbackForm,
     },
 };

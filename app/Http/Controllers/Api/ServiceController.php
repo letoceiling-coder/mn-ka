@@ -315,7 +315,7 @@ class ServiceController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
             'comment' => 'nullable|string|max:1000',
-            'option' => 'nullable|exists:options,id',
+            'app_category' => 'nullable|exists:app_categories,id',
             'option_tree' => 'nullable|exists:option_trees,id',
             'instance' => 'nullable|exists:instances,id',
         ]);
@@ -335,10 +335,10 @@ class ServiceController extends Controller
             $message = "Заявка на услугу: {$service->name}\n\n";
             $message .= "Параметры:\n";
             
-            if ($request->option) {
-                $option = \App\Models\Option::find($request->option);
-                if ($option) {
-                    $message .= "Категория заявителя: {$option->name}\n";
+            if ($request->app_category) {
+                $appCategory = \App\Models\AppCategory::find($request->app_category);
+                if ($appCategory) {
+                    $message .= "Категория заявителя: {$appCategory->name}\n";
                 }
             }
             

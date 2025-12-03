@@ -48,8 +48,11 @@ class ProductsServicesOptionsCasesSeeder extends Seeder
         $this->command->info('🚀 Начало импорта данных из старого проекта...');
 
         try {
-            // Подключаемся к старой БД
-            $this->connectToOldDatabase();
+            // Подключаемся к старой БД (опционально)
+            if (!$this->connectToOldDatabase()) {
+                $this->command->info('ℹ️ Импорт из старой БД пропущен. Используйте локальные seeders для создания данных.');
+                return;
+            }
 
             // Импортируем данные в правильном порядке
             $this->importChapters();
@@ -67,25 +70,29 @@ class ProductsServicesOptionsCasesSeeder extends Seeder
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw $e;
+            // Не бросаем исключение, чтобы не прерывать другие seeders
+            $this->command->warn('⚠️ Продолжаем выполнение других seeders...');
         }
     }
 
     /**
      * Подключение к старой базе данных
      */
-    protected function connectToOldDatabase(): void
+    protected function connectToOldDatabase(): bool
     {
-        config(['database.connections.old_db' => $this->oldDbConnection]);
-        DB::purge('old_db');
-        DB::reconnect('old_db');
-        
-        // Проверяем подключение
         try {
+            config(['database.connections.old_db' => $this->oldDbConnection]);
+            DB::purge('old_db');
+            DB::reconnect('old_db');
+            
+            // Проверяем подключение
             DB::connection('old_db')->select('SELECT 1');
             $this->command->info('✅ Подключение к старой БД установлено');
+            return true;
         } catch (\Exception $e) {
-            throw new \Exception('Не удалось подключиться к старой БД: ' . $e->getMessage());
+            $this->command->warn('⚠️ Не удалось подключиться к старой БД: ' . $e->getMessage());
+            $this->command->info('ℹ️ Пропускаем импорт данных из старой БД. Используйте локальные seeders.');
+            return false;
         }
     }
 
@@ -483,33 +490,68 @@ class ProductsServicesOptionsCasesSeeder extends Seeder
     }
 
     /**
-     * Получить путь к медиа файлу в старом проекте
+     * Получить путь к медиа файлу (сначала проверяем локальные файлы)
      */
     protected function getOldMediaPath($oldMedia): ?string
     {
-        // Пробуем разные варианты путей
-        $possiblePaths = [];
+        // Сначала проверяем локальные файлы в текущем проекте
+        $localPaths = [];
 
         // Если есть metadata с путем
         if ($oldMedia->metadata) {
             $metadata = json_decode($oldMedia->metadata, true);
             if (isset($metadata['path'])) {
-                $possiblePaths[] = $this->oldProjectPath . '/public/' . ltrim($metadata['path'], '/');
+                $localPaths[] = public_path(ltrim($metadata['path'], '/'));
             }
         }
 
         // Путь через disk и name
         if ($oldMedia->disk && $oldMedia->name) {
-            $possiblePaths[] = $this->oldProjectPath . '/public/' . ltrim($oldMedia->disk, '/') . '/' . $oldMedia->name;
+            $localPaths[] = public_path(ltrim($oldMedia->disk, '/') . '/' . $oldMedia->name);
         }
 
-        // Стандартные пути
-        $possiblePaths[] = $this->oldProjectPath . '/public/upload/' . $oldMedia->name;
-        $possiblePaths[] = $this->oldProjectPath . '/public/uploads/' . $oldMedia->name;
+        // Стандартные локальные пути
+        if ($oldMedia->name) {
+            $localPaths[] = public_path('upload/' . $oldMedia->name);
+            $localPaths[] = public_path('uploads/' . $oldMedia->name);
+            $localPaths[] = public_path('img/services/' . $oldMedia->name);
+            $localPaths[] = public_path('img/system/' . $oldMedia->name);
+        }
 
-        foreach ($possiblePaths as $path) {
+        // Проверяем локальные файлы
+        foreach ($localPaths as $path) {
             if (file_exists($path)) {
                 return $path;
+            }
+        }
+
+        // Если локально не найдено, пробуем старый проект (опционально)
+        if ($this->oldProjectPath && File::exists($this->oldProjectPath)) {
+            $oldPaths = [];
+
+            // Если есть metadata с путем
+            if ($oldMedia->metadata) {
+                $metadata = json_decode($oldMedia->metadata, true);
+                if (isset($metadata['path'])) {
+                    $oldPaths[] = $this->oldProjectPath . '/public/' . ltrim($metadata['path'], '/');
+                }
+            }
+
+            // Путь через disk и name
+            if ($oldMedia->disk && $oldMedia->name) {
+                $oldPaths[] = $this->oldProjectPath . '/public/' . ltrim($oldMedia->disk, '/') . '/' . $oldMedia->name;
+            }
+
+            // Стандартные пути
+            if ($oldMedia->name) {
+                $oldPaths[] = $this->oldProjectPath . '/public/upload/' . $oldMedia->name;
+                $oldPaths[] = $this->oldProjectPath . '/public/uploads/' . $oldMedia->name;
+            }
+
+            foreach ($oldPaths as $path) {
+                if (file_exists($path)) {
+                    return $path;
+                }
             }
         }
 

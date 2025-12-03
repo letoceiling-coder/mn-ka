@@ -15,35 +15,7 @@ class WhyChooseUsBlockSettingsSeeder extends Seeder
     use WithoutModelEvents, MediaRegistrationTrait;
 
     /**
-     * Путь к старому проекту
-     */
-    private function getOldProjectPath(): ?string
-    {
-        // Если задан путь через переменную окружения, используем его
-        $envPath = env('OLD_PROJECT_PATH');
-        if ($envPath && File::exists($envPath)) {
-            return $envPath;
-        }
-
-        // Пробуем возможные пути
-        $possiblePaths = [
-            'C:\OSPanel\domains\lagom',
-            'C:\xampp\htdocs\lagom',
-            '/home/d/dsc23ytp/stroy/public_html',
-            '/var/www/html',
-        ];
-
-        foreach ($possiblePaths as $path) {
-            if (File::exists($path)) {
-                return $path;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Скопировать изображение из старого проекта или создать placeholder
+     * Скопировать изображение из локальных ресурсов
      */
     private function copyImage(string $sourceFileName, string $targetPath): bool
     {
@@ -54,31 +26,11 @@ class WhyChooseUsBlockSettingsSeeder extends Seeder
             if (!File::exists($targetDir)) {
                 File::makeDirectory($targetDir, 0755, true);
             }
-            return File::copy($localPath, public_path($targetPath));
-        }
-
-        // Пробуем найти в старом проекте
-        $oldProjectPath = $this->getOldProjectPath();
-        if ($oldProjectPath) {
-            // Пробуем разные варианты путей
-            $possiblePaths = [
-                rtrim($oldProjectPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'delete' . DIRECTORY_SEPARATOR . $sourceFileName,
-                rtrim($oldProjectPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'delete' . DIRECTORY_SEPARATOR . $sourceFileName,
-            ];
-            
-            foreach ($possiblePaths as $oldImagePath) {
-                if (File::exists($oldImagePath)) {
-                    $targetDir = dirname(public_path($targetPath));
-                    if (!File::exists($targetDir)) {
-                        File::makeDirectory($targetDir, 0755, true);
-                    }
-                    $copied = File::copy($oldImagePath, public_path($targetPath));
-                    if ($copied) {
-                        $this->command->info("  ✓ Скопировано из: {$oldImagePath}");
-                    }
-                    return $copied;
-                }
+            $copied = File::copy($localPath, public_path($targetPath));
+            if ($copied) {
+                $this->command->info("  ✓ Скопировано из локальных ресурсов: {$sourceFileName}");
             }
+            return $copied;
         }
 
         // Если файл не найден, создаем директорию и выводим предупреждение
@@ -87,7 +39,7 @@ class WhyChooseUsBlockSettingsSeeder extends Seeder
             File::makeDirectory($targetDir, 0755, true);
         }
         
-        $this->command->warn("⚠️ Изображение не найдено: {$sourceFileName}");
+        $this->command->warn("⚠️ Изображение не найдено в локальных ресурсах: {$sourceFileName}");
         return false;
     }
 

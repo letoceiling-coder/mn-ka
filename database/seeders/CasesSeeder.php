@@ -16,63 +16,25 @@ class CasesSeeder extends Seeder
     use WithoutModelEvents, MediaRegistrationTrait;
 
     /**
-     * Путь к старому проекту
-     */
-    private function getOldProjectPath(): ?string
-    {
-        $envPath = env('OLD_PROJECT_PATH');
-        if ($envPath && File::exists($envPath)) {
-            return $envPath;
-        }
-
-        $possiblePaths = [
-            'C:\OSPanel\domains\lagom',
-            'C:\xampp\htdocs\lagom',
-            '/home/d/dsc23ytp/stroy/public_html',
-            '/var/www/html',
-        ];
-
-        foreach ($possiblePaths as $path) {
-            if (File::exists($path)) {
-                return $path;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Скопировать изображение из старого проекта
+     * Скопировать изображение из локальных ресурсов
      */
     private function copyImage(string $sourcePath, string $targetPath): bool
     {
-        $oldProjectPath = $this->getOldProjectPath();
-        if (!$oldProjectPath) {
-            $this->command->warn("⚠️ Старый проект не найден. Пропускаем копирование: {$sourcePath}");
-            return false;
-        }
-
-        // Пробуем разные варианты путей
-        $possibleSourcePaths = [
-            rtrim($oldProjectPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $sourcePath,
-            rtrim($oldProjectPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $sourcePath,
-        ];
-
-        foreach ($possibleSourcePaths as $oldImagePath) {
-            if (File::exists($oldImagePath)) {
-                $targetDir = dirname(public_path($targetPath));
-                if (!File::exists($targetDir)) {
-                    File::makeDirectory($targetDir, 0755, true);
-                }
-                $copied = File::copy($oldImagePath, public_path($targetPath));
-                if ($copied) {
-                    $this->command->info("  ✓ Скопировано из: {$oldImagePath}");
-                }
-                return $copied;
+        // Сначала проверяем локальные файлы в текущем проекте
+        $localSourcePath = public_path($sourcePath);
+        if (File::exists($localSourcePath)) {
+            $targetDir = dirname(public_path($targetPath));
+            if (!File::exists($targetDir)) {
+                File::makeDirectory($targetDir, 0755, true);
             }
+            $copied = File::copy($localSourcePath, public_path($targetPath));
+            if ($copied) {
+                $this->command->info("  ✓ Скопировано из локальных ресурсов: {$sourcePath}");
+            }
+            return $copied;
         }
 
-        $this->command->warn("  ⚠️ Изображение не найдено: {$sourcePath}");
+        $this->command->warn("  ⚠️ Изображение не найдено в локальных ресурсах: {$sourcePath}");
         return false;
     }
 

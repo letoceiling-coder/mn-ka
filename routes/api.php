@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\QuizSubmissionController;
 use App\Http\Controllers\Api\HowWorkBlockSettingsController;
 use App\Http\Controllers\Api\FaqBlockSettingsController;
 use App\Http\Controllers\Api\WhyChooseUsBlockSettingsController;
+use App\Http\Controllers\Api\CasesBlockSettingsController;
 use App\Http\Controllers\Api\ModalSettingsController;
 use App\Http\Controllers\Api\ProductRequestController;
 use App\Http\Controllers\Api\FeedbackController;
@@ -106,6 +107,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('faq-block-settings', [FaqBlockSettingsController::class, 'update']);
             Route::get('why-choose-us-block-settings', [WhyChooseUsBlockSettingsController::class, 'show']);
             Route::put('why-choose-us-block-settings', [WhyChooseUsBlockSettingsController::class, 'update']);
+            Route::get('cases-block-settings', [CasesBlockSettingsController::class, 'show']);
+            Route::put('cases-block-settings', [CasesBlockSettingsController::class, 'update']);
             Route::get('telegram-settings', [TelegramSettingsController::class, 'show']);
             Route::put('telegram-settings', [TelegramSettingsController::class, 'update']);
             Route::post('telegram-settings/test', [TelegramSettingsController::class, 'testConnection']);
@@ -151,6 +154,9 @@ Route::get('/public/faq-block/settings', [FaqBlockSettingsController::class, 'sh
 
 // Публичные маршруты для WhyChooseUs Block (без авторизации)
 Route::get('/public/why-choose-us-block/settings', [WhyChooseUsBlockSettingsController::class, 'show']);
+
+// Публичные маршруты для Cases Block (без авторизации)
+Route::get('/public/cases-block/settings', [CasesBlockSettingsController::class, 'show']);
 
 // Публичные маршруты для Case Card Settings (без авторизации)
 Route::get('/public/case-card-settings', [CaseCardSettingsController::class, 'show']);
