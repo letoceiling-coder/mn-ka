@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Mail\FeedbackMail;
 use App\Services\NotificationTool;
 use App\Services\TelegramService;
+use App\Helpers\EmailHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -81,11 +82,21 @@ class FeedbackController extends Controller
                 );
             }
 
-            // Отправляем email администраторам
+            // Отправляем email администраторам (только валидные адреса)
             try {
                 $adminEmails = $adminUsers->pluck('email')->filter()->toArray();
-                if (!empty($adminEmails)) {
-                    Mail::to($adminEmails)->send(new FeedbackMail($feedbackRequest));
+                $validEmails = EmailHelper::filterValidEmails($adminEmails);
+                
+                if (!empty($validEmails)) {
+                    Mail::to($validEmails)->send(new FeedbackMail($feedbackRequest));
+                    Log::info('Feedback email sent', [
+                        'sent_to' => $validEmails,
+                        'skipped' => array_diff($adminEmails, $validEmails),
+                    ]);
+                } else {
+                    Log::info('No valid emails for feedback notification', [
+                        'all_emails' => $adminEmails,
+                    ]);
                 }
             } catch (\Exception $e) {
                 Log::error('Error sending feedback email: ' . $e->getMessage());
