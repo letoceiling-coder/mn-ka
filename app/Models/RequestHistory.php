@@ -10,6 +10,8 @@ class RequestHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'request_history';
+
     protected $fillable = [
         'request_id',
         'user_id',
