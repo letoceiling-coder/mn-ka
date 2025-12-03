@@ -183,6 +183,19 @@ class AdminMenu
                 ],
             ],
             [
+                'title' => 'Страницы',
+                'icon' => 'file-text',
+                'roles' => ['admin', 'manager'],
+                'children' => [
+                    [
+                        'title' => 'Главная страница',
+                        'route' => 'admin.pages.home',
+                        'icon' => 'home',
+                        'roles' => ['admin', 'manager'],
+                    ],
+                ],
+            ],
+            [
                 'title' => 'Блоки',
                 'icon' => 'grid',
                 'roles' => ['admin', 'manager'],

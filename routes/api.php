@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\HowWorkBlockSettingsController;
 use App\Http\Controllers\Api\FaqBlockSettingsController;
 use App\Http\Controllers\Api\WhyChooseUsBlockSettingsController;
 use App\Http\Controllers\Api\CasesBlockSettingsController;
+use App\Http\Controllers\Api\HomePageBlocksController;
 use App\Http\Controllers\Api\ModalSettingsController;
 use App\Http\Controllers\Api\ProductRequestController;
 use App\Http\Controllers\Api\FeedbackController;
@@ -127,6 +128,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::apiResource('modal-settings', ModalSettingsController::class);
             Route::get('product-requests/stats', [ProductRequestController::class, 'stats']);
             Route::apiResource('product-requests', ProductRequestController::class);
+            Route::get('home-page-blocks', [HomePageBlocksController::class, 'index']);
+            Route::post('home-page-blocks/update-order', [HomePageBlocksController::class, 'updateOrder']);
+            Route::put('home-page-blocks/{id}', [HomePageBlocksController::class, 'update']);
         });
     });
 });
@@ -154,6 +158,9 @@ Route::get('/public/faq-block/settings', [FaqBlockSettingsController::class, 'sh
 
 // Публичные маршруты для WhyChooseUs Block (без авторизации)
 Route::get('/public/why-choose-us-block/settings', [WhyChooseUsBlockSettingsController::class, 'show']);
+
+// Публичные маршруты для Home Page Blocks (без авторизации)
+Route::get('/public/home-page-blocks', [HomePageBlocksController::class, 'getPublic']);
 
 // Публичные маршруты для Cases Block (без авторизации)
 Route::get('/public/cases-block/settings', [CasesBlockSettingsController::class, 'show']);

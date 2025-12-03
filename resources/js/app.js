@@ -541,6 +541,12 @@ const routes = [
                 component: () => import('./pages/admin/ProductRequests.vue'),
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
+            {
+                path: 'pages/home',
+                name: 'admin.pages.home',
+                component: () => import('./pages/admin/pages/HomePage.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
+            },
         ],
     },
     // Страницы ошибок

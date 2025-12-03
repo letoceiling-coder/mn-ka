@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             FaqBlockSettingsSeeder::class,
             WhyChooseUsBlockSettingsSeeder::class,
             CasesBlockSettingsSeeder::class,
+            HomePageBlocksSeeder::class, // Блоки главной страницы
             CopyMediaFilesSeeder::class,
             ProductsServicesOptionsCasesSeeder::class,
             ImportProductsServicesSeeder::class, // Импорт данных продуктов, сервисов и баннеров из JSON
