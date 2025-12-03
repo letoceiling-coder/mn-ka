@@ -77,3 +77,4 @@ class CaseCardSettingsController extends Controller
     }
 }
 
+

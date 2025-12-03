@@ -67,3 +67,4 @@ class ContactSettingsSeeder extends Seeder
 
 
 
+
