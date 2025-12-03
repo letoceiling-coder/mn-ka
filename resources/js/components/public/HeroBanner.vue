@@ -44,14 +44,21 @@
                 </div>
             </div>
         </section>
+        
+        <!-- Feedback Modal -->
+        <FeedbackModal :is-open="showFeedbackModal" @close="showFeedbackModal = false" @success="handleFeedbackSuccess" />
     </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue';
+import FeedbackModal from './FeedbackModal.vue';
 
 export default {
     name: 'HeroBanner',
+    components: {
+        FeedbackModal,
+    },
     props: {
         slug: {
             type: String,
@@ -61,6 +68,7 @@ export default {
     setup(props) {
         const banner = ref(null);
         const loading = ref(true);
+        const showFeedbackModal = ref(false);
 
         const fetchBanner = async () => {
             try {
@@ -87,10 +95,20 @@ export default {
 
         const handleButtonClick = () => {
             if (banner.value.button_type === 'method') {
-                // Здесь будет логика вызова метода/popup
-                console.log('Method button clicked:', banner.value.button_value);
-                // TODO: Реализовать вызов popup по методу
+                // Если метод не указан или пустой, показываем форму обратной связи
+                if (!banner.value.button_value || banner.value.button_value.trim() === '') {
+                    showFeedbackModal.value = true;
+                } else {
+                    // Здесь будет логика вызова конкретного метода по ID
+                    console.log('Method button clicked:', banner.value.button_value);
+                    // TODO: Реализовать вызов метода по ID
+                }
             }
+        };
+
+        const handleFeedbackSuccess = () => {
+            // Обработка успешной отправки формы
+            showFeedbackModal.value = false;
         };
 
         // Вычисляем адаптивную высоту баннера
@@ -133,7 +151,9 @@ export default {
             banner,
             loading,
             bannerStyle,
+            showFeedbackModal,
             handleButtonClick,
+            handleFeedbackSuccess,
         };
     },
 };

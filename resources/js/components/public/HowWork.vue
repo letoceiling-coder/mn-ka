@@ -104,19 +104,27 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Feedback Modal -->
+        <FeedbackModal :is-open="showFeedbackModal" @close="showFeedbackModal = false" @success="handleFeedbackSuccess" />
     </section>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import FeedbackModal from './FeedbackModal.vue';
 
 export default {
     name: 'HowWork',
+    components: {
+        FeedbackModal,
+    },
     setup() {
         const router = useRouter();
         const settings = ref(null);
         const loading = ref(true);
+        const showFeedbackModal = ref(false);
 
         const fetchSettings = async () => {
             try {
@@ -154,9 +162,20 @@ export default {
                     router.push(settings.value.button_value);
                 }
             } else if (settings.value.button_type === 'method') {
-                // TODO: Реализовать вызов метода/popup
-                console.log('Method button clicked:', settings.value.button_value);
+                // Если метод не указан или пустой, показываем форму обратной связи
+                if (!settings.value.button_value || settings.value.button_value.trim() === '') {
+                    showFeedbackModal.value = true;
+                } else {
+                    // Здесь будет логика вызова конкретного метода по ID
+                    console.log('Method button clicked:', settings.value.button_value);
+                    // TODO: Реализовать вызов метода по ID
+                }
             }
+        };
+
+        const handleFeedbackSuccess = () => {
+            // Обработка успешной отправки формы
+            showFeedbackModal.value = false;
         };
 
         onMounted(() => {
@@ -167,7 +186,9 @@ export default {
             settings,
             loading,
             imageUrl,
+            showFeedbackModal,
             handleButtonClick,
+            handleFeedbackSuccess,
         };
     },
 };

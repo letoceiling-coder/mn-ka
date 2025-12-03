@@ -141,9 +141,9 @@
                         <router-link
                             v-else
                             to="/products"
-                            class="inline-block w-full md:w-auto md:px-8 h-12 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors flex items-center justify-center font-medium"
+                            class="inline-flex items-center justify-center w-full md:w-auto md:px-8 h-12 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium"
                         >
-                            Смотреть другие услуги
+                            <span class="text-center">Смотреть другие услуги</span>
                         </router-link>
                     </div>
                 </div>
