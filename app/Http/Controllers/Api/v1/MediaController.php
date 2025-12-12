@@ -417,11 +417,29 @@ class MediaController extends Controller
 
         try {
             // Получаем folder_id, преобразуя пустую строку в null
+            // При обновлении файла: если folder_id передан, используем его, иначе сохраняем текущий
             $newFolderId = $request->input('folder_id');
-            if ($newFolderId === '' || $newFolderId === 'null') {
+            
+            \Log::info('MediaController update - folder_id', [
+                'input' => $newFolderId,
+                'type' => gettype($newFolderId),
+                'current_folder_id' => $media->folder_id,
+                'has_file' => $request->hasFile('file')
+            ]);
+            
+            if ($newFolderId === '' || $newFolderId === 'null' || $newFolderId === null) {
                 $newFolderId = null;
+            } else {
+                // Преобразуем в int, если передан
+                $newFolderId = (int) $newFolderId;
             }
             $newFile = $request->file('file');
+            
+            \Log::info('MediaController update - after processing', [
+                'new_folder_id' => $newFolderId,
+                'final_folder_id_will_be' => $newFolderId !== null ? $newFolderId : $media->folder_id,
+                'file_received' => $newFile !== null
+            ]);
             
             // Если загружен новый файл, заменяем существующий
             if ($newFile) {
@@ -444,9 +462,11 @@ class MediaController extends Controller
                 $type = $this->getFileType($mimeType);
                 
                 // Определяем путь для сохранения
-                $uploadPath = $media->disk;
-                if ($newFolderId !== null) {
-                    $folder = Folder::find($newFolderId);
+                // Если folder_id не передан, используем текущий folder_id из БД
+                $folderIdForPath = $newFolderId !== null ? $newFolderId : $media->folder_id;
+                $uploadPath = 'upload';
+                if ($folderIdForPath !== null) {
+                    $folder = Folder::find($folderIdForPath);
                     if ($folder) {
                         $folderPath = $this->getFolderPath($folder);
                         $uploadPath = 'upload/' . $folderPath;
@@ -481,6 +501,10 @@ class MediaController extends Controller
                 $metadata['mime_type'] = $mimeType;
                 
                 // Обновляем запись в БД
+                // При обновлении файла: если folder_id передан явно (не null), используем его
+                // Если folder_id не передан или null, сохраняем текущий folder_id из БД
+                // Это важно для случая, когда мы обновляем файл и хотим сохранить его в той же папке
+                $finalFolderId = $newFolderId !== null ? $newFolderId : $media->folder_id;
                 $media->update([
                     'name' => $fileName,
                     'original_name' => $originalName,
@@ -490,7 +514,7 @@ class MediaController extends Controller
                     'height' => $height,
                     'type' => $type,
                     'size' => $fileSize,
-                    'folder_id' => $newFolderId !== null ? $newFolderId : $media->folder_id,
+                    'folder_id' => $finalFolderId,
                     'metadata' => json_encode($metadata)
                 ]);
                 

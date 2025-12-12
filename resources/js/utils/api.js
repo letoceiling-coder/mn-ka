@@ -63,20 +63,28 @@ export const apiPost = async (url, data = {}) => {
 export const apiPut = async (url, data = {}) => {
     const fullUrl = `${API_BASE}${url}`;
     
-    // Если data - FormData, не устанавливаем Content-Type
-    const headers = data instanceof FormData 
-        ? { ...getAuthHeaders(), 'Content-Type': undefined }
-        : getAuthHeaders();
-    
-    // Удаляем Content-Type если это FormData (браузер установит сам)
+    // Если data - FormData, используем POST с _method=PUT для совместимости
+    // Некоторые серверы не поддерживают PUT с multipart/form-data
     if (data instanceof FormData) {
+        // Добавляем _method=PUT для Laravel
+        data.append('_method', 'PUT');
+        
+        const headers = { ...getAuthHeaders() };
+        // Удаляем Content-Type - браузер установит сам с boundary
         delete headers['Content-Type'];
+        
+        return fetch(fullUrl, {
+            method: 'POST',
+            headers,
+            body: data,
+        });
     }
     
+    // Для JSON используем обычный PUT
     return fetch(fullUrl, {
         method: 'PUT',
-        headers,
-        body: data instanceof FormData ? data : JSON.stringify(data),
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
     });
 };
 

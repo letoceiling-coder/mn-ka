@@ -687,13 +687,6 @@
     :slide="lightboxSlide"
   />
 
-  <!-- Image Editor -->
-  <ImageEditor
-    :show="showImageEditor"
-    :file="selectedFileForEdit"
-    @close="showImageEditor = false"
-    @saved="handleImageSaved"
-  />
 
   <!-- Move File Modal -->
   <div v-if="showMoveModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -770,10 +763,10 @@
 
 <script>
     import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiGet, apiPost, apiDelete, apiPut } from '../../utils/api'
 import { useAuthToken } from '../../composables/useAuthToken'
 import FsLightbox from 'fslightbox-vue'
-import ImageEditor from './ImageEditor.vue'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
@@ -782,8 +775,7 @@ const API_BASE = '/api/v1'
 export default {
   name: 'Media',
   components: {
-    FsLightbox,
-    ImageEditor
+    FsLightbox
   },
   props: {
     selectionMode: {
@@ -803,6 +795,7 @@ export default {
   setup(props, { emit }) {
     console.log('[Media] setup() вызван')
     
+    const router = useRouter()
     const loading = ref(false)
     const loadingMedia = ref(false)
     const uploading = ref(false)
@@ -824,8 +817,6 @@ export default {
     const lightboxToggler = ref(false)
     const lightboxSources = ref([])
     const lightboxSlide = ref(1)
-    const showImageEditor = ref(false)
-    const selectedFileForEdit = ref(null)
     const showMoveModal = ref(false)
     const selectedFileForMove = ref(null)
     const selectedMoveFolderId = ref(null)
@@ -1949,19 +1940,11 @@ export default {
       if (file.type !== 'photo') {
         return
       }
-      selectedFileForEdit.value = file
-      showImageEditor.value = true
+      // Простая и надежная навигация - используем window.location.href напрямую
+      // Это гарантирует работу без ошибок в консоли, даже если роут не найден
+      window.location.href = `/admin/media/${file.id}/edit`
     }
 
-    // Обработка сохранения отредактированного изображения
-    const handleImageSaved = async (savedFile) => {
-      console.log('[Media] Image saved:', savedFile)
-      // Обновляем список файлов
-      if (selectedFolder.value) {
-        await fetchMediaFiles(selectedFolder.value.id)
-        await fetchFolders()
-      }
-    }
 
     // Загрузить все папки для выбора
     const fetchAllFolders = async () => {
@@ -2555,9 +2538,6 @@ export default {
       handleEditFile,
       handleMoveFile,
       handleRestoreFile,
-      showImageEditor,
-      selectedFileForEdit,
-      handleImageSaved,
       showMoveModal,
       selectedFileForMove,
       selectedMoveFolderId,

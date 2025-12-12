@@ -300,6 +300,11 @@ const routes = [
                 component: () => import('./pages/admin/Media.vue'),
             },
             {
+                path: 'media/:id/edit',
+                name: 'admin.media.edit',
+                component: () => import('./pages/admin/EditImage.vue'),
+            },
+            {
                 path: 'users',
                 name: 'admin.users',
                 component: () => import('./pages/admin/Users.vue'),
