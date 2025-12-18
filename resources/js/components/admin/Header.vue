@@ -167,89 +167,83 @@ export default {
             'quizzes': 'Опросы',
         };
 
-        // Построение хлебных крошек
+        // Построение хлебных крошек на основе пути
         const breadcrumbs = computed(() => {
             const crumbs = [];
-            const routeName = route.name || '';
             const routePath = route.path;
+            const routeName = route.name || '';
 
             // Если это главная страница админки
-            if (routeName === 'admin.dashboard' || routePath === '/admin') {
+            if (routeName === 'admin.dashboard' || routePath === '/admin' || routePath === '/admin/') {
                 return [];
             }
 
-            // Разбираем имя роута на части
-            const parts = routeName.split('.');
-            
-            // Пропускаем 'admin'
-            if (parts[0] === 'admin') {
-                parts.shift();
+            // Убираем /admin из начала пути
+            let path = routePath.replace(/^\/admin\/?/, '');
+            if (!path) {
+                return [];
             }
 
-            // Строим путь для каждой части
+            // Разбиваем путь на части
+            const pathParts = path.split('/').filter(p => p);
+            
+            // Строим крошки на основе частей пути
             let currentPath = '/admin';
             
-            for (let i = 0; i < parts.length; i++) {
-                const part = parts[i];
-                const isLast = i === parts.length - 1;
+            for (let i = 0; i < pathParts.length; i++) {
+                const part = pathParts[i];
+                const isLast = i === pathParts.length - 1;
                 
-                // Определяем название для части
-                let title = '';
-                let path = null;
-
-                // Если это секция (decisions, settings, blocks, quizzes)
-                if (sectionTitles[part]) {
-                    title = sectionTitles[part];
-                    currentPath += '/' + part;
-                    path = currentPath;
-                }
-                // Если это конкретный роут
-                else if (routeTitles[routeName]) {
-                    // Для последнего элемента используем название роута
-                    if (isLast) {
-                        title = routeTitles[routeName];
-                        // Для страниц создания/редактирования
-                        if (part === 'create') {
-                            title = 'Создать';
-                            currentPath += '/create';
-                            path = currentPath;
-                        } else if (part === 'edit' && route.params.id) {
-                            title = 'Редактировать';
-                            // path остается null, так как это динамический роут
-                        } else {
-                            path = routePath;
-                        }
-                    } else {
-                        // Для промежуточных элементов используем общее название
-                        const routeKey = 'admin.' + parts.slice(0, i + 1).join('.');
-                        title = routeTitles[routeKey] || part;
-                        currentPath += '/' + part;
-                        path = currentPath;
-                    }
-                }
-                // Если название не найдено, используем часть как есть
-                else {
-                    if (part === 'create') {
-                        title = 'Создать';
+                // Пропускаем числовые ID и edit/create
+                if (part.match(/^\d+$/) || part === 'edit' || part === 'create') {
+                    // Для edit/create добавляем как отдельную крошку
+                    if (part === 'edit') {
+                        crumbs.push({
+                            title: 'Редактировать',
+                            path: null,
+                        });
+                    } else if (part === 'create') {
                         currentPath += '/create';
-                        path = currentPath;
-                    } else if (part === 'edit') {
-                        title = 'Редактировать';
-                        // path остается null
-                    } else {
-                        title = part.charAt(0).toUpperCase() + part.slice(1);
-                        currentPath += '/' + part;
-                        path = currentPath;
+                        crumbs.push({
+                            title: 'Создать',
+                            path: null,
+                        });
                     }
+                    continue;
                 }
 
-                // Добавляем крошку только если есть название
-                if (title) {
-                    crumbs.push({
-                        title,
-                        path: isLast ? null : path,
-                    });
+                // Строим путь для этой части
+                currentPath += '/' + part;
+
+                // Определяем название
+                let title = '';
+                
+                // Пытаемся найти название по полному пути
+                const fullRouteKey = 'admin.' + pathParts.slice(0, i + 1).join('.');
+                if (routeTitles[fullRouteKey]) {
+                    title = routeTitles[fullRouteKey];
                 }
+                // Пытаемся найти название по секции
+                else if (sectionTitles[part]) {
+                    title = sectionTitles[part];
+                }
+                // Пытаемся найти название по имени роута (для последнего элемента)
+                else if (isLast && routeTitles[routeName]) {
+                    title = routeTitles[routeName];
+                }
+                // Если не найдено, используем часть пути с заглавной буквы
+                else {
+                    title = part
+                        .split('-')
+                        .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+                        .join(' ');
+                }
+
+                // Добавляем крошку
+                crumbs.push({
+                    title,
+                    path: isLast ? null : currentPath,
+                });
             }
 
             return crumbs;
