@@ -805,6 +805,7 @@ class DeployController extends Controller
                 'RegisterAllMediaFilesSeeder',
                 'UpdateMediaFolderSeeder',
                 'ServicesFromExcelSeeder', // Импорт услуг из Excel файла
+                'ServicesFromCsvSeeder', // Импорт услуг из CSV файла с изображениями
             ];
 
             $results = [];
