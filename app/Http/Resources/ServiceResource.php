@@ -71,6 +71,21 @@ class ServiceResource extends JsonResource
                     ];
                 })->toArray();
             }),
+            // Получаем все активные разделы с их случаями для выбора
+            'available_chapters' => \App\Models\Chapter::active()->ordered()->with(['cases' => function($query) {
+                $query->where('is_active', true)->ordered();
+            }])->get()->map(function($chapter) {
+                return [
+                    'id' => $chapter->id,
+                    'name' => $chapter->name,
+                    'cases' => $chapter->cases->map(function($case) {
+                        return [
+                            'id' => $case->id,
+                            'name' => $case->name,
+                        ];
+                    })->toArray(),
+                ];
+            })->toArray(),
             'app_categories' => AppCategory::all()->map(function($category) {
                 return [
                     'id' => $category->id,

@@ -316,6 +316,9 @@ class ServiceController extends Controller
             'phone' => 'required|string|max:255',
             'comment' => 'nullable|string|max:1000',
             'app_category' => 'nullable|exists:app_categories,id',
+            'chapter' => 'nullable|exists:chapters,id',
+            'case' => 'nullable|exists:cases,id',
+            // Поддержка старых полей для обратной совместимости
             'option_tree' => 'nullable|exists:option_trees,id',
             'instance' => 'nullable|exists:instances,id',
         ]);
@@ -342,6 +345,22 @@ class ServiceController extends Controller
                 }
             }
             
+            // Новая структура: chapter и case
+            if ($request->chapter) {
+                $chapter = \App\Models\Chapter::find($request->chapter);
+                if ($chapter) {
+                    $message .= "Цель обращения: {$chapter->name}\n";
+                }
+            }
+            
+            if ($request->case) {
+                $case = \App\Models\ProjectCase::find($request->case);
+                if ($case) {
+                    $message .= "Подходящий случай: {$case->name}\n";
+                }
+            }
+            
+            // Поддержка старых полей для обратной совместимости
             if ($request->option_tree) {
                 $optionTree = \App\Models\OptionTree::find($request->option_tree);
                 if ($optionTree) {
@@ -377,7 +396,7 @@ class ServiceController extends Controller
             $notificationTitle = "Новая заявка на услугу";
             $notificationMessage = "👤 <b>Клиент:</b> {$request->name}\n📞 <b>Телефон:</b> {$request->phone}\n\n📋 <b>Услуга:</b> {$service->name}";
 
-            if ($request->option || $request->option_tree || $request->instance) {
+            if ($request->option || $request->option_tree || $request->instance || $request->chapter || $request->case) {
                 $notificationMessage .= "\n\n<b>Параметры:</b>";
                 if ($request->option) {
                     $option = \App\Models\Option::find($request->option);
@@ -385,6 +404,20 @@ class ServiceController extends Controller
                         $notificationMessage .= "\n• Категория заявителя: {$option->name}";
                     }
                 }
+                // Новая структура
+                if ($request->chapter) {
+                    $chapter = \App\Models\Chapter::find($request->chapter);
+                    if ($chapter) {
+                        $notificationMessage .= "\n• Цель обращения: {$chapter->name}";
+                    }
+                }
+                if ($request->case) {
+                    $case = \App\Models\ProjectCase::find($request->case);
+                    if ($case) {
+                        $notificationMessage .= "\n• Подходящий случай: {$case->name}";
+                    }
+                }
+                // Старая структура для обратной совместимости
                 if ($request->option_tree) {
                     $optionTree = \App\Models\OptionTree::find($request->option_tree);
                     if ($optionTree) {

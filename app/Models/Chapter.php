@@ -54,6 +54,22 @@ class Chapter extends Model
     }
 
     /**
+     * Получить все случаи раздела
+     */
+    public function cases(): HasMany
+    {
+        return $this->hasMany(ProjectCase::class)->orderBy('order');
+    }
+
+    /**
+     * Получить активные случаи раздела
+     */
+    public function activeCases(): HasMany
+    {
+        return $this->cases()->where('is_active', true);
+    }
+
+    /**
      * Scope для активных разделов
      */
     public function scopeActive($query)

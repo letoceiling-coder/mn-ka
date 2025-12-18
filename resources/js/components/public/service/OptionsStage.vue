@@ -23,46 +23,46 @@
                 </select>
             </div>
 
-            <!-- Цель вашего обращения (optionTrees) -->
+            <!-- Цель вашего обращения (chapters) -->
             <div class="md:col-span-1">
                 <div class="flex items-center gap-3 mb-3">
                     <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#688E67] text-white font-semibold text-sm flex-shrink-0">2</span>
                     <span class="text-sm md:text-base font-medium text-foreground">Цель вашего обращения</span>
                 </div>
                 <select
-                    v-model="selectedOptionTree"
-                    @change="onOptionTreeChange"
+                    v-model="selectedChapter"
+                    @change="onChapterChange"
                     class="w-full h-12 px-4 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-[#688E67] focus:border-transparent transition-colors"
                 >
                     <option value="">Выберите цель</option>
                     <option
-                        v-for="tree in service.option_trees"
-                        :key="tree.id"
-                        :value="tree.id"
+                        v-for="chapter in availableChapters"
+                        :key="chapter.id"
+                        :value="chapter.id"
                     >
-                        {{ tree.name }}
+                        {{ chapter.name }}
                     </option>
                 </select>
             </div>
 
-            <!-- Подходящий случай (instances из выбранного optionTree) -->
-            <div v-if="selectedOptionTree && availableInstances.length > 0" class="md:col-span-1">
+            <!-- Подходящий случай (cases из выбранного chapter) -->
+            <div v-if="selectedChapter && availableCases.length > 0" class="md:col-span-1">
                 <div class="flex items-center gap-3 mb-3">
                     <span class="flex items-center justify-center w-8 h-8 rounded-full bg-[#688E67] text-white font-semibold text-sm flex-shrink-0">3</span>
                     <span class="text-sm md:text-base font-medium text-foreground">Подходящий случай</span>
                 </div>
                 <select
-                    v-model="selectedInstance"
-                    @change="onInstanceChange"
+                    v-model="selectedCase"
+                    @change="onCaseChange"
                     class="w-full h-12 px-4 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-[#688E67] focus:border-transparent transition-colors"
                 >
                     <option value="">Выберите случай</option>
                     <option
-                        v-for="instance in availableInstances"
-                        :key="instance.id"
-                        :value="instance.id"
+                        v-for="caseItem in availableCases"
+                        :key="caseItem.id"
+                        :value="caseItem.id"
                     >
-                        {{ instance.name }}
+                        {{ caseItem.name }}
                     </option>
                 </select>
             </div>
@@ -84,70 +84,69 @@ export default {
     emits: ['update-options'],
     setup(props, { emit }) {
         const selectedAppCategory = ref(null);
-        const selectedOption = ref(null);
-        const selectedOptionTree = ref(null);
-        const selectedInstance = ref(null);
+        const selectedChapter = ref(null);
+        const selectedCase = ref(null);
 
-        // Найти доступные instances из выбранного optionTree
-        const availableInstances = computed(() => {
-            if (!selectedOptionTree.value || !props.service.option_trees) {
+        // Получаем доступные разделы из service
+        const availableChapters = computed(() => {
+            return props.service?.available_chapters || [];
+        });
+
+        // Найти доступные cases из выбранного chapter
+        const availableCases = computed(() => {
+            if (!selectedChapter.value || !availableChapters.value.length) {
                 return [];
             }
 
-            const selectedTree = props.service.option_trees.find(
-                tree => tree.id === selectedOptionTree.value
+            const selectedChapterData = availableChapters.value.find(
+                chapter => chapter.id === selectedChapter.value
             );
 
-            if (!selectedTree || !selectedTree.items || selectedTree.items.length === 0) {
-                // Если у выбранного дерева нет items, используем все instances услуги
-                return props.service.instances || [];
+            if (!selectedChapterData || !selectedChapterData.cases || selectedChapterData.cases.length === 0) {
+                return [];
             }
 
-            // Возвращаем items из выбранного дерева как instances
-            return selectedTree.items.map(item => ({
-                id: item.id,
-                name: item.name,
-            }));
+            return selectedChapterData.cases;
         });
 
         const onAppCategoryChange = () => {
             emitOptions();
         };
 
-
-        const onOptionTreeChange = () => {
-            // Сбрасываем instance при изменении optionTree
-            selectedInstance.value = null;
+        const onChapterChange = () => {
+            // Сбрасываем case при изменении chapter
+            selectedCase.value = null;
             emitOptions();
         };
 
-        const onInstanceChange = () => {
+        const onCaseChange = () => {
             emitOptions();
         };
 
         const emitOptions = () => {
             emit('update-options', {
                 appCategory: selectedAppCategory.value,
-                optionTree: selectedOptionTree.value,
-                instance: selectedInstance.value,
+                chapter: selectedChapter.value,
+                case: selectedCase.value,
             });
         };
 
         // Сбрасываем при изменении услуги
         watch(() => props.service?.id, () => {
             selectedAppCategory.value = null;
-            selectedOptionTree.value = null;
-            selectedInstance.value = null;
+            selectedChapter.value = null;
+            selectedCase.value = null;
         });
 
         return {
             selectedAppCategory,
-            selectedOptionTree,
-            selectedInstance,
-            availableInstances,
+            selectedChapter,
+            selectedCase,
+            availableChapters,
+            availableCases,
             onAppCategoryChange,
-            onOptionTreeChange,
-            onInstanceChange,
+            onChapterChange,
+            onCaseChange,
         };
     },
 };
