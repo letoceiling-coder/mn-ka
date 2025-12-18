@@ -91,10 +91,15 @@ class ServicesFromExcelSeeder extends Seeder
             $chapterOrder = 0;
             $caseOrder = 0;
             
+            // Храним связи: услуга -> разделы -> случаи
+            $serviceChaptersMap = []; // [service_slug => [chapter_ids]]
+            $chapterCasesMap = []; // [chapter_id => [case_ids]]
+            
             $stats = [
                 'services' => 0,
                 'chapters' => 0,
                 'cases' => 0,
+                'service_case_links' => 0,
             ];
             
             foreach ($rows as $rowIndex => $row) {
@@ -130,14 +135,70 @@ class ServicesFromExcelSeeder extends Seeder
                     $caseOrder = 0; // Сбрасываем порядок случаев для нового раздела
                     $stats['chapters']++;
                     $this->command->info("  → Раздел: {$chapterName}");
+                    
+                    // Связываем текущую услугу с разделом
+                    if ($currentService) {
+                        $serviceSlug = $currentService->slug;
+                        if (!isset($serviceChaptersMap[$serviceSlug])) {
+                            $serviceChaptersMap[$serviceSlug] = [];
+                        }
+                        if (!in_array($currentChapterId, $serviceChaptersMap[$serviceSlug])) {
+                            $serviceChaptersMap[$serviceSlug][] = $currentChapterId;
+                        }
+                        
+                        // Обновляем chapter_id услуги, если он еще не установлен
+                        if (!$currentService->chapter_id) {
+                            $currentService->chapter_id = $currentChapterId;
+                            $currentService->save();
+                        }
+                    }
                 }
                 
                 // Если есть название случая - создаем случай и связываем с разделом
                 if (!empty($caseName) && $caseName !== 'NaN' && $currentChapterId) {
-                    $this->createOrUpdateCase($caseName, $currentChapterId, $description, $htmlText, $detailedText, $caseOrder);
+                    $projectCase = $this->createOrUpdateCase($caseName, $currentChapterId, $description, $htmlText, $detailedText, $caseOrder);
                     $caseOrder++;
                     $stats['cases']++;
                     $this->command->info("    • Случай: {$caseName}");
+                    
+                    // Сохраняем связь раздела с случаем
+                    if (!isset($chapterCasesMap[$currentChapterId])) {
+                        $chapterCasesMap[$currentChapterId] = [];
+                    }
+                    $chapterCasesMap[$currentChapterId][] = $projectCase->id;
+                }
+            }
+            
+            // Связываем услуги со случаями через разделы
+            $this->command->info("\nСвязывание услуг со случаями через разделы...");
+            foreach ($serviceChaptersMap as $serviceSlug => $chapterIds) {
+                $service = Service::where('slug', $serviceSlug)->first();
+                if (!$service) {
+                    continue;
+                }
+                
+                $caseIds = [];
+                foreach ($chapterIds as $chapterId) {
+                    if (isset($chapterCasesMap[$chapterId])) {
+                        $caseIds = array_merge($caseIds, $chapterCasesMap[$chapterId]);
+                    }
+                }
+                
+                if (!empty($caseIds)) {
+                    // Удаляем старые связи
+                    DB::table('cases_service')->where('service_id', $service->id)->delete();
+                    
+                    // Создаем новые связи
+                    foreach (array_unique($caseIds) as $caseId) {
+                        DB::table('cases_service')->insert([
+                            'service_id' => $service->id,
+                            'cases_id' => $caseId,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        $stats['service_case_links']++;
+                    }
+                    $this->command->info("  ✓ Услуга '{$service->name}' связана с " . count(array_unique($caseIds)) . " случаями");
                 }
             }
             
@@ -150,6 +211,7 @@ class ServicesFromExcelSeeder extends Seeder
             $this->command->info("  Услуг: {$stats['services']}");
             $this->command->info("  Разделов: {$stats['chapters']}");
             $this->command->info("  Случаев: {$stats['cases']}");
+            $this->command->info("  Связей услуга-случай: {$stats['service_case_links']}");
             
             $this->command->info("\n✅ Импорт завершен успешно!");
             
