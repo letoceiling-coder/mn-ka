@@ -50,8 +50,8 @@ class ServiceController extends Controller
         }
 
         // Для списка услуг - оптимизированный запрос без лишних связей
-        return Cache::remember($cacheKey, $cacheTime, function () use ($request) {
-            try {
+        // Не используем кеш для списка услуг, так как данные могут быть слишком большими для таблицы cache
+        try {
                 // Для списка услуг загружаем только необходимые связи
                 $query = Service::with(['image', 'icon'])->ordered();
 
@@ -120,7 +120,7 @@ class ServiceController extends Controller
                     'message' => config('app.debug') ? $e->getMessage() : 'Внутренняя ошибка сервера',
                 ], 500);
             }
-        });
+        // });
     }
 
     /**

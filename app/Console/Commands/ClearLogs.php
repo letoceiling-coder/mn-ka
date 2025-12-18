@@ -17,7 +17,7 @@ class ClearLogs extends Command
                             {--file= : Очистить конкретный файл лога (например: laravel.log)}
                             {--empty : Очистить только пустые файлы логов}
                             {--days= : Удалить логи старше указанного количества дней}
-                            {--confirm : Пропустить подтверждение}';
+                            {--force : Пропустить подтверждение}';
 
     /**
      * The console command description.
@@ -43,7 +43,7 @@ class ClearLogs extends Command
             'file' => $this->option('file'),
             'empty' => $this->option('empty'),
             'days' => $this->option('days'),
-            'confirm' => $this->option('confirm'),
+            'confirm' => $this->option('force'),
         ];
 
         // Определяем действие
