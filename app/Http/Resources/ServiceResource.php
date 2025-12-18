@@ -9,6 +9,62 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ServiceResource extends JsonResource
 {
     /**
+     * Получить доступные разделы с их случаями
+     */
+    private function getAvailableChapters(): array
+    {
+        // Получаем все случаи, связанные с услугой
+        // Если связь уже загружена, используем её, иначе загружаем
+        if ($this->relationLoaded('cases')) {
+            $cases = $this->cases->where('is_active', true);
+        } else {
+            $cases = $this->cases()->with('chapter')->where('is_active', true)->get();
+        }
+        
+        // Группируем случаи по разделам
+        $chaptersMap = [];
+        foreach ($cases as $case) {
+            // Если chapter не загружен, загружаем его
+            if (!$case->relationLoaded('chapter')) {
+                $case->load('chapter');
+            }
+            
+            if (!$case->chapter || !$case->chapter->is_active) {
+                continue;
+            }
+            
+            $chapterId = $case->chapter->id;
+            if (!isset($chaptersMap[$chapterId])) {
+                $chaptersMap[$chapterId] = [
+                    'id' => $case->chapter->id,
+                    'name' => $case->chapter->name,
+                    'order' => $case->chapter->order ?? 0,
+                    'cases' => [],
+                ];
+            }
+            
+            $chaptersMap[$chapterId]['cases'][] = [
+                'id' => $case->id,
+                'name' => $case->name,
+            ];
+        }
+        
+        // Сортируем разделы по order
+        usort($chaptersMap, function($a, $b) {
+            return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);
+        });
+        
+        // Сортируем случаи внутри каждого раздела
+        foreach ($chaptersMap as &$chapter) {
+            usort($chapter['cases'], function($a, $b) {
+                return 0; // Можно добавить сортировку по order если нужно
+            });
+        }
+        
+        return array_values($chaptersMap);
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -74,65 +130,14 @@ class ServiceResource extends JsonResource
             }),
             // Получаем все активные разделы с их случаями для выбора
             // Разделы берутся из случаев, связанных с услугой
-            'available_chapters' => function() {
-                // Получаем все случаи, связанные с услугой
-                // Если связь уже загружена, используем её, иначе загружаем
-                if ($this->relationLoaded('cases')) {
-                    $cases = $this->cases->where('is_active', true);
-                } else {
-                    $cases = $this->cases()->with('chapter')->where('is_active', true)->get();
-                }
-                
-                // Группируем случаи по разделам
-                $chaptersMap = [];
-                foreach ($cases as $case) {
-                    // Если chapter не загружен, загружаем его
-                    if (!$case->relationLoaded('chapter')) {
-                        $case->load('chapter');
-                    }
-                    
-                    if (!$case->chapter || !$case->chapter->is_active) {
-                        continue;
-                    }
-                    
-                    $chapterId = $case->chapter->id;
-                    if (!isset($chaptersMap[$chapterId])) {
-                        $chaptersMap[$chapterId] = [
-                            'id' => $case->chapter->id,
-                            'name' => $case->chapter->name,
-                            'order' => $case->chapter->order ?? 0,
-                            'cases' => [],
-                        ];
-                    }
-                    
-                    $chaptersMap[$chapterId]['cases'][] = [
-                        'id' => $case->id,
-                        'name' => $case->name,
-                    ];
-                }
-                
-                // Сортируем разделы по order
-                usort($chaptersMap, function($a, $b) {
-                    return ($a['order'] ?? 0) <=> ($b['order'] ?? 0);
-                });
-                
-                // Сортируем случаи внутри каждого раздела
-                foreach ($chaptersMap as &$chapter) {
-                    usort($chapter['cases'], function($a, $b) {
-                        return 0; // Можно добавить сортировку по order если нужно
-                    });
-                }
-                
-                return array_values($chaptersMap);
-            },
-            'app_categories' => $this->when($request->has('include_categories'), function() {
-                return AppCategory::all()->map(function($category) {
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                    ];
-                })->toArray();
-            }),
+            'available_chapters' => $this->getAvailableChapters(),
+            // Всегда возвращаем категории заявителя
+            'app_categories' => AppCategory::all()->map(function($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ];
+            })->toArray(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
