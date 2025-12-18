@@ -21,6 +21,12 @@
     # Block access to hot file (Vite dev server)
     RewriteRule ^hot$ - [F,L]
     
+    # Explicitly handle static assets - if file doesn't exist, return 404 instead of redirecting to index.php
+    # This prevents HTML responses for missing JS/CSS files which causes MIME type errors
+    RewriteCond %{REQUEST_URI} ^/build/assets/.*\.(js|css|woff|woff2|ttf|eot|svg|png|jpg|jpeg|gif|ico|webp)$ [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule .* - [R=404,L]
+    
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f

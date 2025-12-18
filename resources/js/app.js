@@ -746,9 +746,34 @@ router.beforeEach(async (to, from, next) => {
 let errorRedirectCount = 0;
 const MAX_ERROR_REDIRECTS = 2;
 let lastErrorPath = null;
+let lastErrorTime = 0;
+const ERROR_RETRY_DELAY = 2000; // 2 секунды между попытками
 
 router.onError((error, to) => {
     console.error('Router component loading error:', error, 'Route:', to);
+    
+    // Проверяем, не прошло ли достаточно времени с последней ошибки
+    const now = Date.now();
+    if (now - lastErrorTime < ERROR_RETRY_DELAY) {
+        console.warn('Error retry too soon, ignoring');
+        return;
+    }
+    lastErrorTime = now;
+    
+    // Если это ошибка загрузки модуля (MIME type или failed to fetch), перезагружаем страницу
+    const errorMessage = error?.message || error?.toString() || '';
+    const isModuleError = errorMessage.includes('MIME type') || 
+                         errorMessage.includes('Failed to fetch dynamically imported module') ||
+                         errorMessage.includes('Failed to load module script');
+    
+    if (isModuleError) {
+        console.warn('Module loading error detected, reloading page to clear cache...');
+        // Перезагружаем страницу с очисткой кеша
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+        return;
+    }
     
     // Если это та же ошибка, что и раньше, не перенаправляем снова
     if (to && to.path === lastErrorPath) {
@@ -763,6 +788,10 @@ router.onError((error, to) => {
         console.error('Max error redirects reached. Stopping redirect loop.');
         errorRedirectCount = 0;
         lastErrorPath = null;
+        // Перезагружаем страницу как последнюю попытку
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
         return;
     }
     
