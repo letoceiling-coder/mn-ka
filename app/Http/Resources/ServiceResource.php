@@ -76,11 +76,21 @@ class ServiceResource extends JsonResource
             // Разделы берутся из случаев, связанных с услугой
             'available_chapters' => function() {
                 // Получаем все случаи, связанные с услугой
-                $cases = $this->cases()->with('chapter')->where('is_active', true)->get();
+                // Если связь уже загружена, используем её, иначе загружаем
+                if ($this->relationLoaded('cases')) {
+                    $cases = $this->cases->where('is_active', true);
+                } else {
+                    $cases = $this->cases()->with('chapter')->where('is_active', true)->get();
+                }
                 
                 // Группируем случаи по разделам
                 $chaptersMap = [];
                 foreach ($cases as $case) {
+                    // Если chapter не загружен, загружаем его
+                    if (!$case->relationLoaded('chapter')) {
+                        $case->load('chapter');
+                    }
+                    
                     if (!$case->chapter || !$case->chapter->is_active) {
                         continue;
                     }
