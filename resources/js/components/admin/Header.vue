@@ -7,9 +7,28 @@
                 </svg>
             </button>
             <div class="hidden sm:flex items-center gap-2 text-sm min-w-0">
-                <span class="text-muted-foreground truncate">Панель управления</span>
-                <span class="text-muted-foreground">/</span>
-                <span class="font-semibold text-foreground truncate">{{ currentPageTitle }}</span>
+                <router-link
+                    to="/admin"
+                    class="text-muted-foreground hover:text-foreground transition-colors truncate"
+                >
+                    Панель управления
+                </router-link>
+                <template v-for="(crumb, index) in breadcrumbs" :key="index">
+                    <span class="text-muted-foreground">/</span>
+                    <router-link
+                        v-if="crumb.path && index < breadcrumbs.length - 1"
+                        :to="crumb.path"
+                        class="text-muted-foreground hover:text-foreground transition-colors truncate"
+                    >
+                        {{ crumb.title }}
+                    </router-link>
+                    <span
+                        v-else
+                        class="font-semibold text-foreground truncate"
+                    >
+                        {{ crumb.title }}
+                    </span>
+                </template>
             </div>
             <div class="flex sm:hidden items-center text-sm min-w-0">
                 <span class="font-semibold text-foreground truncate">{{ currentPageTitle }}</span>
@@ -97,6 +116,145 @@ export default {
             return route.meta?.title || 'Панель управления';
         });
 
+        // Маппинг названий для роутов
+        const routeTitles = {
+            'admin.dashboard': 'Главная',
+            'admin.documentation': 'Документация',
+            'admin.products': 'Продукты',
+            'admin.categories': 'Категории',
+            'admin.services': 'Услуги',
+            'admin.cases': 'Кейсы',
+            'admin.media': 'Медиа',
+            'admin.users': 'Пользователи',
+            'admin.roles': 'Роли',
+            'admin.subscription': 'Подписка',
+            'admin.versions': 'Версии',
+            'admin.settings': 'Настройки',
+            'admin.settings.telegram': 'Telegram',
+            'admin.settings.contacts': 'Контакты',
+            'admin.settings.about': 'О нас',
+            'admin.settings.footer': 'Футер',
+            'admin.settings.case-cards': 'Карточки кейсов',
+            'admin.menus': 'Меню',
+            'admin.banners.home': 'Баннер главной',
+            'admin.notifications': 'Уведомления',
+            'admin.decisions.chapters': 'Разделы',
+            'admin.decisions.products': 'Продукты',
+            'admin.decisions.services': 'Услуги',
+            'admin.decisions.cases': 'Случаи',
+            'admin.decisions.options': 'Опции',
+            'admin.decisions.option-trees': 'Деревья опций',
+            'admin.decisions.instances': 'Экземпляры',
+            'admin.decisions.settings': 'Настройки',
+            'admin.quizzes.index': 'Опросы',
+            'admin.quizzes.settings': 'Настройки опросов',
+            'admin.blocks.how-work': 'Как это работает',
+            'admin.blocks.faq': 'FAQ',
+            'admin.blocks.why-choose-us': 'Почему выбирают нас',
+            'admin.blocks.cases': 'Кейсы',
+            'admin.modal-settings': 'Настройки модальных окон',
+            'admin.product-requests': 'Заявки на продукты',
+            'admin.pages': 'Страницы',
+            'admin.pages.home': 'Главная страница',
+            'admin.seo-settings': 'SEO настройки',
+        };
+
+        // Маппинг секций для группировки
+        const sectionTitles = {
+            'decisions': 'Решения',
+            'settings': 'Настройки',
+            'blocks': 'Блоки',
+            'quizzes': 'Опросы',
+        };
+
+        // Построение хлебных крошек
+        const breadcrumbs = computed(() => {
+            const crumbs = [];
+            const routeName = route.name || '';
+            const routePath = route.path;
+
+            // Если это главная страница админки
+            if (routeName === 'admin.dashboard' || routePath === '/admin') {
+                return [];
+            }
+
+            // Разбираем имя роута на части
+            const parts = routeName.split('.');
+            
+            // Пропускаем 'admin'
+            if (parts[0] === 'admin') {
+                parts.shift();
+            }
+
+            // Строим путь для каждой части
+            let currentPath = '/admin';
+            
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                const isLast = i === parts.length - 1;
+                
+                // Определяем название для части
+                let title = '';
+                let path = null;
+
+                // Если это секция (decisions, settings, blocks, quizzes)
+                if (sectionTitles[part]) {
+                    title = sectionTitles[part];
+                    currentPath += '/' + part;
+                    path = currentPath;
+                }
+                // Если это конкретный роут
+                else if (routeTitles[routeName]) {
+                    // Для последнего элемента используем название роута
+                    if (isLast) {
+                        title = routeTitles[routeName];
+                        // Для страниц создания/редактирования
+                        if (part === 'create') {
+                            title = 'Создать';
+                            currentPath += '/create';
+                            path = currentPath;
+                        } else if (part === 'edit' && route.params.id) {
+                            title = 'Редактировать';
+                            // path остается null, так как это динамический роут
+                        } else {
+                            path = routePath;
+                        }
+                    } else {
+                        // Для промежуточных элементов используем общее название
+                        const routeKey = 'admin.' + parts.slice(0, i + 1).join('.');
+                        title = routeTitles[routeKey] || part;
+                        currentPath += '/' + part;
+                        path = currentPath;
+                    }
+                }
+                // Если название не найдено, используем часть как есть
+                else {
+                    if (part === 'create') {
+                        title = 'Создать';
+                        currentPath += '/create';
+                        path = currentPath;
+                    } else if (part === 'edit') {
+                        title = 'Редактировать';
+                        // path остается null
+                    } else {
+                        title = part.charAt(0).toUpperCase() + part.slice(1);
+                        currentPath += '/' + part;
+                        path = currentPath;
+                    }
+                }
+
+                // Добавляем крошку только если есть название
+                if (title) {
+                    crumbs.push({
+                        title,
+                        path: isLast ? null : path,
+                    });
+                }
+            }
+
+            return crumbs;
+        });
+
         const toggleTheme = () => {
             store.dispatch('toggleTheme');
         };
@@ -107,6 +265,7 @@ export default {
             currentPageTitle,
             isDarkMode,
             toggleTheme,
+            breadcrumbs,
         };
     },
 };
