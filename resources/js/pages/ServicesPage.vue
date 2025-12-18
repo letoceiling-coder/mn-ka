@@ -139,7 +139,8 @@ export default {
             loadingServices.value = true;
             error.value = null;
             try {
-                const response = await fetch('/api/public/services?active=1', {
+                // Используем параметр minimal=1 для получения только необходимых полей для карточек
+                const response = await fetch('/api/public/services?active=1&minimal=1', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

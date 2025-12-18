@@ -74,8 +74,29 @@ class ServiceController extends Controller
 
             $services = $query->get();
 
+            // Проверяем, нужен ли минимальный набор данных (для карточек)
+            $minimal = $request->boolean('minimal', false);
+
             // Используем минимальный набор данных для списка (оптимизировано)
-            $data = $services->map(function($service) {
+            $data = $services->map(function($service) use ($minimal) {
+                if ($minimal) {
+                    // Минимальный набор для карточек: только необходимые поля
+                    $iconData = null;
+                    if ($service->relationLoaded('icon') && $service->icon) {
+                        $iconData = [
+                            'url' => $service->icon->url ?? null,
+                        ];
+                    }
+                    
+                    return [
+                        'id' => $service->id,
+                        'name' => $service->name,
+                        'slug' => $service->slug,
+                        'icon' => $iconData,
+                        'order' => $service->order ?? 0,
+                    ];
+                } else {
+                    // Полный набор данных (для обратной совместимости)
                     $imageData = null;
                     if ($service->relationLoaded('image') && $service->image) {
                         $imageData = [
@@ -106,6 +127,7 @@ class ServiceController extends Controller
                         'is_active' => $service->is_active,
                         'category' => 'services',
                     ];
+                }
             });
 
             return response()->json([

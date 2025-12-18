@@ -138,7 +138,7 @@ export default {
         const fetchServices = async () => {
             loadingServices.value = true;
             try {
-                const response = await fetch('/api/public/services?active=1', {
+                const response = await fetch('/api/public/services?active=1&minimal=1', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

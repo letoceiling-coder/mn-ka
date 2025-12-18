@@ -546,7 +546,7 @@ export default {
         const fetchServices = async () => {
             if (loadingLists.value) return;
             try {
-                const response = await fetch('/api/public/services?active=1&limit=8', {
+                const response = await fetch('/api/public/services?active=1&minimal=1&limit=8', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

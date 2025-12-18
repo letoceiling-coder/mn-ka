@@ -420,8 +420,8 @@ export default {
             if (loadingLists.value) return;
             loadingLists.value = true;
             try {
-                // Загружаем все услуги (limit=10000 чтобы получить все)
-                const response = await fetch('/api/public/services?active=1&limit=10000', {
+                // Загружаем все услуги (минимальный набор для карточек)
+                const response = await fetch('/api/public/services?active=1&minimal=1&limit=10000', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

@@ -92,8 +92,8 @@ export default {
                     category: 'products',
                 }));
                 
-                // Загружаем все активные услуги
-                const servicesResponse = await fetch('/api/public/services?active=1');
+                // Загружаем все активные услуги (минимальный набор для карточек)
+                const servicesResponse = await fetch('/api/public/services?active=1&minimal=1');
                 const servicesResult = servicesResponse.ok ? await servicesResponse.json() : { data: [] };
                 const allServices = (servicesResult.data || []).map(service => ({
                     ...service,
