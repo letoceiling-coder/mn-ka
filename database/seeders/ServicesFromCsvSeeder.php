@@ -54,27 +54,34 @@ class ServicesFromCsvSeeder extends Seeder
         // Сначала пробуем рядом с CSV
         $imagesPath = dirname($csvPath) . '/images';
         if (!is_dir($imagesPath)) {
-            // Пробуем стандартные пути на сервере
-            $possibleImagePaths = [
-                base_path('images'),
-                base_path('storage/app/images'),
-                storage_path('app/images'),
-                public_path('images'),
-            ];
-            
-            foreach ($possibleImagePaths as $path) {
-                if (is_dir($path)) {
-                    $imagesPath = $path;
-                    break;
-                }
-            }
-            
-            if (!is_dir($imagesPath)) {
-                $this->command->warn("Папка с изображениями не найдена. Пробовались пути:");
+            // Пробуем в папке services-seed
+            $servicesSeedPath = dirname($csvPath) . '/services-seed/images';
+            if (is_dir($servicesSeedPath)) {
+                $imagesPath = $servicesSeedPath;
+            } else {
+                // Пробуем стандартные пути на сервере
+                $possibleImagePaths = [
+                    storage_path('app/services-seed/images'),
+                    storage_path('app/images'),
+                    base_path('images'),
+                    base_path('storage/app/images'),
+                    public_path('images'),
+                ];
+                
                 foreach ($possibleImagePaths as $path) {
-                    $this->command->warn("  - {$path}");
+                    if (is_dir($path)) {
+                        $imagesPath = $path;
+                        break;
+                    }
                 }
-                $imagesPath = null;
+                
+                if (!is_dir($imagesPath)) {
+                    $this->command->warn("Папка с изображениями не найдена. Пробовались пути:");
+                    foreach ($possibleImagePaths as $path) {
+                        $this->command->warn("  - {$path}");
+                    }
+                    $imagesPath = null;
+                }
             }
         }
 
