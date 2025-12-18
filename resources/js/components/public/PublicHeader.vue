@@ -188,7 +188,6 @@
     <SearchModal
         v-if="showSearchModal"
         @close="showSearchModal = false"
-        @search="handleSearch"
     />
 </template>
 

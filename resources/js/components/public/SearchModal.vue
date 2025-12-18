@@ -92,7 +92,12 @@ export default {
 
         const handleSearch = () => {
             if (searchQuery.value.trim()) {
-                emit('search', searchQuery.value);
+                // Используем router для навигации на страницу поиска
+                const router = require('vue-router').useRouter();
+                router.push({
+                    name: 'search',
+                    query: { q: searchQuery.value.trim() }
+                });
                 searchQuery.value = '';
                 emit('close');
             }
