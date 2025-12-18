@@ -149,7 +149,13 @@ export default {
                 
                 if (response.ok) {
                     const data = await response.json();
-                    services.value = data.data || [];
+                    const servicesList = data.data || [];
+                    // Сортируем услуги по полю order (если есть)
+                    services.value = servicesList.sort((a, b) => {
+                        const orderA = a.order ?? 999999;
+                        const orderB = b.order ?? 999999;
+                        return orderA - orderB;
+                    });
                 } else {
                     throw new Error('Ошибка загрузки услуг');
                 }

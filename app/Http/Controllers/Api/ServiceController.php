@@ -102,10 +102,10 @@ class ServiceController extends Controller
                         'image' => $imageData,
                         'icon' => $iconData,
                         'chapter_id' => $service->chapter_id,
-                        'order' => $service->order,
+                        'order' => $service->order ?? 0,
                         'is_active' => $service->is_active,
                         'category' => 'services',
-                ];
+                    ];
             });
 
             return response()->json([
