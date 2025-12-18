@@ -8,15 +8,32 @@ use Illuminate\Support\Str;
 use App\Models\Service;
 use App\Models\Chapter;
 use App\Models\ProjectCase;
+use App\Models\Media;
+use App\Models\Folder;
+use App\Services\MediaImportService;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ServicesFromExcelSeeder extends Seeder
 {
+    private MediaImportService $mediaService;
+    private ?int $servicesFolderId = null;
+    private ?int $iconsFolderId = null;
+    private array $importedServiceSlugs = [];
+
+    public function __construct()
+    {
+        $this->mediaService = new MediaImportService();
+    }
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
+        // Очистка всех существующих услуг перед импортом
+        $this->command->warn("Очистка всех существующих услуг...");
+        $this->clearExistingServices();
+        
         // Получаем путь к файлу из .env или используем стандартные пути
         $excelPath = env('SERVICES_EXCEL_PATH') ?? $this->findExcelFile();
         
@@ -39,6 +56,21 @@ class ServicesFromExcelSeeder extends Seeder
         }
         
         $this->command->info("Используется файл: {$excelPath}");
+
+        // Подготовка папок для медиа
+        $this->prepareMediaFolders();
+        
+        // Находим резервные изображения
+        $this->command->info("Поиск резервных изображений в медиа-библиотеке...");
+        $fallbackImage = Media::where('type', 'photo')->first();
+        $fallbackIcon = Media::where('type', 'photo')->first();
+        
+        if ($fallbackImage) {
+            $this->command->info("  Резервное изображение: {$fallbackImage->original_name}");
+        }
+        if ($fallbackIcon) {
+            $this->command->info("  Резервная иконка: {$fallbackIcon->original_name}");
+        }
 
         $this->command->info("Чтение Excel файла...");
         
@@ -76,7 +108,15 @@ class ServicesFromExcelSeeder extends Seeder
                 
                 // Если есть название услуги - создаем новую услугу
                 if (!empty($serviceName) && $serviceName !== 'NaN') {
-                    $currentService = $this->createOrUpdateService($serviceName, $description, $htmlText, $detailedText, $order);
+                    $currentService = $this->createOrUpdateService(
+                        $serviceName, 
+                        $description, 
+                        $htmlText, 
+                        $detailedText, 
+                        $order,
+                        $fallbackImage?->id,
+                        $fallbackIcon?->id
+                    );
                     $order++;
                     $stats['services']++;
                     $this->command->info("✓ Услуга: {$serviceName}");
@@ -101,12 +141,17 @@ class ServicesFromExcelSeeder extends Seeder
                 }
             }
             
+            // Удаляем все услуги, которых нет в Excel
+            $this->command->info("\nУдаление услуг, отсутствующих в Excel...");
+            $deletedCount = Service::whereNotIn('slug', $this->importedServiceSlugs)->delete();
+            $this->command->info("  Удалено услуг: {$deletedCount}");
+            
             $this->command->info("\n📊 Статистика импорта:");
             $this->command->info("  Услуг: {$stats['services']}");
             $this->command->info("  Разделов: {$stats['chapters']}");
             $this->command->info("  Случаев: {$stats['cases']}");
             
-            $this->command->info("Импорт завершен успешно!");
+            $this->command->info("\n✅ Импорт завершен успешно!");
             
         } catch (\Exception $e) {
             $this->command->error("Ошибка при импорте: " . $e->getMessage());
@@ -114,7 +159,60 @@ class ServicesFromExcelSeeder extends Seeder
         }
     }
     
-    private function createOrUpdateService($name, $description, $htmlText, $detailedText, $order)
+    /**
+     * Очистить все существующие услуги
+     */
+    private function clearExistingServices(): void
+    {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        
+        // Удаляем связи
+        DB::table('product_service')->truncate();
+        DB::table('cases_service')->truncate();
+        
+        // Удаляем случаи
+        ProjectCase::truncate();
+        
+        // Удаляем услуги
+        Service::truncate();
+        
+        // Удаляем разделы
+        Chapter::truncate();
+        
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        $this->command->info("✅ Все услуги, разделы и случаи очищены");
+    }
+    
+    /**
+     * Подготовить папки для медиа
+     */
+    private function prepareMediaFolders(): void
+    {
+        // Находим или создаем папку "Услуги"
+        $servicesFolder = Folder::firstOrCreate(
+            ['slug' => 'services'],
+            [
+                'name' => 'Услуги',
+                'slug' => 'services',
+                'protected' => false,
+            ]
+        );
+        $this->servicesFolderId = $servicesFolder->id;
+
+        // Находим или создаем папку "Иконки"
+        $iconsFolder = Folder::firstOrCreate(
+            ['slug' => 'icons'],
+            [
+                'name' => 'Иконки',
+                'slug' => 'icons',
+                'protected' => false,
+            ]
+        );
+        $this->iconsFolderId = $iconsFolder->id;
+    }
+    
+    private function createOrUpdateService($name, $description, $htmlText, $detailedText, $order, $imageId = null, $iconId = null)
     {
         // Обрезаем название до 255 символов
         $name = mb_substr($name, 0, 255);
@@ -134,6 +232,9 @@ class ServicesFromExcelSeeder extends Seeder
             $counter++;
         }
         
+        // Сохраняем slug для последующего удаления лишних услуг
+        $this->importedServiceSlugs[] = $slug;
+        
         $descriptionData = [];
         if (!empty($description)) {
             $descriptionData['ru'] = $description;
@@ -148,6 +249,8 @@ class ServicesFromExcelSeeder extends Seeder
                 'name' => $name,
                 'slug' => $slug,
                 'description' => !empty($descriptionData) ? $descriptionData : null,
+                'image_id' => $imageId,
+                'icon_id' => $iconId,
                 'order' => $order,
                 'is_active' => true,
             ]
@@ -158,7 +261,6 @@ class ServicesFromExcelSeeder extends Seeder
         if ($htmlText !== null && $htmlText !== '') {
             $service->html_content = $htmlText;
             $service->save();
-            $this->command->info("    → HTML контент обновлен для услуги: {$name}");
         }
         
         return $service;
