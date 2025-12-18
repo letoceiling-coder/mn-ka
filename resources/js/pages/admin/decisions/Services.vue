@@ -55,12 +55,37 @@
 
         <!-- Services List -->
         <div v-if="!loading && services.length > 0" class="bg-card rounded-lg border border-border overflow-hidden">
-            <div class="divide-y divide-border">
+            <div 
+                class="divide-y divide-border"
+                @dragover.prevent="onDragOver"
+                @drop.prevent="onDrop"
+            >
                 <div
-                    v-for="service in services"
+                    v-for="(service, index) in services"
                     :key="service.id"
-                    class="p-4 hover:bg-muted/10 transition-colors flex items-center justify-between"
+                    :class="[
+                        'p-4 hover:bg-muted/10 transition-colors flex items-center justify-between cursor-move',
+                        { 'dragging': draggedItem?.id === service.id, 'drag-over': dragOverIndex === index }
+                    ]"
+                    :draggable="true"
+                    @dragstart="onDragStart($event, service, index)"
+                    @dragend="onDragEnd"
+                    @dragover.prevent="onItemDragOver($event, index)"
+                    @dragenter.prevent="onItemDragEnter(index)"
+                    @dragleave="onItemDragLeave"
                 >
+                    <!-- Drag Handle -->
+                    <div class="flex-shrink-0 text-muted-foreground cursor-grab active:cursor-grabbing mr-3">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 5H13M7 10H13M7 15H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="4" cy="5" r="1" fill="currentColor"/>
+                            <circle cx="4" cy="10" r="1" fill="currentColor"/>
+                            <circle cx="4" cy="15" r="1" fill="currentColor"/>
+                            <circle cx="16" cy="5" r="1" fill="currentColor"/>
+                            <circle cx="16" cy="10" r="1" fill="currentColor"/>
+                            <circle cx="16" cy="15" r="1" fill="currentColor"/>
+                        </svg>
+                    </div>
                     <div class="flex-1">
                         <h3 class="font-medium text-foreground">{{ service.name }}</h3>
                         <p class="text-sm text-muted-foreground">
@@ -73,11 +98,12 @@
                         <router-link
                             :to="{ name: 'admin.decisions.services.edit', params: { id: service.id } }"
                             class="px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors inline-block"
+                            @click.stop
                         >
                             Редактировать
                         </router-link>
                         <button
-                            @click="deleteService(service)"
+                            @click.stop="deleteService(service)"
                             class="px-3 py-1.5 text-sm bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-lg transition-colors"
                         >
                             Удалить
@@ -235,10 +261,14 @@ export default {
         const loading = ref(false);
         const exporting = ref(false);
         const importing = ref(false);
+        const saving = ref(false);
         const error = ref(null);
         const services = ref([]);
         const showImportDocumentation = ref(false);
         const importDocumentationRead = ref(false);
+        const draggedItem = ref(null);
+        const draggedIndex = ref(null);
+        const dragOverIndex = ref(null);
 
         const fetchServices = async () => {
             loading.value = true;
@@ -249,12 +279,125 @@ export default {
                     throw new Error('Ошибка загрузки услуг');
                 }
                 const data = await response.json();
-                services.value = data.data || [];
+                const servicesList = data.data || [];
+                // Сортируем услуги по полю order
+                services.value = servicesList.sort((a, b) => {
+                    const orderA = a.order ?? 999999;
+                    const orderB = b.order ?? 999999;
+                    return orderA - orderB;
+                });
             } catch (err) {
                 error.value = err.message || 'Ошибка загрузки услуг';
                 console.error('Error fetching services:', err);
             } finally {
                 loading.value = false;
+            }
+        };
+
+        // Drag and Drop handlers
+        const onDragStart = (event, service, index) => {
+            draggedItem.value = service;
+            draggedIndex.value = index;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/html', event.target);
+        };
+
+        const onDragEnd = () => {
+            draggedItem.value = null;
+            draggedIndex.value = null;
+            dragOverIndex.value = null;
+        };
+
+        const onDragOver = (event) => {
+            event.dataTransfer.dropEffect = 'move';
+        };
+
+        const onItemDragOver = (event, index) => {
+            if (draggedIndex.value !== null && draggedIndex.value !== index) {
+                dragOverIndex.value = index;
+            }
+        };
+
+        const onItemDragEnter = (index) => {
+            if (draggedIndex.value !== null && draggedIndex.value !== index) {
+                dragOverIndex.value = index;
+            }
+        };
+
+        const onItemDragLeave = () => {
+            // Не очищаем dragOverIndex здесь, чтобы сохранить визуальный индикатор
+        };
+
+        const onDrop = async (event) => {
+            if (!draggedItem.value || draggedIndex.value === null) return;
+
+            const dropIndex = dragOverIndex.value !== null ? dragOverIndex.value : draggedIndex.value;
+
+            if (draggedIndex.value === dropIndex) {
+                dragOverIndex.value = null;
+                return;
+            }
+
+            // Перемещаем элемент в массиве
+            const newServices = [...services.value];
+            const [removed] = newServices.splice(draggedIndex.value, 1);
+            newServices.splice(dropIndex, 0, removed);
+
+            // Обновляем порядок
+            newServices.forEach((service, index) => {
+                service.order = index;
+            });
+
+            services.value = newServices;
+            dragOverIndex.value = null;
+
+            // Сохраняем новый порядок
+            await saveOrder(newServices);
+        };
+
+        const saveOrder = async (servicesList) => {
+            saving.value = true;
+            try {
+                const token = localStorage.getItem('token');
+                const servicesData = servicesList.map((service, index) => ({
+                    id: service.id,
+                    order: index,
+                }));
+
+                const response = await fetch('/api/v1/services/update-order', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ services: servicesData }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Ошибка сохранения порядка');
+                }
+
+                await Swal.fire({
+                    title: 'Порядок обновлен',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            } catch (err) {
+                await Swal.fire({
+                    title: 'Ошибка',
+                    text: err.message || 'Ошибка сохранения порядка услуг',
+                    icon: 'error',
+                    confirmButtonText: 'ОК'
+                });
+                // Восстанавливаем исходный порядок при ошибке
+                await fetchServices();
+            } finally {
+                saving.value = false;
             }
         };
 
@@ -470,14 +613,25 @@ export default {
             loading,
             exporting,
             importing,
+            saving,
             error,
             services,
             showImportDocumentation,
             importDocumentationRead,
+            draggedItem,
+            draggedIndex,
+            dragOverIndex,
             fetchServices,
             deleteService,
             exportServices,
             handleImportFile,
+            onDragStart,
+            onDragEnd,
+            onDragOver,
+            onItemDragOver,
+            onItemDragEnter,
+            onItemDragLeave,
+            onDrop,
         };
     },
 };

@@ -570,4 +570,31 @@ class ServiceController extends Controller
             'errors' => $result['errors'],
         ]);
     }
+
+    /**
+     * Обновить порядок услуг
+     */
+    public function updateOrder(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'services' => 'required|array',
+            'services.*.id' => 'required|exists:services,id',
+            'services.*.order' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Ошибка валидации',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        foreach ($request->services as $item) {
+            Service::where('id', $item['id'])->update(['order' => $item['order']]);
+        }
+
+        return response()->json([
+            'message' => 'Порядок услуг успешно обновлен',
+        ]);
+    }
 }

@@ -94,6 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::apiResource('products', ProductController::class);
             Route::get('services/export', [ServiceController::class, 'export']);
             Route::post('services/import', [ServiceController::class, 'import']);
+            Route::post('services/update-order', [ServiceController::class, 'updateOrder']);
             Route::apiResource('services', ServiceController::class);
             Route::apiResource('cases', CaseController::class);
             Route::apiResource('options', OptionController::class);
