@@ -637,3 +637,14 @@ export default {
 };
 </script>
 
+<style scoped>
+.dragging {
+    opacity: 0.5;
+}
+
+.drag-over {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-top: 2px solid rgba(59, 130, 246, 0.5);
+}
+</style>
+
