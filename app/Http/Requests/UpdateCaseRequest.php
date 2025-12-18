@@ -25,9 +25,9 @@ class UpdateCaseRequest extends FormRequest
         $caseId = $this->route('cases') ?? $this->route('id');
 
         return [
-            'name' => 'sometimes|required|string|max:255',
-            'slug' => 'sometimes|nullable|string|max:255|unique:cases,slug,' . $caseId,
-            'description' => 'sometimes|required|array',
+            'name' => 'sometimes|required|string|max:500',
+            'slug' => 'sometimes|nullable|string|max:500|unique:cases,slug,' . $caseId,
+            'description' => 'nullable|array',
             'html' => 'nullable|array',
             'image_id' => 'nullable|exists:media,id',
             'icon_id' => 'nullable|exists:media,id',
