@@ -14,7 +14,7 @@ class ServicesExport
      */
     public function exportToZip(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $services = Service::with(['chapter', 'image', 'icon', 'options', 'optionTrees', 'instances', 'products'])->orderBy('order')->get();
+        $services = Service::with(['chapter', 'image', 'icon'])->orderBy('order')->get();
 
         $filename = 'services_' . date('Y-m-d_His') . '.zip';
 
@@ -59,10 +59,6 @@ class ServicesExport
                     'ID иконки',
                     'Путь иконки',
                     'URL иконки',
-                    'Продукты (ID через запятую)',
-                    'Опции (ID через запятую)',
-                    'Деревья опций (ID через запятую)',
-                    'Экземпляры (ID через запятую)',
                     'Порядок',
                     'Активен',
                 ], ';');
@@ -122,12 +118,6 @@ class ServicesExport
                         }
                     }
 
-                    // Получаем ID связанных сущностей
-                    $productsIds = $service->products ? $service->products->pluck('id')->implode(',') : '';
-                    $optionsIds = $service->options ? $service->options->pluck('id')->implode(',') : '';
-                    $optionTreesIds = $service->optionTrees ? $service->optionTrees->pluck('id')->implode(',') : '';
-                    $instancesIds = $service->instances ? $service->instances->pluck('id')->implode(',') : '';
-
                     // Записываем строку в CSV
                     fputcsv($csvFile, [
                         $service->id,
@@ -142,10 +132,6 @@ class ServicesExport
                         $service->icon_id ?? '',
                         $iconPath,
                         $service->icon?->url ?? '',
-                        $productsIds,
-                        $optionsIds,
-                        $optionTreesIds,
-                        $instancesIds,
                         $service->order ?? 0,
                         $service->is_active ? '1' : '0',
                     ], ';');
@@ -226,7 +212,7 @@ class ServicesExport
      */
     public function exportToCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $services = Service::with(['chapter', 'image', 'icon', 'options', 'optionTrees', 'instances', 'products'])->orderBy('order')->get();
+        $services = Service::with(['chapter', 'image', 'icon'])->orderBy('order')->get();
 
         $filename = 'services_' . date('Y-m-d_His') . '.csv';
 
@@ -258,10 +244,6 @@ class ServicesExport
                 'ID иконки',
                 'Путь иконки',
                 'URL иконки',
-                'Продукты (ID через запятую)',
-                'Опции (ID через запятую)',
-                'Деревья опций (ID через запятую)',
-                'Экземпляры (ID через запятую)',
                 'Порядок',
                 'Активен',
             ], ';');
@@ -280,12 +262,6 @@ class ServicesExport
                     $iconPath = 'images/icons/' . $iconPath;
                 }
                 
-                // Получаем ID связанных сущностей
-                $productsIds = $service->products ? $service->products->pluck('id')->implode(',') : '';
-                $optionsIds = $service->options ? $service->options->pluck('id')->implode(',') : '';
-                $optionTreesIds = $service->optionTrees ? $service->optionTrees->pluck('id')->implode(',') : '';
-                $instancesIds = $service->instances ? $service->instances->pluck('id')->implode(',') : '';
-
                 fputcsv($file, [
                     $service->id,
                     $service->name,
@@ -299,10 +275,6 @@ class ServicesExport
                     $service->icon_id ?? '',
                     $iconPath,
                     $service->icon?->url ?? '',
-                    $productsIds,
-                    $optionsIds,
-                    $optionTreesIds,
-                    $instancesIds,
                     $service->order ?? 0,
                     $service->is_active ? '1' : '0',
                 ], ';');

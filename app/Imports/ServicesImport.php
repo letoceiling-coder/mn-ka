@@ -169,13 +169,7 @@ class ServicesImport
                     $data['order'] = $maxOrder + 1;
                 }
 
-                // Создаем или обновляем услугу
-                $productsIds = $data['products'] ?? null;
-                $optionsIds = $data['options'] ?? null;
-                $optionTreesIds = $data['option_trees'] ?? null;
-                $instancesIds = $data['instances'] ?? null;
-                
-                // Убираем из данных для создания/обновления
+                // Убираем из данных поля, которых больше нет
                 unset($data['products'], $data['options'], $data['option_trees'], $data['instances']);
 
                 if (!empty($data['id']) && Service::find($data['id'])) {
@@ -183,27 +177,6 @@ class ServicesImport
                     $service->update($data);
                 } else {
                     $service = Service::create($data);
-                }
-
-                // Синхронизируем связи
-                if ($productsIds !== null) {
-                    $ids = array_filter(array_map('intval', explode(',', $productsIds)));
-                    $service->products()->sync($ids);
-                }
-                
-                if ($optionsIds !== null) {
-                    $ids = array_filter(array_map('intval', explode(',', $optionsIds)));
-                    $service->options()->sync($ids);
-                }
-                
-                if ($optionTreesIds !== null) {
-                    $ids = array_filter(array_map('intval', explode(',', $optionTreesIds)));
-                    $service->optionTrees()->sync($ids);
-                }
-                
-                if ($instancesIds !== null) {
-                    $ids = array_filter(array_map('intval', explode(',', $instancesIds)));
-                    $service->instances()->sync($ids);
                 }
 
                 $this->successCount++;
@@ -328,25 +301,20 @@ class ServicesImport
                 case 'Активен':
                     $data['is_active'] = ($value === '1' || $value === 'true' || $value === 'да');
                     break;
+                // Игнорируем старые поля (products, options, option_trees, instances)
                 case 'Продукты (ID через запятую)':
                 case 'Продукты':
                 case 'Products':
-                    $data['products'] = !empty($value) ? trim($value) : null;
-                    break;
                 case 'Опции (ID через запятую)':
                 case 'Опции':
                 case 'Options':
-                    $data['options'] = !empty($value) ? trim($value) : null;
-                    break;
                 case 'Деревья опций (ID через запятую)':
                 case 'Деревья опций':
                 case 'Option Trees':
-                    $data['option_trees'] = !empty($value) ? trim($value) : null;
-                    break;
                 case 'Экземпляры (ID через запятую)':
                 case 'Экземпляры':
                 case 'Instances':
-                    $data['instances'] = !empty($value) ? trim($value) : null;
+                    // Игнорируем эти поля при импорте
                     break;
             }
         }
