@@ -311,7 +311,8 @@ class ServicesImport
                     $data['slug'] = !empty($value) ? trim($value) : null;
                     break;
                 case 'Описание':
-                    $data['description'] = !empty($value) ? $value : null;
+                    // Преобразуем простой текст в JSON структуру
+                    $data['description'] = $this->formatDescriptionForImport($value);
                     break;
                 case 'HTML контент':
                 case 'HTML':
@@ -399,6 +400,51 @@ class ServicesImport
         }
 
         return $data;
+    }
+
+    /**
+     * Преобразовать описание из простого текста в JSON структуру для импорта
+     */
+    protected function formatDescriptionForImport(?string $description): ?array
+    {
+        if (empty($description)) {
+            return null;
+        }
+
+        $description = trim($description);
+
+        // Если это уже JSON строка, пытаемся декодировать
+        $decoded = json_decode($description, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // Проверяем структуру - если есть ru или detailed, возвращаем как есть
+            if (isset($decoded['ru']) || isset($decoded['detailed'])) {
+                return $decoded;
+            }
+            // Если это просто массив, оборачиваем в структуру
+            return ['ru' => implode(' ', $decoded), 'detailed' => ''];
+        }
+
+        // Если это простой текст, создаем структуру
+        // Разделяем на краткое и подробное описание по двойному переносу строки
+        $parts = preg_split('/\n\s*\n/', $description, 2);
+        
+        $result = [];
+        
+        if (!empty($parts[0])) {
+            $result['ru'] = trim($parts[0]);
+        }
+        
+        if (!empty($parts[1])) {
+            $result['detailed'] = trim($parts[1]);
+        } else {
+            // Если нет подробного описания, используем весь текст как краткое
+            if (empty($result['ru'])) {
+                $result['ru'] = $description;
+            }
+            $result['detailed'] = '';
+        }
+
+        return $result;
     }
 }
 

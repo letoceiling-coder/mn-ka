@@ -119,12 +119,15 @@ class ServicesExport
                         }
                     }
 
+                    // Преобразуем description из JSON массива в читаемый текст
+                    $descriptionText = $this->formatDescriptionForExport($service->description);
+                    
                     // Записываем строку в CSV
                     fputcsv($csvFile, [
                         $service->id,
                         $service->name,
                         $service->slug,
-                        is_array($service->description) ? json_encode($service->description, JSON_UNESCAPED_UNICODE) : ($service->description ?? ''),
+                        $descriptionText,
                         $service->html_content ?? '',
                         $service->chapter_id ?? '',
                         $service->chapter?->name ?? '',
@@ -210,6 +213,57 @@ class ServicesExport
     }
 
     /**
+     * Преобразовать description из массива/JSON в читаемый текст для экспорта
+     */
+    protected function formatDescriptionForExport($description): string
+    {
+        if (empty($description)) {
+            return '';
+        }
+
+        // Если это уже строка (не массив), возвращаем как есть
+        if (is_string($description)) {
+            // Проверяем, не является ли это JSON строкой
+            $decoded = json_decode($description, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $this->formatDescriptionArray($decoded);
+            }
+            return $description;
+        }
+
+        // Если это массив, форматируем его
+        if (is_array($description)) {
+            return $this->formatDescriptionArray($description);
+        }
+
+        return '';
+    }
+
+    /**
+     * Форматировать массив description в текст
+     */
+    protected function formatDescriptionArray(array $description): string
+    {
+        $parts = [];
+        
+        // Добавляем краткое описание (ru)
+        if (!empty($description['ru'])) {
+            $parts[] = $description['ru'];
+        }
+        
+        // Добавляем подробное описание (detailed), если есть
+        if (!empty($description['detailed'])) {
+            // Разделяем краткое и подробное описание пустой строкой для читаемости
+            if (!empty($parts)) {
+                $parts[] = ''; // Пустая строка как разделитель
+            }
+            $parts[] = $description['detailed'];
+        }
+        
+        return implode("\n\n", $parts);
+    }
+
+    /**
      * Экспортировать услуги в CSV
      */
     public function exportToCsv(): \Symfony\Component\HttpFoundation\StreamedResponse
@@ -265,11 +319,14 @@ class ServicesExport
                     $iconPath = 'images/icons/' . $iconPath;
                 }
                 
+                // Преобразуем description из JSON массива в читаемый текст
+                $descriptionText = $this->formatDescriptionForExport($service->description);
+                
                 fputcsv($file, [
                     $service->id,
                     $service->name,
                     $service->slug,
-                    is_array($service->description) ? json_encode($service->description, JSON_UNESCAPED_UNICODE) : ($service->description ?? ''),
+                    $descriptionText,
                     $service->html_content ?? '',
                     $service->chapter_id ?? '',
                     $service->chapter?->name ?? '',
