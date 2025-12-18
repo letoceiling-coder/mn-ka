@@ -531,6 +531,11 @@ class DeployController extends Controller
         try {
             // Получаем путь к composer
             $composerPath = $this->getComposerPath();
+            
+            Log::info("Используется composer: {$composerPath}");
+            Log::info("Проверка существования composer: " . (file_exists($composerPath) ? 'да' : 'нет'));
+            Log::info("basePath: {$this->basePath}");
+            Log::info("Проверка composer.phar в проекте: " . (file_exists($this->basePath . '/composer.phar') ? 'да' : 'нет'));
 
             // Определяем HOME директорию (для composer)
             // Попробуем получить из пользователя или использовать базовую директорию
@@ -545,6 +550,8 @@ class DeployController extends Controller
             // Добавляем --no-scripts временно, чтобы избежать проблем с prePackageUninstall
             // Затем запустим скрипты отдельно после успешной установки
             $command = "{$this->phpPath} {$composerPath} install --no-dev --optimize-autoloader --no-interaction --no-scripts";
+            
+            Log::info("Выполняется команда: {$command}");
 
             // Устанавливаем переменные окружения для composer и увеличиваем таймаут
             $process = Process::path($this->basePath)
@@ -589,24 +596,28 @@ class DeployController extends Controller
         // 1. Проверить явно указанный путь в .env
         $composerPath = env('COMPOSER_PATH');
         if ($composerPath && file_exists($composerPath)) {
+            Log::info("Composer найден через COMPOSER_PATH: {$composerPath}");
             return $composerPath;
         }
 
         // 2. Проверить composer.phar в корне проекта (самый надежный вариант)
         $projectComposer = $this->basePath . '/composer.phar';
         if (file_exists($projectComposer)) {
+            Log::info("Composer найден в проекте: {$projectComposer}");
             return $projectComposer;
         }
+
+        Log::warning("composer.phar не найден в проекте: {$projectComposer}");
 
         // 3. Попробовать установить composer.phar автоматически
         $installed = $this->installComposerPhar();
         if ($installed && file_exists($projectComposer)) {
+            Log::info("Composer установлен автоматически: {$projectComposer}");
             return $projectComposer;
         }
 
         // 4. Попробовать найти composer в стандартных местах
         $possiblePaths = [
-            '/home/d/dsc23ytp/.local/bin/composer',
             '/usr/local/bin/composer',
             '/usr/bin/composer',
             'composer', // Последняя попытка - использовать из PATH
@@ -617,16 +628,20 @@ class DeployController extends Controller
                 // Для 'composer' проверяем через which
                 $whichProcess = Process::run('which composer');
                 if ($whichProcess->successful() && trim($whichProcess->output())) {
-                    return trim($whichProcess->output());
+                    $foundPath = trim($whichProcess->output());
+                    Log::info("Composer найден через which: {$foundPath}");
+                    return $foundPath;
                 }
             } else {
                 if (file_exists($path)) {
+                    Log::info("Composer найден в стандартном месте: {$path}");
                     return $path;
                 }
             }
         }
 
         // 5. Fallback на 'composer' (будет ошибка, если не найден)
+        Log::error("Composer не найден ни в одном из стандартных мест");
         return 'composer';
     }
 
