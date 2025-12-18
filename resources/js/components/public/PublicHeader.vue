@@ -101,13 +101,17 @@
                 </button>
                 
                 <!-- Полное поле поиска для больших экранов -->
-                <div v-if="showSearchInput" class="relative flex items-center h-[38px] bg-white rounded-lg min-w-[250px] px-[15px] pr-10">
+                <div v-if="showSearchInput" class="relative flex items-center h-[38px] bg-white rounded-lg min-w-[250px] px-[15px] pr-10" ref="searchContainer">
                     <input 
                         type="text" 
                         v-model="searchQuery"
+                        @input="handleSearchInput"
                         @keypress.enter="handleSearch"
+                        @focus="showSuggestions = true"
+                        @blur="handleSearchBlur"
                         placeholder="Поиск по сайту" 
                         class="outline-none border-0 w-full p-0 bg-transparent text-sm text-black placeholder:text-[#999]"
+                        ref="searchInput"
                     >
                     <button
                         @click="handleSearch"
@@ -129,6 +133,45 @@
                             />
                         </svg>
                     </button>
+                    
+                    <!-- Автодополнение -->
+                    <Transition
+                        enter-active-class="transition-all duration-200 ease-out"
+                        enter-from-class="opacity-0 translate-y-2"
+                        enter-to-class="opacity-100 translate-y-0"
+                        leave-active-class="transition-all duration-150 ease-in"
+                        leave-from-class="opacity-100 translate-y-0"
+                        leave-to-class="opacity-0 translate-y-2"
+                    >
+                        <div 
+                            v-if="showSuggestions && autocompleteResults.length > 0"
+                            class="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 max-h-[400px] overflow-y-auto z-50"
+                        >
+                            <div 
+                                v-for="(item, index) in autocompleteResults" 
+                                :key="index"
+                                @click="selectSuggestion(item)"
+                                class="px-4 py-3 hover:bg-[#D2E8BE]/30 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                            >
+                                <div class="flex items-center justify-between">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-medium text-sm text-black truncate">{{ item.name }}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">{{ item.type_label }}</div>
+                                    </div>
+                                    <svg 
+                                        width="16" 
+                                        height="16"
+                                        viewBox="0 0 16 16" 
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="flex-shrink-0 ml-2 text-gray-400"
+                                    >
+                                        <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </Transition>
                 </div>
             </div>
         </header>
@@ -180,6 +223,11 @@ export default {
         });
         const hoveredLink = ref(null);
         const activeLink = ref(null);
+        const searchContainer = ref(null);
+        const searchInput = ref(null);
+        const showSuggestions = ref(false);
+        const autocompleteResults = ref([]);
+        let autocompleteTimeout = null;
 
         // Определяем что показывать для поиска
         const showSearchInput = computed(() => windowWidth.value >= 1024);
@@ -287,9 +335,59 @@ export default {
 
         const handleSearch = () => {
             if (searchQuery.value.trim()) {
-                console.log('Search:', searchQuery.value);
+                router.push({
+                    name: 'search',
+                    query: { q: searchQuery.value.trim() }
+                });
+                showSuggestions.value = false;
+                searchQuery.value = '';
             }
             showSearchModal.value = false;
+        };
+
+        const handleSearchInput = () => {
+            // Очищаем предыдущий таймаут
+            if (autocompleteTimeout) {
+                clearTimeout(autocompleteTimeout);
+            }
+
+            const query = searchQuery.value.trim();
+            
+            // Если запрос слишком короткий, не показываем подсказки
+            if (query.length < 2) {
+                autocompleteResults.value = [];
+                showSuggestions.value = false;
+                return;
+            }
+
+            // Debounce - задержка 300ms перед запросом
+            autocompleteTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/public/search/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        autocompleteResults.value = data.data || [];
+                        showSuggestions.value = true;
+                    }
+                } catch (error) {
+                    console.error('Error fetching autocomplete:', error);
+                    autocompleteResults.value = [];
+                }
+            }, 300);
+        };
+
+        const handleSearchBlur = () => {
+            // Небольшая задержка, чтобы клик по подсказке успел сработать
+            setTimeout(() => {
+                showSuggestions.value = false;
+            }, 200);
+        };
+
+        const selectSuggestion = (item) => {
+            router.push(item.url);
+            searchQuery.value = '';
+            showSuggestions.value = false;
+            autocompleteResults.value = [];
         };
 
         const navigateToMenu = () => {
@@ -449,6 +547,13 @@ export default {
             toggleBurger,
             handleSearch,
             navigateToMenu,
+            searchContainer,
+            searchInput,
+            showSuggestions,
+            autocompleteResults,
+            handleSearchInput,
+            handleSearchBlur,
+            selectSuggestion,
         };
     },
 };

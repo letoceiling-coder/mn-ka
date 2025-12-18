@@ -36,6 +36,7 @@ use App\Http\Controllers\Api\ContactSettingsController;
 use App\Http\Controllers\Api\AboutSettingsController;
 use App\Http\Controllers\Api\FooterSettingsController;
 use App\Http\Controllers\Api\CaseCardSettingsController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\v1\FolderController;
 use App\Http\Controllers\Api\v1\MediaController;
 use Illuminate\Support\Facades\Route;
@@ -202,6 +203,10 @@ Route::get('/public/modal-settings/{type}', [ModalSettingsController::class, 'sh
 
 // Публичные маршруты для обратной связи (без авторизации)
 Route::post('/public/feedback', [FeedbackController::class, 'submit']);
+
+// Публичные маршруты для поиска (без авторизации)
+Route::get('/public/search', [SearchController::class, 'search']);
+Route::get('/public/search/autocomplete', [SearchController::class, 'autocomplete']);
 
 // Публичные маршруты для настроек контактов (без авторизации)
 Route::get('/public/contact-settings', [ContactSettingsController::class, 'show']);

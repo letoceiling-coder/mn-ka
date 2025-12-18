@@ -207,6 +207,11 @@ const routes = [
                 component: () => import('./pages/CasePage.vue'),
             },
             {
+                path: 'search',
+                name: 'search',
+                component: () => import('./pages/SearchPage.vue'),
+            },
+            {
                 path: ':slug',
                 name: 'page',
                 component: () => import('./pages/Page.vue'),
