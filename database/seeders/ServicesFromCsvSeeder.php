@@ -43,15 +43,39 @@ class ServicesFromCsvSeeder extends Seeder
         if (!$csvPath || !file_exists($csvPath)) {
             $this->command->error("CSV файл не найден!");
             $this->command->info("Укажите путь к файлу через .env (SERVICES_CSV_PATH)");
-            $this->command->info("Или поместите файл services.csv в одну из стандартных директорий");
+            $this->command->info("Или поместите файл services.csv в одну из стандартных директорий:");
+            $this->command->info("  - " . base_path('services.csv'));
+            $this->command->info("  - " . base_path('storage/app/services.csv'));
+            $this->command->info("  - " . storage_path('app/services.csv'));
             return;
         }
 
         // Получаем путь к папке с изображениями
+        // Сначала пробуем рядом с CSV
         $imagesPath = dirname($csvPath) . '/images';
         if (!is_dir($imagesPath)) {
-            $this->command->warn("Папка с изображениями не найдена: {$imagesPath}");
-            $imagesPath = null;
+            // Пробуем стандартные пути на сервере
+            $possibleImagePaths = [
+                base_path('images'),
+                base_path('storage/app/images'),
+                storage_path('app/images'),
+                public_path('images'),
+            ];
+            
+            foreach ($possibleImagePaths as $path) {
+                if (is_dir($path)) {
+                    $imagesPath = $path;
+                    break;
+                }
+            }
+            
+            if (!is_dir($imagesPath)) {
+                $this->command->warn("Папка с изображениями не найдена. Пробовались пути:");
+                foreach ($possibleImagePaths as $path) {
+                    $this->command->warn("  - {$path}");
+                }
+                $imagesPath = null;
+            }
         }
 
         $this->command->info("Используется CSV файл: {$csvPath}");
@@ -316,8 +340,9 @@ class ServicesFromCsvSeeder extends Seeder
             $slug = mb_substr($slug, 0, 252) . '-' . substr(md5($name), 0, 2);
         }
         
-        // Проверяем уникальность slug только если он не уникален
-        // Используем updateOrCreate, который сам обработает дубликаты
+        // Если slug уже существует, но это не та же услуга - добавляем суффикс
+        // Но только если slug был сгенерирован, а не взят из CSV
+        // Для slug из CSV используем как есть (updateOrCreate обработает)
         
         // Парсим описание (может быть JSON)
         $descriptionData = null;
