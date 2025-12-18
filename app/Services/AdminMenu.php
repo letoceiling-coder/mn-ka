@@ -23,37 +23,6 @@ class AdminMenu
                 'roles' => ['admin', 'manager', 'user'],
             ],
             [
-                'title' => 'Панель управления',
-                'route' => 'admin.dashboard',
-                'icon' => 'home',
-                'roles' => ['admin', 'manager', 'user'],
-            ],
-            [
-                'title' => 'Ресурсы',
-                'icon' => 'database',
-                'roles' => ['admin', 'manager'],
-                'children' => [
-                    [
-                        'title' => 'Продукты',
-                        'route' => 'admin.products',
-                        'icon' => 'shopping-cart',
-                        'roles' => ['admin', 'manager'],
-                    ],
-                    [
-                        'title' => 'Категории',
-                        'route' => 'admin.categories',
-                        'icon' => 'folder',
-                        'roles' => ['admin', 'manager'],
-                    ],
-                    [
-                        'title' => 'Услуги',
-                        'route' => 'admin.services',
-                        'icon' => 'credit-card',
-                        'roles' => ['admin', 'manager'],
-                    ],
-                ],
-            ],
-            [
                 'title' => 'Медиа',
                 'route' => 'admin.media',
                 'icon' => 'image',
@@ -75,18 +44,6 @@ class AdminMenu
                 'title' => 'Роли',
                 'route' => 'admin.roles',
                 'icon' => 'shield',
-                'roles' => ['admin'],
-            ],
-            [
-                'title' => 'Подписка',
-                'route' => 'admin.subscription',
-                'icon' => 'credit-card',
-                'roles' => ['admin', 'manager'],
-            ],
-            [
-                'title' => 'Версии',
-                'route' => 'admin.versions',
-                'icon' => 'home',
                 'roles' => ['admin'],
             ],
             [
