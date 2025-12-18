@@ -24,18 +24,15 @@
                     <span v-else>...</span>
                     <span>{{ exporting ? 'Экспорт...' : 'Экспорт ZIP' }}</span>
                 </button>
-                <label class="h-11 px-4 border border-border bg-background hover:bg-muted/10 rounded-lg transition-colors inline-flex items-center justify-center gap-2 cursor-pointer">
-                    <input
-                        type="file"
-                        accept=".zip,.csv,.txt"
-                        @change="handleImportFile"
-                        class="hidden"
-                        :disabled="loading || importing"
-                    />
+                <button
+                    @click="showImportDocumentation = true"
+                    :disabled="loading || importing"
+                    class="h-11 px-4 border border-border bg-background hover:bg-muted/10 rounded-lg transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                >
                     <span v-if="!importing">📤</span>
                     <span v-else>...</span>
                     <span>{{ importing ? 'Импорт...' : 'Импорт ZIP/CSV' }}</span>
-                </label>
+                </button>
                 <router-link
                     :to="{ name: 'admin.decisions.services.create' }"
                     class="h-11 px-6 bg-accent/10 backdrop-blur-xl text-accent border border-accent/40 hover:bg-accent/20 rounded-2xl shadow-lg shadow-accent/10 inline-flex items-center justify-center gap-2"
@@ -95,6 +92,135 @@
             <p class="text-muted-foreground">Услуги не найдены</p>
         </div>
 
+        <!-- Модальное окно с документацией по импорту -->
+        <div v-if="showImportDocumentation" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click.self="showImportDocumentation = false">
+            <div class="bg-background rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                <h2 class="text-2xl font-semibold mb-4">Документация по импорту услуг</h2>
+                
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Формат файла</h3>
+                        <p class="text-muted-foreground mb-2">Поддерживаются следующие форматы:</p>
+                        <ul class="list-disc list-inside text-muted-foreground space-y-1 ml-4">
+                            <li><strong>CSV</strong> - файл с разделителем точка с запятой (;)</li>
+                            <li><strong>ZIP</strong> - архив, содержащий CSV файл и папку images/ с изображениями</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Структура CSV файла</h3>
+                        <p class="text-muted-foreground mb-2">Первая строка должна содержать заголовки колонок:</p>
+                        <div class="bg-muted/30 p-3 rounded-lg font-mono text-xs overflow-x-auto">
+                            ID;Название;Slug;Описание;HTML контент;Раздел ID;ID изображения;Путь изображения;ID иконки;Путь иконки;Порядок;Активен
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-lg mb-2">Описание полей</h3>
+                        <div class="space-y-2">
+                            <div class="border-l-4 border-blue-500 pl-3">
+                                <p class="font-semibold text-red-600">ID <span class="text-xs font-normal text-muted-foreground">(обязательное для обновления)</span></p>
+                                <p class="text-muted-foreground text-xs">Уникальный идентификатор услуги. Если указан и услуга существует - будет обновлена, иначе создана новая.</p>
+                            </div>
+                            <div class="border-l-4 border-red-500 pl-3">
+                                <p class="font-semibold text-red-600">Название <span class="text-xs font-normal text-red-600">(обязательное)</span></p>
+                                <p class="text-muted-foreground text-xs">Название услуги. Максимум 255 символов.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Slug</p>
+                                <p class="text-muted-foreground text-xs">URL-адрес услуги. Если не указан, будет сгенерирован автоматически из названия. Максимум 255 символов.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Описание</p>
+                                <p class="text-muted-foreground text-xs">Текстовое описание услуги. Может быть пустым.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">HTML контент</p>
+                                <p class="text-muted-foreground text-xs">HTML-контент для отображения на странице услуги. Может быть пустым.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Раздел ID</p>
+                                <p class="text-muted-foreground text-xs">ID раздела (chapter), к которому относится услуга. Должен существовать в базе данных.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">ID изображения</p>
+                                <p class="text-muted-foreground text-xs">ID изображения из медиа-библиотеки. Альтернатива пути к изображению.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Путь изображения</p>
+                                <p class="text-muted-foreground text-xs">Относительный путь к изображению в ZIP архиве (например: images/services/image.jpg). Работает только при импорте ZIP.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">ID иконки</p>
+                                <p class="text-muted-foreground text-xs">ID иконки из медиа-библиотеки. Альтернатива пути к иконке.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Путь иконки</p>
+                                <p class="text-muted-foreground text-xs">Относительный путь к иконке в ZIP архиве (например: images/icons/icon.png). Работает только при импорте ZIP.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Порядок</p>
+                                <p class="text-muted-foreground text-xs">Число для сортировки услуг. Если не указано, будет установлено автоматически.</p>
+                            </div>
+                            <div class="border-l-4 border-gray-300 pl-3">
+                                <p class="font-semibold">Активен</p>
+                                <p class="text-muted-foreground text-xs">1, true или "да" - услуга активна, иначе - неактивна. По умолчанию: активна.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <h4 class="font-semibold text-yellow-800 mb-2">⚠️ Важные замечания:</h4>
+                        <ul class="list-disc list-inside text-yellow-700 text-xs space-y-1">
+                            <li>Поле <strong>"Название"</strong> является обязательным</li>
+                            <li>Если указан <strong>ID</strong> и услуга существует - она будет обновлена</li>
+                            <li>Если <strong>ID</strong> не указан или услуга не найдена - будет создана новая услуга</li>
+                            <li>При импорте ZIP архива изображения должны находиться в папке <code>images/services/</code> или <code>images/icons/</code></li>
+                            <li>Максимальный размер файла: 100 MB</li>
+                            <li>Разделитель в CSV файле: точка с запятой (;)</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <h4 class="font-semibold text-blue-800 mb-2">💡 Пример строки CSV:</h4>
+                        <div class="bg-white p-2 rounded font-mono text-xs overflow-x-auto">
+                            1;Название услуги;slug-uslugi;Описание услуги;;5;10;images/services/image.jpg;11;images/icons/icon.png;0;1
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            v-model="importDocumentationRead"
+                            class="w-4 h-4"
+                        />
+                        <span class="text-sm">Я ознакомлен с документацией</span>
+                    </label>
+                    <div class="flex gap-3">
+                        <button
+                            @click="showImportDocumentation = false"
+                            class="px-4 py-2 border border-border rounded-lg hover:bg-muted/10 transition-colors"
+                        >
+                            Отмена
+                        </button>
+                        <label class="px-4 py-2 bg-accent/10 text-accent border border-accent/40 hover:bg-accent/20 rounded-lg transition-colors cursor-pointer inline-flex items-center justify-center gap-2" :class="{ 'opacity-50 cursor-not-allowed': !importDocumentationRead }">
+                            <input
+                                type="file"
+                                accept=".zip,.csv,.txt"
+                                @change="handleImportFile"
+                                class="hidden"
+                                :disabled="!importDocumentationRead || loading || importing"
+                            />
+                            <span>📤</span>
+                            <span>Загрузить файл</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -111,6 +237,8 @@ export default {
         const importing = ref(false);
         const error = ref(null);
         const services = ref([]);
+        const showImportDocumentation = ref(false);
+        const importDocumentationRead = ref(false);
 
         const fetchServices = async () => {
             loading.value = true;
@@ -183,6 +311,10 @@ export default {
             if (!file) {
                 return;
             }
+
+            // Закрываем модальное окно документации
+            showImportDocumentation.value = false;
+            importDocumentationRead.value = false;
 
             // Проверяем размер файла на клиенте (100MB = 100 * 1024 * 1024 байт)
             const maxSize = 100 * 1024 * 1024; // 100MB
@@ -340,6 +472,8 @@ export default {
             importing,
             error,
             services,
+            showImportDocumentation,
+            importDocumentationRead,
             fetchServices,
             deleteService,
             exportServices,
