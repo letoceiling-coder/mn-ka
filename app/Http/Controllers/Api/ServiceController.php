@@ -52,30 +52,30 @@ class ServiceController extends Controller
         // Для списка услуг - оптимизированный запрос без лишних связей
         // Не используем кеш для списка услуг, так как данные могут быть слишком большими для таблицы cache
         try {
-                // Для списка услуг загружаем только необходимые связи
-                $query = Service::with(['image', 'icon'])->ordered();
+            // Для списка услуг загружаем только необходимые связи
+            $query = Service::with(['image', 'icon'])->ordered();
 
-                if ($request->has('chapter_id')) {
-                    $query->where('chapter_id', $request->chapter_id);
-                }
+            if ($request->has('chapter_id')) {
+                $query->where('chapter_id', $request->chapter_id);
+            }
 
-                if ($request->has('active')) {
-                    $query->where('is_active', $request->boolean('active'));
-                } else {
-                    $query->active();
-                }
+            if ($request->has('active')) {
+                $query->where('is_active', $request->boolean('active'));
+            } else {
+                $query->active();
+            }
 
-                // Убираем лимит для списка услуг или делаем его большим
-                // Для страницы /services нужно показать все услуги
-                $limit = $request->get('limit', 0);
-                if ($limit > 0 && $limit < 10000) {
-                    $query->limit($limit);
-                }
+            // Убираем лимит для списка услуг или делаем его большим
+            // Для страницы /services нужно показать все услуги
+            $limit = $request->get('limit', 0);
+            if ($limit > 0 && $limit < 10000) {
+                $query->limit($limit);
+            }
 
-                $services = $query->get();
+            $services = $query->get();
 
-                // Используем минимальный набор данных для списка (оптимизировано)
-                $data = $services->map(function($service) {
+            // Используем минимальный набор данных для списка (оптимизировано)
+            $data = $services->map(function($service) {
                     $imageData = null;
                     if ($service->relationLoaded('image') && $service->image) {
                         $imageData = [
@@ -105,22 +105,21 @@ class ServiceController extends Controller
                         'order' => $service->order,
                         'is_active' => $service->is_active,
                         'category' => 'services',
-                    ];
-                });
+                ];
+            });
 
-                return response()->json([
-                    'data' => $data,
-                ]);
-            } catch (\Exception $e) {
-                Log::error('Ошибка при загрузке услуг: ' . $e->getMessage(), [
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                return response()->json([
-                    'error' => 'Ошибка при загрузке услуг',
-                    'message' => config('app.debug') ? $e->getMessage() : 'Внутренняя ошибка сервера',
-                ], 500);
-            }
-        // });
+            return response()->json([
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Ошибка при загрузке услуг: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'error' => 'Ошибка при загрузке услуг',
+                'message' => config('app.debug') ? $e->getMessage() : 'Внутренняя ошибка сервера',
+            ], 500);
+        }
     }
 
     /**
