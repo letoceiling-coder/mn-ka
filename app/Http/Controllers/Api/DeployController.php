@@ -96,8 +96,18 @@ class DeployController extends Controller
                 throw new \Exception("Ошибка миграций: {$migrationsResult['error']}");
             }
 
-            // 3.5. Выполнение seeders (только если явно запрошено)
+            // 3.5. Принудительное выполнение миграций перед seeders (если запрошены seeders)
             $runSeeders = $request->input('run_seeders', false);
+            if ($runSeeders) {
+                // Выполняем миграции еще раз перед seeders, чтобы убедиться, что все миграции применены
+                Log::info('Повторное выполнение миграций перед seeders...');
+                $migrationsBeforeSeed = $this->runMigrations();
+                if ($migrationsBeforeSeed['status'] === 'success') {
+                    Log::info("Миграции перед seeders: {$migrationsBeforeSeed['message']}");
+                }
+            }
+            
+            // 3.6. Выполнение seeders (только если явно запрошено)
             if ($runSeeders) {
                 $seedersResult = $this->runSeeders();
                 $result['data']['seeders'] = $seedersResult;
