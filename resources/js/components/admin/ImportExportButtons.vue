@@ -1,23 +1,23 @@
 <template>
     <div class="flex items-center gap-2 relative">
         <!-- Кнопка экспорта -->
-        <button
-            @click="toggleExportMenu"
-            class="h-11 px-4 flex items-center gap-2 rounded-md bg-accent/10 hover:bg-accent/20 transition-colors text-sm font-medium relative"
-            type="button"
-        >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <span class="hidden sm:inline">Экспорт</span>
-        </button>
+        <div class="export-button-container relative">
+            <button
+                @click="toggleExportMenu"
+                class="h-11 px-4 flex items-center gap-2 rounded-md bg-accent/10 hover:bg-accent/20 transition-colors text-sm font-medium"
+                type="button"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="hidden sm:inline">Экспорт</span>
+            </button>
 
-        <!-- Меню экспорта -->
-        <div
-            v-if="showExportMenu"
-            v-click-outside="() => showExportMenu = false"
-            class="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg z-50"
-        >
+            <!-- Меню экспорта -->
+            <div
+                v-if="showExportMenu"
+                class="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg z-50"
+            >
             <button
                 v-for="option in exportOptions"
                 :key="option.value"
@@ -26,26 +26,27 @@
             >
                 {{ option.label }}
             </button>
+            </div>
         </div>
 
         <!-- Кнопка импорта -->
-        <button
-            @click="toggleImportMenu"
-            class="h-11 px-4 flex items-center gap-2 rounded-md bg-accent/10 hover:bg-accent/20 transition-colors text-sm font-medium relative"
-            type="button"
-        >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-            </svg>
-            <span class="hidden sm:inline">Импорт</span>
-        </button>
+        <div class="import-button-container relative">
+            <button
+                @click="toggleImportMenu"
+                class="h-11 px-4 flex items-center gap-2 rounded-md bg-accent/10 hover:bg-accent/20 transition-colors text-sm font-medium"
+                type="button"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                <span class="hidden sm:inline">Импорт</span>
+            </button>
 
-        <!-- Меню импорта -->
-        <div
-            v-if="showImportMenu"
-            v-click-outside="() => showImportMenu = false"
-            class="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg z-50"
-        >
+            <!-- Меню импорта -->
+            <div
+                v-if="showImportMenu"
+                class="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg z-50"
+            >
             <button
                 v-for="option in importOptions"
                 :key="option.value"
@@ -54,6 +55,7 @@
             >
                 {{ option.label }}
             </button>
+            </div>
         </div>
 
         <!-- Скрытый input для файлов -->
@@ -132,26 +134,11 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
 export default {
     name: 'ImportExportButtons',
-    directives: {
-        clickOutside: {
-            mounted(el, binding) {
-                el.clickOutsideEvent = (event) => {
-                    if (!(el === event.target || el.contains(event.target))) {
-                        binding.value();
-                    }
-                };
-                document.addEventListener('click', el.clickOutsideEvent);
-            },
-            unmounted(el) {
-                document.removeEventListener('click', el.clickOutsideEvent);
-            },
-        },
-    },
     setup() {
         const showExportMenu = ref(false);
         const showImportMenu = ref(false);
@@ -187,6 +174,26 @@ export default {
             showImportMenu.value = !showImportMenu.value;
             showExportMenu.value = false;
         };
+
+        // Обработка клика вне меню для их закрытия
+        const handleClickOutside = (event) => {
+            const target = event.target;
+            const exportButton = target.closest('.export-button-container');
+            const importButton = target.closest('.import-button-container');
+            
+            if (!exportButton && !importButton) {
+                showExportMenu.value = false;
+                showImportMenu.value = false;
+            }
+        };
+
+        onMounted(() => {
+            document.addEventListener('click', handleClickOutside);
+        });
+
+        onUnmounted(() => {
+            document.removeEventListener('click', handleClickOutside);
+        });
 
         const handleExport = async (type) => {
             showExportMenu.value = false;
