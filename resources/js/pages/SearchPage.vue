@@ -17,7 +17,7 @@
 
             <!-- Поле поиска -->
             <div class="mb-6">
-                <div class="relative flex items-center h-[48px] bg-white rounded-lg px-4 pr-12 shadow-sm">
+                <div class="relative flex items-center h-[48px] bg-white rounded-lg px-4 shadow-sm" :class="localSearchQuery || searchQuery ? 'pr-20' : 'pr-12'">
                     <input 
                         type="text" 
                         v-model="localSearchQuery"
@@ -26,10 +26,36 @@
                         class="outline-none border-0 w-full p-0 bg-transparent text-sm text-black placeholder:text-[#999]"
                         ref="searchInput"
                     >
+                    <!-- Кнопка закрытия (показывается только если есть текст) -->
+                    <button
+                        v-if="localSearchQuery || searchQuery"
+                        @click="clearSearch"
+                        type="button"
+                        class="absolute right-10 top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70 transition-opacity"
+                        title="Очистить поиск"
+                    >
+                        <svg 
+                            width="20" 
+                            height="20"
+                            viewBox="0 0 20 20" 
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path 
+                                d="M15 5L5 15M5 5L15 15" 
+                                stroke="#999" 
+                                stroke-width="2" 
+                                stroke-linecap="round" 
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                    </button>
+                    <!-- Кнопка поиска -->
                     <button
                         @click="performSearch"
                         type="button"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70 transition-opacity"
+                        title="Найти"
                     >
                         <svg 
                             width="20" 
@@ -201,6 +227,28 @@ export default {
             });
         };
 
+        const clearSearch = () => {
+            localSearchQuery.value = '';
+            searchQuery.value = '';
+            // Очищаем GET параметры из URL
+            router.push({
+                name: 'search',
+                query: {}
+            });
+            // Очищаем результаты
+            results.value = {
+                services: [],
+                products: [],
+                cases: [],
+                pages: [],
+            };
+            total.value = 0;
+            // Фокус на поле поиска
+            if (searchInput.value) {
+                searchInput.value.focus();
+            }
+        };
+
         const fetchSearchResults = async (query) => {
             if (!query || query.trim().length < 2) {
                 results.value = {
@@ -285,6 +333,7 @@ export default {
             localSearchQuery,
             searchInput,
             performSearch,
+            clearSearch,
         };
     },
 };
