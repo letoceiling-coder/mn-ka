@@ -77,3 +77,4 @@ tail -f storage/logs/laravel.log
 2. Проверьте доступность интернета с сервера (для скачивания composer installer)
 3. Установите composer вручную по инструкции в `COMPOSER_INSTALL.md`
 
+

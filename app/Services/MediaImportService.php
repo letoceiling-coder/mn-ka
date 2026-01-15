@@ -13,10 +13,10 @@ class MediaImportService
      * Загрузить файл изображения в Media библиотеку
      *
      * @param string $filePath Полный путь к файлу
-     * @param int|null $folderId ID папки для загрузки (null = общая папка)
+     * @param int|null|string $folderIdOrName ID папки, название папки или null для общей папки
      * @return Media|false
      */
-    public function uploadImageFromPath(string $filePath, ?int $folderId = null): Media|false
+    public function uploadImageFromPath(string $filePath, int|string|null $folderIdOrName = null): Media|false
     {
         if (!file_exists($filePath) || !is_file($filePath)) {
             Log::error("File not found: {$filePath}");
@@ -40,11 +40,8 @@ class MediaImportService
         // Определяем тип файла
         $type = $this->getFileType($mimeType);
 
-        // Если нет папки, используем папку "Общая"
-        if (!$folderId) {
-            $commonFolder = Folder::where('slug', 'common')->first();
-            $folderId = $commonFolder?->id;
-        }
+        // Определяем ID папки
+        $folderId = $this->resolveFolderId($folderIdOrName);
 
         // Генерируем уникальное имя файла
         $fileName = uniqid() . '_' . time() . '.' . $extension;
@@ -114,6 +111,47 @@ class MediaImportService
             }
             return false;
         }
+    }
+
+    /**
+     * Определить ID папки по ID, имени или создать новую
+     *
+     * @param int|string|null $folderIdOrName
+     * @return int|null
+     */
+    protected function resolveFolderId(int|string|null $folderIdOrName): ?int
+    {
+        // Если передан null, используем общую папку
+        if ($folderIdOrName === null) {
+            $commonFolder = Folder::where('slug', 'common')->first();
+            return $commonFolder?->id;
+        }
+
+        // Если передан int, это уже ID папки
+        if (is_int($folderIdOrName)) {
+            return $folderIdOrName;
+        }
+
+        // Если передана строка, ищем папку по slug или создаем новую
+        if (is_string($folderIdOrName)) {
+            $slug = \Illuminate\Support\Str::slug($folderIdOrName);
+            
+            // Ищем существующую папку
+            $folder = Folder::where('slug', $slug)->first();
+            
+            // Если не нашли, создаем новую
+            if (!$folder) {
+                $folder = Folder::create([
+                    'name' => ucfirst($folderIdOrName),
+                    'slug' => $slug,
+                    'parent_id' => null,
+                ]);
+            }
+            
+            return $folder->id;
+        }
+
+        return null;
     }
 
     /**

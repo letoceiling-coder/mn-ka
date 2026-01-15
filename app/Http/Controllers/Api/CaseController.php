@@ -7,7 +7,10 @@ use App\Http\Resources\CaseResource;
 use App\Http\Requests\StoreCaseRequest;
 use App\Http\Requests\UpdateCaseRequest;
 use App\Models\ProjectCase;
+use App\Exports\CasesExport;
+use App\Imports\CasesImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class CaseController extends Controller
@@ -271,5 +274,38 @@ class CaseController extends Controller
         $case->delete();
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * Экспортировать случаи в ZIP архив
+     */
+    public function export()
+    {
+        $exporter = new CasesExport();
+        return $exporter->exportToZip();
+    }
+
+    /**
+     * Импортировать случаи из ZIP архива
+     */
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:zip,csv|max:102400', // 100MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Ошибка валидации',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $importer = new CasesImport();
+        $result = $importer->importFromZip($request->file('file'));
+
+        $statusCode = $result['success'] ? 200 : 422;
+
+        return response()->json($result, $statusCode);
     }
 }

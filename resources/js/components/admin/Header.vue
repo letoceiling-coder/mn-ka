@@ -39,6 +39,9 @@
             </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Кнопки импорт/экспорт для разделов решений -->
+            <ImportExportButtons v-if="showImportExport" />
+            
             <div class="relative hidden md:block">
                 <svg class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -79,11 +82,13 @@ import { computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 import NotificationDropdown from './NotificationDropdown.vue';
+import ImportExportButtons from './ImportExportButtons.vue';
 
 export default {
     name: 'Header',
     components: {
         NotificationDropdown,
+        ImportExportButtons,
     },
     setup() {
         const store = useStore();
@@ -240,6 +245,12 @@ export default {
             window.dispatchEvent(new Event('toggle-mobile-sidebar'));
         };
 
+        // Показывать кнопки импорт/экспорт только в разделах решений
+        const showImportExport = computed(() => {
+            const path = route.path;
+            return path.startsWith('/admin/decisions');
+        });
+
         return {
             user,
             userInitials,
@@ -248,6 +259,7 @@ export default {
             toggleTheme,
             toggleMobileSidebar,
             breadcrumbs,
+            showImportExport,
         };
     },
 };

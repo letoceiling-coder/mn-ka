@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ChapterResource;
 use App\Models\Chapter;
+use App\Exports\ChaptersExport;
+use App\Imports\ChaptersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -161,5 +163,38 @@ class ChapterController extends Controller
         return response()->json([
             'message' => 'Порядок разделов успешно обновлен',
         ]);
+    }
+
+    /**
+     * Экспортировать разделы в ZIP архив
+     */
+    public function export()
+    {
+        $exporter = new ChaptersExport();
+        return $exporter->exportToZip();
+    }
+
+    /**
+     * Импортировать разделы из ZIP архива
+     */
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:zip,csv|max:102400', // 100MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Ошибка валидации',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $importer = new ChaptersImport();
+        $result = $importer->importFromZip($request->file('file'));
+
+        $statusCode = $result['success'] ? 200 : 422;
+
+        return response()->json($result, $statusCode);
     }
 }

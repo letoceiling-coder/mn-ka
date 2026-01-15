@@ -32,3 +32,4 @@ php artisan storage:link
 # 8. Оптимизация приложения (для продакшена)
 php artisan optimize
 
+

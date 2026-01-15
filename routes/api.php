@@ -37,6 +37,7 @@ use App\Http\Controllers\Api\AboutSettingsController;
 use App\Http\Controllers\Api\FooterSettingsController;
 use App\Http\Controllers\Api\CaseCardSettingsController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\DecisionController;
 use App\Http\Controllers\Api\v1\FolderController;
 use App\Http\Controllers\Api\v1\MediaController;
 use Illuminate\Support\Facades\Route;
@@ -89,6 +90,8 @@ Route::middleware('auth:sanctum')->group(function () {
             
             // Decision Block Management
             Route::post('chapters/update-order', [ChapterController::class, 'updateOrder']);
+            Route::get('chapters/export', [ChapterController::class, 'export']);
+            Route::post('chapters/import', [ChapterController::class, 'import']);
             Route::apiResource('chapters', ChapterController::class);
             Route::get('products/export', [ProductController::class, 'export']);
             Route::post('products/import', [ProductController::class, 'import']);
@@ -97,7 +100,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('services/import', [ServiceController::class, 'import']);
             Route::post('services/update-order', [ServiceController::class, 'updateOrder']);
             Route::apiResource('services', ServiceController::class);
+            Route::get('cases/export', [CaseController::class, 'export']);
+            Route::post('cases/import', [CaseController::class, 'import']);
             Route::apiResource('cases', CaseController::class);
+            
+            // Full Decisions Export/Import
+            Route::get('decisions/export', [DecisionController::class, 'exportAll']);
+            Route::post('decisions/import', [DecisionController::class, 'importAll']);
             Route::apiResource('options', OptionController::class);
             Route::apiResource('option-trees', OptionTreeController::class);
             Route::apiResource('instances', InstanceController::class);
