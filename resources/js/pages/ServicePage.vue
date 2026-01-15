@@ -146,7 +146,7 @@
                     <!-- Другие услуги -->
                     <div v-if="servicesList.length > 0" class="mt-12 pb-12">
                         <h2 class="text-2xl md:text-3xl font-semibold text-foreground mb-6">Другие услуги</h2>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                             <DecisionCard
                                 v-for="item in servicesList"
                                 :key="`service-${item.id}`"

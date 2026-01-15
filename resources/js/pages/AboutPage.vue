@@ -67,7 +67,7 @@
                     <h2 class="text-2xl md:text-3xl font-semibold text-[#424448] text-center mb-8 md:mb-10">
                         Виды услуг
                     </h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                         <ProductCard
                             v-for="service in services"
                             :key="`service-${service.id}`"
@@ -83,7 +83,7 @@
                     <h2 class="text-2xl md:text-3xl font-semibold text-[#424448] text-center mb-8 md:mb-10">
                         Продуктовые решения
                     </h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 lg:gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                         <ProductCard
                             v-for="product in products"
                             :key="`product-${product.id}`"

@@ -46,7 +46,7 @@
                     <!-- Продукты -->
                     <div v-if="products.length > 0" class="mb-12">
                         <h2 class="text-xl md:text-2xl font-semibold text-foreground mb-6">Продуктовые направления</h2>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                             <ProductCard
                                 v-for="product in products"
                                 :key="`product-${product.id}`"
@@ -60,7 +60,7 @@
                     <!-- Услуги -->
                     <div v-if="services.length > 0" class="mb-12">
                         <h2 class="text-xl md:text-2xl font-semibold text-foreground mb-6">Все услуги</h2>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                             <ProductCard
                                 v-for="service in services"
                                 :key="`service-${service.id}`"
