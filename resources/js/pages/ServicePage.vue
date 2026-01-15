@@ -29,7 +29,7 @@
                         <nav class="flex items-center gap-2 text-sm text-muted-foreground">
                             <router-link to="/" class="hover:text-foreground transition-colors">Главная</router-link>
                             <span>/</span>
-                            <span class="text-foreground">Услуги</span>
+                            <router-link to="/services" class="hover:text-foreground transition-colors">Услуги</router-link>
                             <span>/</span>
                             <span class="text-foreground">{{ service.name }}</span>
                         </nav>
