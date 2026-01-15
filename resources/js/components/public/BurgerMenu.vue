@@ -156,7 +156,7 @@ export default {
         },
     },
     emits: ['close'],
-    setup(props) {
+    setup(props, { emit }) {
         const router = useRouter();
         const store = useStore();
         const searchQuery = ref('');
@@ -262,6 +262,8 @@ export default {
                     name: 'search',
                     query: { q: query }
                 });
+                // Закрываем меню после перехода на страницу поиска
+                emit('close');
             }
         };
 
