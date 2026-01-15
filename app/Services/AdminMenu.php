@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Page;
 use Illuminate\Support\Collection;
 
 class AdminMenu
@@ -144,26 +145,7 @@ class AdminMenu
                 'title' => 'Страницы',
                 'icon' => 'file-text',
                 'roles' => ['admin', 'manager'],
-                'children' => [
-                    [
-                        'title' => 'Список страниц',
-                        'route' => 'admin.pages',
-                        'icon' => 'file-text',
-                        'roles' => ['admin', 'manager'],
-                    ],
-                    [
-                        'title' => 'Главная страница',
-                        'route' => 'admin.pages.home',
-                        'icon' => 'home',
-                        'roles' => ['admin', 'manager'],
-                    ],
-                    [
-                        'title' => 'Страница "О нас"',
-                        'route' => 'admin.settings.about',
-                        'icon' => 'info',
-                        'roles' => ['admin', 'manager'],
-                    ],
-                ],
+                'children' => $this->getPagesMenuItems(),
             ],
             [
                 'title' => 'Блоки',
@@ -278,6 +260,58 @@ class AdminMenu
     protected function hasAccess(array $userRoles, array $requiredRoles): bool
     {
         return !empty(array_intersect($userRoles, $requiredRoles));
+    }
+
+    /**
+     * Получить пункты меню для созданных страниц
+     *
+     * @return array
+     */
+    protected function getPagesMenuItems(): array
+    {
+        $items = [
+            [
+                'title' => 'Список страниц',
+                'route' => 'admin.pages',
+                'icon' => 'file-text',
+                'roles' => ['admin', 'manager'],
+            ],
+            [
+                'title' => 'Главная страница',
+                'route' => 'admin.pages.home',
+                'icon' => 'home',
+                'roles' => ['admin', 'manager'],
+            ],
+            [
+                'title' => 'Страница "О нас"',
+                'route' => 'admin.settings.about',
+                'icon' => 'info',
+                'roles' => ['admin', 'manager'],
+            ],
+        ];
+
+        // Получаем активные страницы и добавляем их в меню
+        try {
+            $pages = Page::active()
+                ->ordered()
+                ->select('id', 'title', 'slug', 'order')
+                ->get();
+
+            foreach ($pages as $page) {
+                $items[] = [
+                    'title' => $page->title,
+                    'route' => 'admin.pages.edit',
+                    'route_params' => ['id' => $page->id],
+                    'icon' => 'file-text',
+                    'roles' => ['admin', 'manager'],
+                ];
+            }
+        } catch (\Exception $e) {
+            // Если произошла ошибка при получении страниц, просто возвращаем базовые пункты
+            \Illuminate\Support\Facades\Log::warning('Error fetching pages for admin menu: ' . $e->getMessage());
+        }
+
+        return $items;
     }
 
     /**
