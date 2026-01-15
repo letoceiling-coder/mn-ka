@@ -54,22 +54,64 @@
                         </li>
                     </ul>
                     
-                    <!-- Select для меню если не помещается -->
-                    <select
+                    <!-- Современный Dropdown для меню если не помещается -->
+                    <div 
                         v-if="showMenuSelect"
-                        v-model="selectedMenuItem"
-                        @change="navigateToMenu"
-                        class="menu-select font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer w-full max-w-full overflow-hidden text-ellipsis"
+                        class="menu-dropdown relative w-full max-w-full"
+                        ref="dropdownContainer"
                     >
-                        <option value="">Выберите...</option>
-                        <option 
-                            v-for="item in hiddenMenuItems" 
-                            :key="item.id || item.slug"
-                            :value="item.url || item.slug"
+                        <button
+                            @click="toggleDropdown"
+                            @keydown.enter.prevent="toggleDropdown"
+                            @keydown.space.prevent="toggleDropdown"
+                            @keydown.escape="isDropdownOpen = false"
+                            type="button"
+                            class="menu-dropdown-button font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap flex items-center justify-between gap-2 h-[45px] px-3 rounded-lg transition-all duration-300"
+                            :class="{ 'menu-dropdown-open': isDropdownOpen }"
+                            :aria-expanded="isDropdownOpen"
+                            aria-haspopup="true"
                         >
-                            {{ item.title || item.name }}
-                        </option>
-                    </select>
+                            <span class="truncate">{{ selectedDropdownText || 'Выберите...' }}</span>
+                            <svg 
+                                class="menu-dropdown-arrow flex-shrink-0 transition-transform duration-300"
+                                :class="{ 'rotate-180': isDropdownOpen }"
+                                width="14" 
+                                height="8" 
+                                viewBox="0 0 14 8" 
+                                fill="none" 
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path d="M1 1L7 7L13 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        
+                        <Transition
+                            enter-active-class="transition-all duration-200 ease-out"
+                            enter-from-class="opacity-0 translate-y-2 scale-95"
+                            enter-to-class="opacity-100 translate-y-0 scale-100"
+                            leave-active-class="transition-all duration-150 ease-in"
+                            leave-from-class="opacity-100 translate-y-0 scale-100"
+                            leave-to-class="opacity-0 translate-y-2 scale-95"
+                        >
+                            <div 
+                                v-if="isDropdownOpen"
+                                class="menu-dropdown-list absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden"
+                                ref="dropdownList"
+                            >
+                                <button
+                                    v-for="item in hiddenMenuItems" 
+                                    :key="item.id || item.slug"
+                                    @click="selectMenuItem(item)"
+                                    @keydown.enter.prevent="selectMenuItem(item)"
+                                    @keydown.space.prevent="selectMenuItem(item)"
+                                    type="button"
+                                    class="menu-dropdown-item w-full text-left px-4 py-3 font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer transition-colors duration-200 hover:bg-[#C9E1B5] focus:bg-[#D2E8BE] focus:outline-none"
+                                >
+                                    {{ item.title || item.name }}
+                                </button>
+                            </div>
+                        </Transition>
+                    </div>
                 </div>
             </div>
 
@@ -214,6 +256,10 @@ export default {
         const menuList = ref(null);
         const menuBackground = ref(null);
         const selectedMenuItem = ref('');
+        const isDropdownOpen = ref(false);
+        const selectedDropdownText = ref('');
+        const dropdownContainer = ref(null);
+        const dropdownList = ref(null);
         const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1920);
         const backgroundStyle = ref({
             left: '0px',
@@ -300,10 +346,10 @@ export default {
             tempContainer.style.width = 'auto';
             document.body.appendChild(tempContainer);
 
-            // Учитываем padding контейнера и резерв для select
+            // Учитываем padding контейнера и резерв для dropdown
             const containerPadding = windowWidth.value >= 768 ? 30 : windowWidth.value >= 640 ? 24 : 16;
-            const selectReserve = 60; // Резерв для select если нужно
-            const containerWidth = menuContainer.value.offsetWidth - containerPadding - selectReserve;
+            const dropdownReserve = 80; // Резерв для dropdown если нужно (немного больше для кнопки)
+            const containerWidth = menuContainer.value.offsetWidth - containerPadding - dropdownReserve;
             let visibleCount = menuItems.value.length;
             let totalWidth = 0;
 
@@ -422,6 +468,27 @@ export default {
             }
         };
 
+        // Управление dropdown
+        const toggleDropdown = () => {
+            isDropdownOpen.value = !isDropdownOpen.value;
+        };
+
+        const selectMenuItem = (item) => {
+            const url = item.url || item.slug;
+            if (url) {
+                router.push(url);
+                selectedDropdownText.value = item.title || item.name;
+                isDropdownOpen.value = false;
+            }
+        };
+
+        // Закрытие dropdown при клике вне его
+        const handleClickOutside = (event) => {
+            if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+                isDropdownOpen.value = false;
+            }
+        };
+
         const updateWindowWidth = () => {
             windowWidth.value = window.innerWidth;
         };
@@ -520,6 +587,7 @@ export default {
             await fetchMenu();
             window.addEventListener('resize', updateWindowWidth);
             window.addEventListener('resize', calculateVisibleMenuItems);
+            document.addEventListener('click', handleClickOutside);
             await nextTick();
             updateWindowWidth();
             await calculateVisibleMenuItems();
@@ -528,6 +596,8 @@ export default {
 
         onUnmounted(() => {
             window.removeEventListener('resize', updateWindowWidth);
+            window.removeEventListener('resize', calculateVisibleMenuItems);
+            document.removeEventListener('click', handleClickOutside);
             document.body.style.overflow = '';
         });
 
@@ -539,9 +609,11 @@ export default {
 
         watch(() => route.path, () => {
             updateActiveLink();
+            isDropdownOpen.value = false;
         });
 
         watch(windowWidth, async () => {
+            isDropdownOpen.value = false;
             await nextTick();
             await calculateVisibleMenuItems();
             if (hoveredLink.value) {
@@ -560,6 +632,10 @@ export default {
             menuList,
             menuBackground,
             selectedMenuItem,
+            isDropdownOpen,
+            selectedDropdownText,
+            dropdownContainer,
+            dropdownList,
             showSearchInput,
             showSearchIcon,
             visibleMenuItems,
@@ -572,6 +648,8 @@ export default {
             toggleBurger,
             handleSearch,
             navigateToMenu,
+            toggleDropdown,
+            selectMenuItem,
             searchContainer,
             searchInput,
             showSuggestions,
@@ -585,61 +663,101 @@ export default {
 </script>
 
 <style scoped>
-/* Кастомные стили для select меню */
-.menu-select {
+/* Современный Dropdown стили */
+.menu-dropdown {
+    position: relative;
+    z-index: 50;
+}
+
+.menu-dropdown-button {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 14px 8px;
-    padding: 12px 32px 12px 12px;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    border-radius: 8px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
     min-height: 45px;
-    display: flex;
-    align-items: center;
-    position: relative;
     height: 45px;
     line-height: 15px;
 }
 
-.menu-select:hover {
+.menu-dropdown-button:hover {
     background-color: rgba(255, 255, 255, 0.5);
     box-shadow: 0 2px 4px rgba(65, 132, 144, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.menu-select:focus {
+.menu-dropdown-button:focus {
     background-color: rgba(255, 255, 255, 0.7);
     box-shadow: 0 4px 6px rgba(65, 132, 144, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
     outline: none;
 }
 
-.menu-select:active {
-    background-color: rgba(255, 255, 255, 0.6);
+.menu-dropdown-button.menu-dropdown-open {
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 4px 6px rgba(65, 132, 144, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.menu-select option {
-    background-color: white;
-    color: #000000;
-    padding: 12px 16px;
-    font-size: 12px;
-    line-height: 15px;
-    font-weight: 500;
+.menu-dropdown-arrow {
+    width: 14px;
+    height: 8px;
+    flex-shrink: 0;
+    color: currentColor;
 }
 
-.menu-select option:hover {
-    background-color: #C9E1B5;
+.menu-dropdown-list {
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 200px;
+    width: max-content;
+    max-width: 100%;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-.menu-select option:checked {
+@media (min-width: 768px) {
+    .menu-dropdown-list {
+        min-width: 220px;
+    }
+}
+
+.menu-dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+}
+
+.menu-dropdown-item:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.menu-dropdown-item:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.menu-dropdown-item:active {
     background-color: #D2E8BE;
-    font-weight: 600;
+}
+
+/* Адаптивность для dropdown */
+@media (max-width: 767px) {
+    .menu-dropdown-list {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    
+    .menu-dropdown-button {
+        font-size: 11px;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    .menu-dropdown-item {
+        font-size: 11px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
 }
 
 /* Дополнительные стили для предотвращения переполнения */
