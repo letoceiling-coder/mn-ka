@@ -109,12 +109,22 @@ class ProductsImport
         }
         
         // Проверяем формат файла
-        if (!$this->validateHeaders($headers)) {
+        $validationResult = $this->validateHeaders($headers);
+        if ($validationResult !== true) {
             fclose($handle);
             return [
                 'success' => false,
                 'message' => 'Неверный формат файла. Ожидаются определенные заголовки.',
-                'errors' => ['Файл не соответствует ожидаемому формату'],
+                'errors' => [
+                    [
+                        'row' => 1,
+                        'errors' => is_array($validationResult) ? $validationResult : [$validationResult],
+                        'data' => [
+                            'found_headers' => $headers,
+                            'expected_headers' => ['ID', 'Название*', 'Slug', 'Описание', 'Раздел ID', 'Название раздела', 'SEO Title', 'SEO Description', 'SEO Keywords', 'ID изображения', 'Путь изображения', 'URL изображения', 'ID иконки', 'Путь иконки', 'URL иконки', 'Услуги (ID через запятую)', 'Порядок', 'Активен'],
+                        ],
+                    ],
+                ],
             ];
         }
 
@@ -213,14 +223,34 @@ class ProductsImport
     /**
      * Проверить заголовки CSV файла
      */
-    protected function validateHeaders(array $headers): bool
+    /**
+     * Проверить заголовки CSV файла
+     * @return bool|array true если валидно, массив ошибок если нет
+     */
+    protected function validateHeaders(array $headers): bool|array
     {
-        $requiredHeaders = ['Название', 'Slug'];
+        // Убираем звездочки из заголовков для проверки
+        $cleanHeaders = array_map(function($header) {
+            return trim(str_replace('*', '', $header));
+        }, $headers);
+        
+        $requiredHeaders = ['Название'];
+        $missingHeaders = [];
+        
         foreach ($requiredHeaders as $required) {
-            if (!in_array($required, $headers)) {
-                return false;
+            if (!in_array($required, $cleanHeaders)) {
+                $missingHeaders[] = $required;
             }
         }
+        
+        if (!empty($missingHeaders)) {
+            return [
+                "Отсутствуют обязательные заголовки: " . implode(', ', $missingHeaders),
+                "Найденные заголовки: " . implode(', ', $cleanHeaders),
+                "Ожидаемые заголовки: ID, Название*, Slug, Описание, Раздел ID, Название раздела, SEO Title, SEO Description, SEO Keywords, ID изображения, Путь изображения, URL изображения, ID иконки, Путь иконки, URL иконки, Услуги (ID через запятую), Порядок, Активен",
+            ];
+        }
+        
         return true;
     }
 
@@ -322,4 +352,5 @@ class ProductsImport
         return $data;
     }
 }
+
 

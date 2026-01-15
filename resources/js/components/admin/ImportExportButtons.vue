@@ -112,6 +112,17 @@
                                     <p v-else class="mt-1 text-red-700 dark:text-red-300">
                                         Неизвестная ошибка
                                     </p>
+                                    
+                                    <!-- Дополнительная информация о заголовках -->
+                                    <div v-if="error.data && (error.data.found_headers || error.data.expected_headers)" class="mt-3 pt-3 border-t border-red-300 dark:border-red-700">
+                                        <p class="text-xs font-semibold text-red-900 dark:text-red-300 mb-1">Детали:</p>
+                                        <div v-if="error.data.found_headers" class="text-xs text-red-800 dark:text-red-400 mb-1">
+                                            <span class="font-medium">Найдено:</span> {{ Array.isArray(error.data.found_headers) ? error.data.found_headers.join(', ') : error.data.found_headers }}
+                                        </div>
+                                        <div v-if="error.data.expected_headers" class="text-xs text-red-800 dark:text-red-400">
+                                            <span class="font-medium">Ожидается:</span> {{ Array.isArray(error.data.expected_headers) ? error.data.expected_headers.join(', ') : error.data.expected_headers }}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

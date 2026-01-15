@@ -116,12 +116,22 @@ class ChaptersImport
         }
         
         // Проверяем формат файла
-        if (!$this->validateHeaders($headers)) {
+        $validationResult = $this->validateHeaders($headers);
+        if ($validationResult !== true) {
             fclose($handle);
             return [
                 'success' => false,
                 'message' => 'Неверный формат файла. Ожидаются определенные заголовки.',
-                'errors' => ['Файл не соответствует ожидаемому формату разделов'],
+                'errors' => [
+                    [
+                        'row' => 1,
+                        'errors' => is_array($validationResult) ? $validationResult : [$validationResult],
+                        'data' => [
+                            'found_headers' => $headers,
+                            'expected_headers' => ['ID', 'Название*', 'Порядок', 'Активен'],
+                        ],
+                    ],
+                ],
             ];
         }
 
@@ -197,20 +207,32 @@ class ChaptersImport
 
     /**
      * Проверить заголовки CSV файла
+     * @return bool|array true если валидно, массив ошибок если нет
      */
-    protected function validateHeaders(array $headers): bool
+    protected function validateHeaders(array $headers): bool|array
     {
         // Убираем звездочки из заголовков для проверки
         $cleanHeaders = array_map(function($header) {
-            return str_replace('*', '', $header);
+            return trim(str_replace('*', '', $header));
         }, $headers);
         
         $requiredHeaders = ['Название'];
+        $missingHeaders = [];
+        
         foreach ($requiredHeaders as $required) {
             if (!in_array($required, $cleanHeaders)) {
-                return false;
+                $missingHeaders[] = $required;
             }
         }
+        
+        if (!empty($missingHeaders)) {
+            return [
+                "Отсутствуют обязательные заголовки: " . implode(', ', $missingHeaders),
+                "Найденные заголовки: " . implode(', ', $cleanHeaders),
+                "Ожидаемые заголовки: ID, Название*, Порядок, Активен",
+            ];
+        }
+        
         return true;
     }
 
@@ -245,4 +267,5 @@ class ChaptersImport
         return $data;
     }
 }
+
 
