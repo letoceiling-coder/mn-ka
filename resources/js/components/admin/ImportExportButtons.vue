@@ -202,11 +202,11 @@ export default {
 
             try {
                 const endpoints = {
-                    all: '/api/v1/admin/decisions/export',
-                    chapters: '/api/v1/admin/chapters/export',
-                    products: '/api/v1/admin/products/export',
-                    services: '/api/v1/admin/services/export',
-                    cases: '/api/v1/admin/cases/export',
+                    all: '/api/v1/decisions/export',
+                    chapters: '/api/v1/chapters/export',
+                    products: '/api/v1/products/export',
+                    services: '/api/v1/services/export',
+                    cases: '/api/v1/cases/export',
                 };
 
                 const response = await axios.get(endpoints[type], {
@@ -259,11 +259,11 @@ export default {
                 formData.append('file', file);
 
                 const endpoints = {
-                    all: '/api/v1/admin/decisions/import',
-                    chapters: '/api/v1/admin/chapters/import',
-                    products: '/api/v1/admin/products/import',
-                    services: '/api/v1/admin/services/import',
-                    cases: '/api/v1/admin/cases/import',
+                    all: '/api/v1/decisions/import',
+                    chapters: '/api/v1/chapters/import',
+                    products: '/api/v1/products/import',
+                    services: '/api/v1/services/import',
+                    cases: '/api/v1/cases/import',
                 };
 
                 const response = await axios.post(endpoints[selectedImportType.value], formData, {
