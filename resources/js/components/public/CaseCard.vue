@@ -23,8 +23,8 @@
             </h3>
 
             <!-- Описание -->
-            <p v-if="caseItem.description" class="text-sm md:text-base text-gray-600 leading-relaxed line-clamp-3">
-                {{ caseItem.description }}
+            <p v-if="caseDescription" class="text-sm md:text-base text-gray-600 leading-relaxed line-clamp-3">
+                {{ caseDescription }}
             </p>
             <p v-else class="text-sm md:text-base text-gray-600 leading-relaxed">
                 Краткое описание обращения, выполнения услуги и подробности
@@ -68,17 +68,8 @@ export default {
     setup(props) {
         // Определяем URL изображения для карточки
         const imageUrl = computed(() => {
-            console.log('CaseCard imageUrl computed for:', props.caseItem.name, {
-                hasImage: !!props.caseItem.image,
-                imageUrl: props.caseItem.image?.url,
-                hasImages: !!props.caseItem.images,
-                imagesLength: props.caseItem.images?.length,
-                firstImageUrl: props.caseItem.images?.[0]?.url,
-            });
-            
             // Используем основное изображение напрямую (как в админ панели)
             if (props.caseItem.image && props.caseItem.image.url) {
-                console.log('Returning image.url:', props.caseItem.image.url);
                 return props.caseItem.image.url;
             }
             
@@ -86,12 +77,50 @@ export default {
             if (props.caseItem.images && Array.isArray(props.caseItem.images) && props.caseItem.images.length > 0) {
                 const firstImage = props.caseItem.images[0];
                 if (firstImage && firstImage.url) {
-                    console.log('Returning firstImage.url:', firstImage.url);
                     return firstImage.url;
                 }
             }
             
-            console.log('Returning null - no image found');
+            return null;
+        });
+
+        // Вычисляем описание для отображения
+        const caseDescription = computed(() => {
+            if (!props.caseItem || !props.caseItem.description) {
+                return null;
+            }
+            
+            const desc = props.caseItem.description;
+            
+            // Если это строка, возвращаем её
+            if (typeof desc === 'string') {
+                return desc;
+            }
+            
+            // Если это объект, извлекаем нужное поле
+            if (typeof desc === 'object') {
+                // Приоритет: ru -> short -> full -> detailed
+                if (desc.ru) {
+                    return desc.ru;
+                }
+                if (desc.short) {
+                    return desc.short;
+                }
+                if (desc.full) {
+                    return desc.full;
+                }
+                if (desc.detailed) {
+                    // Если detailed - это длинный текст, берем только начало для карточки
+                    const detailedText = typeof desc.detailed === 'string' 
+                        ? desc.detailed 
+                        : String(desc.detailed);
+                    // Берем первые 150 символов для краткого описания
+                    return detailedText.length > 150 
+                        ? detailedText.substring(0, 150) + '...' 
+                        : detailedText;
+                }
+            }
+            
             return null;
         });
 
@@ -118,6 +147,7 @@ export default {
 
         return {
             imageUrl,
+            caseDescription,
             getCaseUrl,
             handleImageError,
             handleImageLoad,

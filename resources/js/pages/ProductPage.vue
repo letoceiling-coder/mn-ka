@@ -57,7 +57,11 @@
                             :eager="true"
                         />
                         <!-- SVG иконка поделиться (опционально) -->
-                        <div class="absolute top-4 right-4 cursor-pointer hidden md:block">
+                        <div 
+                            @click="handleShare"
+                            class="absolute top-4 right-4 cursor-pointer hidden md:block hover:opacity-80 transition-opacity"
+                            title="Поделиться"
+                        >
                             <svg width="44" height="48" viewBox="0 0 44 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M35.3327 15.2C39.0145 15.2 41.9993 12.2451 41.9993 8.60002C41.9993 4.95493 39.0145 2 35.3327 2C31.6508 2 28.666 4.95493 28.666 8.60002C28.666 12.2451 31.6508 15.2 35.3327 15.2Z"
@@ -689,6 +693,45 @@ export default {
             return [schema, breadcrumbSchema];
         });
 
+        // Функция для поделиться
+        const handleShare = async () => {
+            const url = window.location.href;
+            const title = product.value?.name || 'Продукт';
+            const description = product.value?.description;
+            let descriptionText = '';
+            
+            // Извлекаем текст описания
+            if (description) {
+                if (typeof description === 'string') {
+                    descriptionText = description;
+                } else if (typeof description === 'object' && description !== null) {
+                    descriptionText = description.ru || description.short || description.full || '';
+                }
+            }
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title,
+                        text: descriptionText || '',
+                        url,
+                    });
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        console.error('Error sharing:', err);
+                    }
+                }
+            } else {
+                // Fallback: копируем в буфер обмена
+                try {
+                    await navigator.clipboard.writeText(url);
+                    alert('Ссылка скопирована в буфер обмена');
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                }
+            }
+        };
+
         return {
             loading,
             error,
@@ -703,6 +746,7 @@ export default {
             modalSettings,
             currentStageComponent,
             formattedCount,
+            handleShare,
             canProceed,
             handleServicesUpdate,
             handleFormUpdate,

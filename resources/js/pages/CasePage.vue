@@ -254,29 +254,47 @@ export default {
         const caseDescription = computed(() => {
             if (!caseItem.value) return null;
             
-            // Пробуем получить описание
-            if (caseItem.value.description) {
-                if (typeof caseItem.value.description === 'string') {
-                    return caseItem.value.description;
+            let description = caseItem.value.description;
+            
+            // Если это JSON-строка, декодируем её
+            if (typeof description === 'string' && description.trim().startsWith('{')) {
+                try {
+                    description = JSON.parse(description);
+                } catch (e) {
+                    // Если не удалось распарсить, оставляем как строку
+                    return description;
                 }
-                if (typeof caseItem.value.description === 'object') {
-                    // Если это объект, пробуем получить полное описание
-                    if (caseItem.value.description.full) {
-                        return caseItem.value.description.full;
+            }
+            
+            // Пробуем получить описание
+            if (description) {
+                if (typeof description === 'string') {
+                    return description;
+                }
+                if (typeof description === 'object' && description !== null) {
+                    // Если это объект, пробуем получить описание по приоритету
+                    // ru -> short -> full -> detailed (только начало для краткого описания)
+                    if (description.ru) {
+                        return description.ru;
                     }
-                    if (caseItem.value.description.short) {
-                        return caseItem.value.description.short;
+                    if (description.short) {
+                        return description.short;
                     }
-                    if (caseItem.value.description.ru) {
-                        return caseItem.value.description.ru;
+                    if (description.full) {
+                        return description.full;
                     }
-                    if (Array.isArray(caseItem.value.description) && caseItem.value.description.length > 0) {
-                        return caseItem.value.description[0];
+                    if (description.detailed) {
+                        // Для краткого описания берем только начало detailed
+                        const detailedText = typeof description.detailed === 'string'
+                            ? description.detailed
+                            : String(description.detailed);
+                        // Берем первые 200 символов
+                        return detailedText.length > 200
+                            ? detailedText.substring(0, 200) + '...'
+                            : detailedText;
                     }
-                    // Если это объект, пробуем преобразовать в строку
-                    const descString = JSON.stringify(caseItem.value.description);
-                    if (descString && descString !== '{}') {
-                        return descString.replace(/[{}"]/g, '');
+                    if (Array.isArray(description) && description.length > 0) {
+                        return description[0];
                     }
                 }
             }
@@ -286,25 +304,55 @@ export default {
 
         // Вычисляем HTML контент
         const caseHtml = computed(() => {
-            if (!caseItem.value || !caseItem.value.html) return null;
+            if (!caseItem.value) return null;
             
-            if (typeof caseItem.value.html === 'string') {
-                return caseItem.value.html;
+            let html = null;
+            
+            // Проверяем поле html_content (если есть)
+            if (caseItem.value.html_content) {
+                html = caseItem.value.html_content;
+            } else if (caseItem.value.html) {
+                html = caseItem.value.html;
             }
             
-            if (typeof caseItem.value.html === 'object') {
-                // Если это объект, пробуем получить полный HTML
-                if (caseItem.value.html.content) {
-                    return caseItem.value.html.content;
+            if (!html) return null;
+            
+            // Если это JSON-строка, декодируем её
+            if (typeof html === 'string' && html.trim().startsWith('{')) {
+                try {
+                    html = JSON.parse(html);
+                } catch (e) {
+                    // Если не удалось распарсить, проверяем, не HTML ли это
+                    if (html.includes('<')) {
+                        return html; // Это HTML, возвращаем как есть
+                    }
+                    return null;
                 }
-                if (caseItem.value.html.lead) {
-                    return caseItem.value.html.lead;
+            }
+            
+            // Обрабатываем декодированные данные
+            if (typeof html === 'string') {
+                // Если это HTML-строка, возвращаем её
+                return html;
+            }
+            
+            if (typeof html === 'object' && html !== null) {
+                // Если это объект, пробуем получить HTML по приоритету
+                // content -> ru -> lead -> full
+                if (html.content) {
+                    return html.content;
                 }
-                if (caseItem.value.html.ru) {
-                    return caseItem.value.html.ru;
+                if (html.ru) {
+                    return html.ru;
                 }
-                if (Array.isArray(caseItem.value.html) && caseItem.value.html.length > 0) {
-                    return caseItem.value.html[0];
+                if (html.lead) {
+                    return html.lead;
+                }
+                if (html.full) {
+                    return html.full;
+                }
+                if (Array.isArray(html) && html.length > 0) {
+                    return html[0];
                 }
             }
             

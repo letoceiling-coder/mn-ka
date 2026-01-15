@@ -46,22 +46,45 @@ class CaseResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Обрабатываем description и html - они могут быть массивами, строками или null
+        // Обрабатываем description - может быть JSON-строкой, массивом, объектом или строкой
         $description = $this->description;
         if ($description === null) {
-            $description = '';
+            $description = null;
+        } elseif (is_string($description)) {
+            // Пробуем декодировать JSON-строку
+            $decoded = json_decode($description, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $description = $decoded; // Оставляем как массив для обработки на фронтенде
+            } else {
+                // Если это не JSON, оставляем как строку
+                $description = $description;
+            }
         } elseif (is_array($description)) {
-            $description = $description['ru'] ?? $description['en'] ?? (string) reset($description) ?? '';
+            // Уже массив, оставляем как есть
+            $description = $description;
         } else {
+            // Другие типы преобразуем в строку
             $description = (string) $description;
         }
         
+        // Обрабатываем html - может быть JSON-строкой, массивом, объектом или строкой
         $html = $this->html;
         if ($html === null) {
-            $html = '';
+            $html = null;
+        } elseif (is_string($html)) {
+            // Пробуем декодировать JSON-строку
+            $decoded = json_decode($html, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $html = $decoded; // Оставляем как массив для обработки на фронтенде
+            } else {
+                // Если это не JSON, оставляем как строку
+                $html = $html;
+            }
         } elseif (is_array($html)) {
-            $html = $html['ru'] ?? $html['en'] ?? (string) reset($html) ?? '';
+            // Уже массив, оставляем как есть
+            $html = $html;
         } else {
+            // Другие типы преобразуем в строку
             $html = (string) $html;
         }
 
