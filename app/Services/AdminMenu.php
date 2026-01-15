@@ -157,6 +157,12 @@ class AdminMenu
                         'icon' => 'home',
                         'roles' => ['admin', 'manager'],
                     ],
+                    [
+                        'title' => 'Страница "О нас"',
+                        'route' => 'admin.settings.about',
+                        'icon' => 'info',
+                        'roles' => ['admin', 'manager'],
+                    ],
                 ],
             ],
             [
