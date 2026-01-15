@@ -12,6 +12,29 @@ const store = createStore({
         menu: [],
         notifications: [],
         theme: localStorage.getItem('theme') || 'light',
+        // Кеш для публичных данных
+        publicCache: {
+            products: {
+                data: null,
+                timestamp: null,
+                loading: false,
+            },
+            services: {
+                data: null,
+                timestamp: null,
+                loading: false,
+            },
+            productsMinimal: {
+                data: null,
+                timestamp: null,
+                loading: false,
+            },
+            servicesMinimal: {
+                data: null,
+                timestamp: null,
+                loading: false,
+            },
+        },
     },
     mutations: {
         SET_USER(state, user) {
@@ -58,6 +81,33 @@ const store = createStore({
                 if (body) body.classList.remove('dark');
                 html.style.colorScheme = 'light';
             }
+        },
+        // Мутации для публичного кеша
+        SET_PUBLIC_PRODUCTS(state, { data, minimal = false }) {
+            const key = minimal ? 'productsMinimal' : 'products';
+            state.publicCache[key].data = data;
+            state.publicCache[key].timestamp = Date.now();
+            state.publicCache[key].loading = false;
+        },
+        SET_PUBLIC_SERVICES(state, { data, minimal = false }) {
+            const key = minimal ? 'servicesMinimal' : 'services';
+            state.publicCache[key].data = data;
+            state.publicCache[key].timestamp = Date.now();
+            state.publicCache[key].loading = false;
+        },
+        SET_PUBLIC_LOADING(state, { type, minimal = false, loading }) {
+            const key = minimal ? `${type}Minimal` : type;
+            if (state.publicCache[key]) {
+                state.publicCache[key].loading = loading;
+            }
+        },
+        CLEAR_PUBLIC_CACHE(state) {
+            state.publicCache = {
+                products: { data: null, timestamp: null, loading: false },
+                services: { data: null, timestamp: null, loading: false },
+                productsMinimal: { data: null, timestamp: null, loading: false },
+                servicesMinimal: { data: null, timestamp: null, loading: false },
+            };
         },
     },
     actions: {
@@ -127,6 +177,123 @@ const store = createStore({
             const newTheme = state.theme === 'dark' ? 'light' : 'dark';
             commit('SET_THEME', newTheme);
         },
+        // Actions для загрузки публичных данных с кешированием
+        async fetchPublicProducts({ commit, state }, { minimal = false, force = false } = {}) {
+            const key = minimal ? 'productsMinimal' : 'products';
+            const cache = state.publicCache[key];
+            const CACHE_TTL = 5 * 60 * 1000; // 5 минут
+            
+            // Проверяем кеш
+            if (!force && cache.data && cache.timestamp) {
+                const age = Date.now() - cache.timestamp;
+                if (age < CACHE_TTL) {
+                    return cache.data; // Возвращаем кешированные данные
+                }
+            }
+            
+            // Если уже идет загрузка, возвращаем промис существующего запроса
+            if (cache.loading) {
+                // Ждем завершения текущей загрузки
+                return new Promise((resolve) => {
+                    const checkInterval = setInterval(() => {
+                        if (!cache.loading && cache.data) {
+                            clearInterval(checkInterval);
+                            resolve(cache.data);
+                        }
+                    }, 100);
+                });
+            }
+            
+            commit('SET_PUBLIC_LOADING', { type: 'products', minimal, loading: true });
+            
+            try {
+                const url = minimal 
+                    ? '/api/public/products?active=1&minimal=1'
+                    : '/api/public/products?active=1';
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const data = result.data || [];
+                    commit('SET_PUBLIC_PRODUCTS', { data, minimal });
+                    return data;
+                } else {
+                    throw new Error('Failed to fetch products');
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                commit('SET_PUBLIC_LOADING', { type: 'products', minimal, loading: false });
+                // Возвращаем кешированные данные, если есть, даже если они устарели
+                if (cache.data) {
+                    return cache.data;
+                }
+                throw error;
+            }
+        },
+        async fetchPublicServices({ commit, state }, { minimal = false, force = false } = {}) {
+            const key = minimal ? 'servicesMinimal' : 'services';
+            const cache = state.publicCache[key];
+            const CACHE_TTL = 5 * 60 * 1000; // 5 минут
+            
+            // Проверяем кеш
+            if (!force && cache.data && cache.timestamp) {
+                const age = Date.now() - cache.timestamp;
+                if (age < CACHE_TTL) {
+                    return cache.data; // Возвращаем кешированные данные
+                }
+            }
+            
+            // Если уже идет загрузка, возвращаем промис существующего запроса
+            if (cache.loading) {
+                // Ждем завершения текущей загрузки
+                return new Promise((resolve) => {
+                    const checkInterval = setInterval(() => {
+                        if (!cache.loading && cache.data) {
+                            clearInterval(checkInterval);
+                            resolve(cache.data);
+                        }
+                    }, 100);
+                });
+            }
+            
+            commit('SET_PUBLIC_LOADING', { type: 'services', minimal, loading: true });
+            
+            try {
+                const url = minimal 
+                    ? '/api/public/services?active=1&minimal=1'
+                    : '/api/public/services?active=1';
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const data = result.data || [];
+                    commit('SET_PUBLIC_SERVICES', { data, minimal });
+                    return data;
+                } else {
+                    throw new Error('Failed to fetch services');
+                }
+            } catch (error) {
+                console.error('Error fetching services:', error);
+                commit('SET_PUBLIC_LOADING', { type: 'services', minimal, loading: false });
+                // Возвращаем кешированные данные, если есть, даже если они устарели
+                if (cache.data) {
+                    return cache.data;
+                }
+                throw error;
+            }
+        },
     },
     getters: {
         isAuthenticated: (state) => !!state.token,
@@ -149,6 +316,23 @@ const store = createStore({
         isAdmin: (state) => {
             if (!state.user || !state.user.roles) return false;
             return state.user.roles.some(role => role.slug === 'admin');
+        },
+        // Геттеры для публичных данных
+        publicProducts: (state) => (minimal = false) => {
+            const key = minimal ? 'productsMinimal' : 'products';
+            return state.publicCache[key].data || [];
+        },
+        publicServices: (state) => (minimal = false) => {
+            const key = minimal ? 'servicesMinimal' : 'services';
+            return state.publicCache[key].data || [];
+        },
+        isPublicProductsLoading: (state) => (minimal = false) => {
+            const key = minimal ? 'productsMinimal' : 'products';
+            return state.publicCache[key].loading || false;
+        },
+        isPublicServicesLoading: (state) => (minimal = false) => {
+            const key = minimal ? 'servicesMinimal' : 'services';
+            return state.publicCache[key].loading || false;
         },
     },
 });

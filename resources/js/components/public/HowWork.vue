@@ -153,23 +153,27 @@ export default {
         });
 
         const handleButtonClick = () => {
-            if (!settings.value) return;
+            if (!settings.value) {
+                console.warn('HowWork: settings not loaded');
+                return;
+            }
             
+            console.log('HowWork button clicked:', {
+                button_type: settings.value.button_type,
+                button_value: settings.value.button_value,
+            });
+            
+            // Если тип кнопки - URL и значение указано, выполняем переход
             if (settings.value.button_type === 'url' && settings.value.button_value) {
                 if (settings.value.button_value.startsWith('http')) {
                     window.open(settings.value.button_value, '_blank');
                 } else {
                     router.push(settings.value.button_value);
                 }
-            } else if (settings.value.button_type === 'method') {
-                // Если метод не указан или пустой, показываем форму обратной связи
-                if (!settings.value.button_value || settings.value.button_value.trim() === '') {
-                    showFeedbackModal.value = true;
-                } else {
-                    // Здесь будет логика вызова конкретного метода по ID
-                    console.log('Method button clicked:', settings.value.button_value);
-                    // TODO: Реализовать вызов метода по ID
-                }
+            } else {
+                // Во всех остальных случаях (method, не указан, или пустой) открываем форму обратной связи
+                console.log('Opening feedback modal');
+                showFeedbackModal.value = true;
             }
         };
 

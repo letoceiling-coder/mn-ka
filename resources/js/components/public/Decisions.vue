@@ -45,6 +45,7 @@
 
 <script>
 import { ref, onMounted, TransitionGroup } from 'vue';
+import { useStore } from 'vuex';
 import DecisionCard from './DecisionCard.vue';
 
 export default {
@@ -54,6 +55,7 @@ export default {
         TransitionGroup,
     },
     setup() {
+        const store = useStore();
         const title = ref('Выберите решение под ваш участок');
         const loading = ref(true);
         const error = ref(null);
@@ -78,30 +80,28 @@ export default {
         // Все элементы (продукты и услуги)
         const allItems = ref([]);
 
-        // Загрузка всех продуктов и услуг
+        // Загрузка всех продуктов и услуг из store
         const loadChapters = async () => {
             loading.value = true;
             error.value = null;
             
             try {
-                // Загружаем все активные продукты
-                const productsResponse = await fetch('/api/public/products?active=1');
-                const productsResult = productsResponse.ok ? await productsResponse.json() : { data: [] };
-                const allProducts = (productsResult.data || []).map(product => ({
+                // Загружаем все активные продукты из store
+                const allProducts = await store.dispatch('fetchPublicProducts', { minimal: false });
+                const productsWithCategory = (allProducts || []).map(product => ({
                     ...product,
                     category: 'products',
                 }));
                 
-                // Загружаем все активные услуги (минимальный набор для карточек)
-                const servicesResponse = await fetch('/api/public/services?active=1&minimal=1');
-                const servicesResult = servicesResponse.ok ? await servicesResponse.json() : { data: [] };
-                const allServices = (servicesResult.data || []).map(service => ({
+                // Загружаем все активные услуги из store (минимальный набор для карточек)
+                const allServices = await store.dispatch('fetchPublicServices', { minimal: true });
+                const servicesWithCategory = (allServices || []).map(service => ({
                     ...service,
                     category: 'services',
                 }));
                 
                 // Объединяем все продукты и услуги в один массив
-                allItems.value = [...allProducts, ...allServices];
+                allItems.value = [...productsWithCategory, ...servicesWithCategory];
             } catch (err) {
                 console.error('Ошибка загрузки данных:', err);
                 error.value = 'Не удалось загрузить данные. Попробуйте обновить страницу.';

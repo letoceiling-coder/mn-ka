@@ -145,6 +145,7 @@
 <script>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 export default {
     name: 'BurgerMenu',
@@ -157,101 +158,68 @@ export default {
     emits: ['close'],
     setup(props) {
         const router = useRouter();
+        const store = useStore();
         const searchQuery = ref('');
         const services = ref([]);
         const products = ref([]);
-        const loadingServices = ref(false);
-        const loadingProducts = ref(false);
         const expandedProducts = ref([]);
         const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth <= 767);
 
-        // Загрузка услуг
+        // Загрузка услуг из store
         const fetchServices = async () => {
-            if (services.value.length > 0) return; // Уже загружены
-            
-            loadingServices.value = true;
             try {
-                const response = await fetch('/api/public/services?active=1&minimal=1', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const servicesList = data.data || [];
-                    // Сортируем услуги по полю order (если есть)
-                    services.value = servicesList
-                        .sort((a, b) => {
-                            const orderA = a.order ?? 999999;
-                            const orderB = b.order ?? 999999;
-                            return orderA - orderB;
-                        })
-                        .map(service => {
-                            const serviceSlug = service.slug ? service.slug.replace(/^\/+/, '') : '';
-                            return {
-                                slug: serviceSlug ? `/services/${serviceSlug}` : '/services',
-                                name: service.name || service.title,
-                            };
-                        });
-                }
+                const servicesList = await store.dispatch('fetchPublicServices', { minimal: true });
+                // Сортируем услуги по полю order (если есть)
+                services.value = servicesList
+                    .sort((a, b) => {
+                        const orderA = a.order ?? 999999;
+                        const orderB = b.order ?? 999999;
+                        return orderA - orderB;
+                    })
+                    .map(service => {
+                        const serviceSlug = service.slug ? service.slug.replace(/^\/+/, '') : '';
+                        return {
+                            slug: serviceSlug ? `/services/${serviceSlug}` : '/services',
+                            name: service.name || service.title,
+                        };
+                    });
             } catch (err) {
                 console.error('Error fetching services:', err);
-            } finally {
-                loadingServices.value = false;
             }
         };
 
-        // Загрузка продуктов
+        // Загрузка продуктов из store
         const fetchProducts = async () => {
-            if (products.value.length > 0) return; // Уже загружены
-            
-            loadingProducts.value = true;
             try {
-                const response = await fetch('/api/public/products?active=1', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
+                const productsList = await store.dispatch('fetchPublicProducts', { minimal: false });
+                
+                // Группируем продукты по chapter (разделам)
+                const groupedProducts = {};
+                
+                productsList.forEach(product => {
+                    const chapterName = product.chapter?.name || 'Без категории';
+                    const chapterId = product.chapter_id || 'no-chapter';
+                    
+                    if (!groupedProducts[chapterId]) {
+                        groupedProducts[chapterId] = {
+                            name: chapterName,
+                            items: [],
+                        };
+                    }
+                    
+                    const productSlug = product.slug ? product.slug.replace(/^\/+/, '') : '';
+                    groupedProducts[chapterId].items.push({
+                        slug: productSlug ? `/products/${productSlug}` : '/products',
+                        name: product.name,
+                    });
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    const productsList = data.data || [];
-                    
-                    // Группируем продукты по chapter (разделам)
-                    const groupedProducts = {};
-                    
-                    productsList.forEach(product => {
-                        const chapterName = product.chapter?.name || 'Без категории';
-                        const chapterId = product.chapter_id || 'no-chapter';
-                        
-                        if (!groupedProducts[chapterId]) {
-                            groupedProducts[chapterId] = {
-                                name: chapterName,
-                                items: [],
-                            };
-                        }
-                        
-                        const productSlug = product.slug ? product.slug.replace(/^\/+/, '') : '';
-                        groupedProducts[chapterId].items.push({
-                            slug: productSlug ? `/products/${productSlug}` : '/products',
-                            name: product.name,
-                        });
-                    });
-                    
-                    // Преобразуем объект в массив и сортируем
-                    products.value = Object.values(groupedProducts)
-                        .filter(group => group.items.length > 0)
-                        .sort((a, b) => a.name.localeCompare(b.name));
-                }
+                // Преобразуем объект в массив и сортируем
+                products.value = Object.values(groupedProducts)
+                    .filter(group => group.items.length > 0)
+                    .sort((a, b) => a.name.localeCompare(b.name));
             } catch (err) {
                 console.error('Error fetching products:', err);
-            } finally {
-                loadingProducts.value = false;
             }
         };
 

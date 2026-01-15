@@ -189,6 +189,7 @@
 <script>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import SEOHead from '../components/SEOHead.vue';
 import DecisionCard from '../components/public/DecisionCard.vue';
 import LazyImage from '../components/public/LazyImage.vue';
@@ -212,6 +213,7 @@ export default {
     },
     setup() {
         const route = useRoute();
+        const store = useStore();
         
         const loading = ref(false);
         const error = ref(null);
@@ -422,19 +424,10 @@ export default {
             if (loadingLists.value) return;
             loadingLists.value = true;
             try {
-                // Загружаем все услуги (минимальный набор для карточек)
-                const response = await fetch('/api/public/services?active=1&minimal=1&limit=10000', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    // Фильтруем все услуги, исключая текущую
-                    servicesList.value = (data.data || []).filter(s => s.id !== service.value?.id);
-                }
+                // Загружаем все услуги из store (минимальный набор для карточек)
+                const data = await store.dispatch('fetchPublicServices', { minimal: true });
+                // Фильтруем все услуги, исключая текущую
+                servicesList.value = (data || []).filter(s => s.id !== service.value?.id);
             } catch (err) {
                 console.error('Error fetching services:', err);
             } finally {

@@ -91,6 +91,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import ProductCard from '../components/public/ProductCard.vue';
 import FeedbackForm from '../components/public/FeedbackForm.vue';
 import SEOHead from '../components/SEOHead.vue';
@@ -103,68 +104,40 @@ export default {
         SEOHead,
     },
     setup() {
-        const loadingProducts = ref(false);
-        const loadingServices = ref(false);
+        const store = useStore();
         const error = ref(null);
         const products = ref([]);
         const services = ref([]);
 
+        const loadingProducts = computed(() => store.getters.isPublicProductsLoading(false));
+        const loadingServices = computed(() => store.getters.isPublicServicesLoading(true));
+
         const fetchProducts = async () => {
-            loadingProducts.value = true;
             try {
-                const response = await fetch('/api/public/products?active=1', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    products.value = data.data || [];
-                }
+                const data = await store.dispatch('fetchPublicProducts', { minimal: false });
+                products.value = data || [];
             } catch (err) {
                 console.error('Error fetching products:', err);
                 // Не показываем ошибку для продуктов, если услуги загрузились
                 if (services.value.length === 0) {
                     error.value = err.message || 'Ошибка загрузки продуктов';
                 }
-            } finally {
-                loadingProducts.value = false;
             }
         };
 
         const fetchServices = async () => {
-            loadingServices.value = true;
             error.value = null;
             try {
-                // Используем параметр minimal=1 для получения только необходимых полей для карточек
-                const response = await fetch('/api/public/services?active=1&minimal=1', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
+                const servicesList = await store.dispatch('fetchPublicServices', { minimal: true });
+                // Сортируем услуги по полю order (если есть)
+                services.value = (servicesList || []).sort((a, b) => {
+                    const orderA = a.order ?? 999999;
+                    const orderB = b.order ?? 999999;
+                    return orderA - orderB;
                 });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const servicesList = data.data || [];
-                    // Сортируем услуги по полю order (если есть)
-                    services.value = servicesList.sort((a, b) => {
-                        const orderA = a.order ?? 999999;
-                        const orderB = b.order ?? 999999;
-                        return orderA - orderB;
-                    });
-                } else {
-                    throw new Error('Ошибка загрузки услуг');
-                }
             } catch (err) {
                 console.error('Error fetching services:', err);
                 error.value = err.message || 'Ошибка загрузки услуг';
-            } finally {
-                loadingServices.value = false;
             }
         };
 

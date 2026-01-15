@@ -218,6 +218,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import SEOHead from '../components/SEOHead.vue';
 import ProductCard from '../components/public/ProductCard.vue';
 import HowWork from '../components/public/HowWork.vue';
@@ -234,6 +235,7 @@ export default {
         FeedbackForm,
     },
     setup() {
+        const store = useStore();
         const loading = ref(true);
         const bannerImage = ref(null);
         const bannerOverlay = ref(false);
@@ -293,41 +295,21 @@ export default {
             }
         };
 
-        // Загрузка услуг
+        // Загрузка услуг из store
         const fetchServices = async () => {
             try {
-                const response = await fetch('/api/public/services?active=1', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    services.value = (data.data || []).slice(0, 8); // Ограничиваем до 8 услуг
-                }
+                const data = await store.dispatch('fetchPublicServices', { minimal: false });
+                services.value = (data || []).slice(0, 8); // Ограничиваем до 8 услуг
             } catch (err) {
                 console.error('Error fetching services:', err);
             }
         };
 
-        // Загрузка продуктов
+        // Загрузка продуктов из store
         const fetchProducts = async () => {
             try {
-                const response = await fetch('/api/public/products?active=1', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    products.value = (data.data || []).slice(0, 8); // Ограничиваем до 8 продуктов
-                }
+                const data = await store.dispatch('fetchPublicProducts', { minimal: false });
+                products.value = (data || []).slice(0, 8); // Ограничиваем до 8 продуктов
             } catch (err) {
                 console.error('Error fetching products:', err);
             }

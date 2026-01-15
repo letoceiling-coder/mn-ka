@@ -222,6 +222,7 @@
 <script>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import SEOHead from '../components/SEOHead.vue';
 import { usePreloader } from '../composables/usePreloader';
 import DecisionCard from '../components/public/DecisionCard.vue';
@@ -249,6 +250,7 @@ export default {
     },
     setup() {
         const route = useRoute();
+        const store = useStore();
         const { getCachedProduct, setCachedProduct, clearProductCache } = useProductCache();
         const { hidePreloader } = usePreloader();
         
@@ -529,18 +531,9 @@ export default {
             if (loadingLists.value) return;
             loadingLists.value = true;
             try {
-                const response = await fetch('/api/public/products?active=1&limit=8', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    // Исключаем текущий продукт из списка
-                    productsList.value = (data.data || []).filter(p => p.id !== product.value?.id).slice(0, 8);
-                }
+                const data = await store.dispatch('fetchPublicProducts', { minimal: false });
+                // Исключаем текущий продукт из списка и ограничиваем до 8
+                productsList.value = (data || []).filter(p => p.id !== product.value?.id).slice(0, 8);
             } catch (err) {
                 console.error('Error fetching products list:', err);
             } finally {
@@ -551,17 +544,9 @@ export default {
         const fetchServices = async () => {
             if (loadingLists.value) return;
             try {
-                const response = await fetch('/api/public/services?active=1&minimal=1&limit=8', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    servicesList.value = (data.data || []).slice(0, 8);
-                }
+                const data = await store.dispatch('fetchPublicServices', { minimal: true });
+                // Ограничиваем до 8
+                servicesList.value = (data || []).slice(0, 8);
             } catch (err) {
                 console.error('Error fetching services:', err);
             }
