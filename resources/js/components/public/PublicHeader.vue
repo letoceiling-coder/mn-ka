@@ -59,7 +59,7 @@
                         v-if="showMenuSelect"
                         v-model="selectedMenuItem"
                         @change="navigateToMenu"
-                        class="font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer w-full max-w-full overflow-hidden text-ellipsis"
+                        class="menu-select font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer w-full max-w-full overflow-hidden text-ellipsis"
                     >
                         <option value="">Выберите...</option>
                         <option 
@@ -586,16 +586,60 @@ export default {
 
 <style scoped>
 /* Кастомные стили для select меню */
-select {
+.menu-select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right center;
-    padding-right: 20px;
+    background-position: right 8px center;
+    background-size: 14px 8px;
+    padding: 12px 32px 12px 12px;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: 45px;
+    line-height: 15px;
+}
+
+.menu-select:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 4px rgba(65, 132, 144, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.menu-select:focus {
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 4px 6px rgba(65, 132, 144, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+
+.menu-select:active {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.menu-select option {
+    background-color: white;
+    color: #000000;
+    padding: 12px 16px;
+    font-size: 12px;
+    line-height: 15px;
+    font-weight: 500;
+}
+
+.menu-select option:hover {
+    background-color: #C9E1B5;
+}
+
+.menu-select option:checked {
+    background-color: #D2E8BE;
+    font-weight: 600;
 }
 
 /* Дополнительные стили для предотвращения переполнения */
