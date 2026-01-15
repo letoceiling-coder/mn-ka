@@ -78,3 +78,4 @@ tail -f storage/logs/laravel.log
 3. Установите composer вручную по инструкции в `COMPOSER_INSTALL.md`
 
 
+

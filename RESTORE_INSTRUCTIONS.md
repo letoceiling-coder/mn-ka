@@ -112,3 +112,4 @@ php artisan view:clear
 **Коммит для отката:** 8efd677 (Deploy: 2025-12-12 10:29:36)
 
 
+

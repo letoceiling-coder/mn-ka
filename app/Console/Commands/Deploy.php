@@ -57,26 +57,18 @@ class Deploy extends Command
                 }
             }
 
-            // Шаг 3: Обновление версии (если есть изменения)
-            if ($hasChanges) {
-                $newVersion = $this->incrementVersion($dryRun);
-                if ($newVersion) {
-                    $this->info("  📌 Новая версия: {$newVersion}");
-                }
-            }
-
-            // Шаг 4: Добавление изменений в git
+            // Шаг 3: Добавление изменений в git
             if ($hasChanges) {
                 $this->addChangesToGit($dryRun);
                 
-                // Шаг 5: Создание коммита
+                // Шаг 4: Создание коммита
                 $commitMessage = $this->createCommit($dryRun);
                 
-                // Шаг 6: Отправка в репозиторий
+                // Шаг 5: Отправка в репозиторий
                 $this->pushToRepository($dryRun);
             }
 
-            // Шаг 7: Отправка POST запроса на сервер
+            // Шаг 6: Отправка POST запроса на сервер
             if (!$dryRun) {
                 $this->sendDeployRequest();
             } else {
@@ -193,68 +185,11 @@ class Deploy extends Command
     }
 
     /**
-     * Обновление версии проекта
-     */
-    protected function incrementVersion(bool $dryRun): ?string
-    {
-        $this->info('🔢 Шаг 3: Обновление версии...');
-        
-        $versionFile = base_path('VERSION.txt');
-        
-        if (!File::exists($versionFile)) {
-            $this->warn('  ⚠️  Файл VERSION.txt не найден, создаю с версией 1.0.0');
-            if (!$dryRun) {
-                File::put($versionFile, "1.0.0\n");
-            }
-            return '1.0.0';
-        }
-        
-        $currentVersion = trim(File::get($versionFile));
-        
-        if ($dryRun) {
-            $this->line("  [DRY-RUN] Текущая версия: {$currentVersion}");
-            $this->line("  [DRY-RUN] Новая версия будет: " . $this->calculateNextVersion($currentVersion));
-            return null;
-        }
-        
-        $newVersion = $this->calculateNextVersion($currentVersion);
-        File::put($versionFile, $newVersion . "\n");
-        
-        $this->info("  ✅ Версия обновлена: {$currentVersion} → {$newVersion}");
-        $this->newLine();
-        
-        return $newVersion;
-    }
-    
-    /**
-     * Вычисление следующей версии
-     */
-    protected function calculateNextVersion(string $currentVersion): string
-    {
-        // Формат версии: MAJOR.MINOR.PATCH (например, 1.0.0)
-        $parts = explode('.', $currentVersion);
-        
-        if (count($parts) !== 3) {
-            // Если формат неверный, начинаем с 1.0.0
-            return '1.0.0';
-        }
-        
-        $major = (int)$parts[0];
-        $minor = (int)$parts[1];
-        $patch = (int)$parts[2];
-        
-        // Увеличиваем patch версию (1.0.0 -> 1.0.1)
-        $patch++;
-        
-        return "{$major}.{$minor}.{$patch}";
-    }
-
-    /**
      * Добавление изменений в git
      */
     protected function addChangesToGit(bool $dryRun): void
     {
-        $this->info('➕ Шаг 4: Добавление изменений в git...');
+        $this->info('➕ Шаг 3: Добавление изменений в git...');
         
         if ($dryRun) {
             $this->line('  [DRY-RUN] Выполнение: git add .');
@@ -284,19 +219,10 @@ class Deploy extends Command
      */
     protected function createCommit(bool $dryRun): string
     {
-        $this->info('💾 Шаг 5: Создание коммита...');
+        $this->info('💾 Шаг 4: Создание коммита...');
         
         $customMessage = $this->option('message');
-        
-        // Получаем текущую версию для коммита
-        $versionFile = base_path('VERSION.txt');
-        $version = File::exists($versionFile) ? trim(File::get($versionFile)) : 'unknown';
-        
-        if ($customMessage) {
-            $commitMessage = $customMessage;
-        } else {
-            $commitMessage = "Deploy v{$version}: " . now()->format('Y-m-d H:i:s');
-        }
+        $commitMessage = $customMessage ?: 'Deploy: ' . now()->format('Y-m-d H:i:s');
         
         if ($dryRun) {
             $this->line("  [DRY-RUN] Выполнение: git commit -m \"{$commitMessage}\"");
@@ -325,7 +251,7 @@ class Deploy extends Command
      */
     protected function pushToRepository(bool $dryRun): void
     {
-        $this->info('📤 Шаг 6: Отправка в репозиторий...');
+        $this->info('📤 Шаг 5: Отправка в репозиторий...');
         
         // Определяем текущую ветку
         $branchProcess = Process::run('git rev-parse --abbrev-ref HEAD');
@@ -364,7 +290,7 @@ class Deploy extends Command
      */
     protected function sendDeployRequest(): void
     {
-        $this->info('🌐 Шаг 7: Отправка запроса на сервер...');
+        $this->info('🌐 Шаг 6: Отправка запроса на сервер...');
         
         $serverUrl = env('SERVER_URL');
         $deployToken = env('DEPLOY_TOKEN');

@@ -93,3 +93,4 @@ tail -f storage/logs/laravel.log
 Если видите версию 5.6.40 - значит PHP_PATH не настроен правильно.
 
 
+

@@ -1,9 +1,9 @@
 <template>
-    <div class="w-full px-3 sm:px-4 md:px-5">
-        <header class="rounded-lg h-[60px] flex items-center px-4 sm:px-5 gap-3 sm:gap-5 bg-[#D2E8BE] mt-3 w-full max-w-[1200px] mx-auto shadow-sm">
+    <div class="w-full px-3 sm:px-4 md:px-5 overflow-hidden max-w-full">
+        <header class="rounded-lg h-[60px] flex items-center px-2 sm:px-4 md:px-5 gap-2 sm:gap-3 md:gap-5 bg-[#D2E8BE] mt-3 w-full max-w-[1200px] mx-auto shadow-sm overflow-hidden">
             <!-- Logo -->
-            <div class="flex items-center mr-3 sm:mr-5 flex-shrink-0">
-                <router-link to="/" class="font-semibold text-base sm:text-lg text-black no-underline">
+            <div class="flex items-center mr-2 sm:mr-3 md:mr-5 flex-shrink-0 min-w-0">
+                <router-link to="/" class="font-semibold text-base sm:text-lg text-black no-underline truncate">
                     mnka
                 </router-link>
             </div>
@@ -23,13 +23,13 @@
             </button>
 
             <!-- Middle Section (Desktop) -->
-            <div class="hidden md:flex bg-[#C9E1B5] rounded-lg flex-1 items-center px-[15px] gap-3 sm:gap-5 min-w-0">
+            <div class="hidden md:flex bg-[#C9E1B5] rounded-lg flex-1 items-center px-2 sm:px-3 md:px-[15px] gap-2 sm:gap-3 md:gap-5 min-w-0 max-w-full overflow-hidden">
                 <!-- Menu List / Select -->
-                <div class="flex-1 min-w-0 relative" ref="menuContainer">
+                <div class="flex-1 min-w-0 max-w-full relative overflow-hidden" ref="menuContainer">
                     <ul 
                         v-if="showMenuList"
                         ref="menuList"
-                        class="menu-list flex items-center gap-3 sm:gap-5 list-none m-0 p-0 flex-wrap h-[50px] relative"
+                        class="menu-list flex items-center gap-2 sm:gap-3 md:gap-5 list-none m-0 p-0 flex-wrap h-[50px] relative overflow-visible"
                     >
                         <!-- Анимированный фон -->
                         <div 
@@ -41,11 +41,11 @@
                         <li 
                             v-for="(item, index) in visibleMenuItems" 
                             :key="item.id || item.slug || index"
-                            class="menu-item-wrapper font-medium text-xs leading-[15px] list-none m-0 p-0 relative z-10"
+                            class="menu-item-wrapper font-medium text-xs leading-[15px] list-none m-0 p-0 relative z-10 flex-shrink-0"
                         >
                             <router-link 
                                 :to="item.url || item.slug || '#'" 
-                                class="menu-link text-black no-underline whitespace-nowrap"
+                                class="menu-link text-black no-underline whitespace-nowrap block overflow-hidden text-ellipsis max-w-full"
                                 @mouseenter="handleLinkHover($event)"
                                 @mouseleave="handleLinkLeave"
                             >
@@ -59,7 +59,7 @@
                         v-if="showMenuSelect"
                         v-model="selectedMenuItem"
                         @change="navigateToMenu"
-                        class="font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer w-full"
+                        class="font-medium text-xs leading-[15px] text-black bg-transparent border-0 outline-none cursor-pointer w-full max-w-full overflow-hidden text-ellipsis"
                     >
                         <option value="">Выберите...</option>
                         <option 
@@ -276,28 +276,54 @@ export default {
 
             await nextTick();
             
+            // Определяем gap в зависимости от размера экрана
+            const getGap = () => {
+                if (windowWidth.value >= 768) return 20; // md:gap-5 = 1.25rem = 20px
+                if (windowWidth.value >= 640) return 12; // sm:gap-3 = 0.75rem = 12px
+                return 8; // gap-2 = 0.5rem = 8px
+            };
+
+            // Определяем padding ссылки в зависимости от размера экрана
+            const getLinkPadding = () => {
+                if (windowWidth.value >= 768) return 24; // 0 12px = 24px total
+                if (windowWidth.value >= 640) return 20; // 0 10px = 20px total
+                return 16; // 0 8px = 16px total
+            };
+            
             const tempContainer = document.createElement('ul');
-            tempContainer.className = 'flex items-center gap-3 sm:gap-5 list-none m-0 p-0 flex-wrap';
+            tempContainer.className = 'flex items-center list-none m-0 p-0 flex-wrap';
+            tempContainer.style.gap = `${getGap()}px`;
             tempContainer.style.position = 'absolute';
             tempContainer.style.top = '-9999px';
             tempContainer.style.opacity = '0';
             tempContainer.style.pointerEvents = 'none';
+            tempContainer.style.width = 'auto';
             document.body.appendChild(tempContainer);
 
-            const containerWidth = menuContainer.value.offsetWidth - 50;
+            // Учитываем padding контейнера и резерв для select
+            const containerPadding = windowWidth.value >= 768 ? 30 : windowWidth.value >= 640 ? 24 : 16;
+            const selectReserve = 60; // Резерв для select если нужно
+            const containerWidth = menuContainer.value.offsetWidth - containerPadding - selectReserve;
             let visibleCount = menuItems.value.length;
+            let totalWidth = 0;
 
             for (let i = 0; i < menuItems.value.length; i++) {
                 const item = menuItems.value[i];
                 const li = document.createElement('li');
-                li.className = 'font-medium text-xs leading-[15px] list-none m-0 p-0';
+                li.className = 'font-medium text-xs leading-[15px] list-none m-0 p-0 flex-shrink-0';
                 const a = document.createElement('a');
-                a.className = 'text-black pb-[3px] border-b border-transparent transition-all duration-300 no-underline whitespace-nowrap';
+                a.className = 'text-black no-underline whitespace-nowrap inline-flex items-center';
+                a.style.padding = `0 ${getLinkPadding() / 2}px`;
+                a.style.minHeight = '45px';
                 a.textContent = item.title || item.name;
                 li.appendChild(a);
                 tempContainer.appendChild(li);
 
-                if (tempContainer.scrollWidth > containerWidth) {
+                // Проверяем общую ширину с учетом gap
+                const currentGap = i > 0 ? getGap() : 0;
+                totalWidth = tempContainer.scrollWidth;
+
+                if (totalWidth > containerWidth) {
                     visibleCount = i;
                     break;
                 }
@@ -566,6 +592,27 @@ select {
     background-repeat: no-repeat;
     background-position: right center;
     padding-right: 20px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Дополнительные стили для предотвращения переполнения */
+.menu-container {
+    overflow: hidden;
+    max-width: 100%;
+}
+
+@media (max-width: 767px) {
+    .menu-list {
+        gap: 8px;
+    }
+    
+    .menu-link {
+        font-size: 11px;
+        padding: 0 6px;
+    }
 }
 
 /* Анимированный фон меню */
@@ -584,19 +631,23 @@ select {
 /* Стили для списка меню */
 .menu-list {
     position: relative;
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Стили для обертки пункта меню */
 .menu-item-wrapper {
     position: relative;
     z-index: 2;
+    flex-shrink: 0;
+    max-width: 100%;
 }
 
 /* Стили для ссылок меню */
 .menu-link {
     display: inline-flex;
     align-items: center;
-    padding: 0 12px;
+    padding: 0 8px;
     min-height: 45px;
     font-size: 12px;
     line-height: 15px;
@@ -604,6 +655,21 @@ select {
     z-index: 2;
     border-bottom: 1px solid transparent;
     transition: border-color 0.3s;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (min-width: 640px) {
+    .menu-link {
+        padding: 0 10px;
+    }
+}
+
+@media (min-width: 768px) {
+    .menu-link {
+        padding: 0 12px;
+    }
 }
 
 .menu-link:hover {
