@@ -41,9 +41,11 @@
                             <h1 class="text-2xl md:text-3xl font-semibold text-foreground mb-3 md:text-left text-center">
                                 {{ service.name }}
                             </h1>
-                            <div v-if="service.description" class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center">
-                                {{ typeof service.description === 'string' ? service.description : service.description?.ru || '' }}
-                            </div>
+                            <div 
+                                v-if="service.description" 
+                                class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center"
+                                v-html="typeof service.description === 'string' ? service.description : service.description?.ru || ''"
+                            ></div>
                         </div>
                         <div class="relative">
                             <LazyImage

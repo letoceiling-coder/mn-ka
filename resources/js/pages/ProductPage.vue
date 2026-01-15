@@ -41,9 +41,11 @@
                         <h1 class="text-2xl md:text-3xl font-semibold text-foreground mb-3 md:text-left text-center">
                             {{ product.name }}
                         </h1>
-                        <div v-if="product.description" class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center">
-                            {{ typeof product.description === 'string' ? product.description : product.description?.ru || '' }}
-                        </div>
+                        <div 
+                            v-if="product.description" 
+                            class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center"
+                            v-html="typeof product.description === 'string' ? product.description : product.description?.ru || ''"
+                        ></div>
                     </div>
                     <div class="relative">
                         <LazyImage
