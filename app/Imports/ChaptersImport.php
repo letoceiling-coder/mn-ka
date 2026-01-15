@@ -200,9 +200,14 @@ class ChaptersImport
      */
     protected function validateHeaders(array $headers): bool
     {
+        // Убираем звездочки из заголовков для проверки
+        $cleanHeaders = array_map(function($header) {
+            return str_replace('*', '', $header);
+        }, $headers);
+        
         $requiredHeaders = ['Название'];
         foreach ($requiredHeaders as $required) {
-            if (!in_array($required, $headers)) {
+            if (!in_array($required, $cleanHeaders)) {
                 return false;
             }
         }
@@ -218,7 +223,8 @@ class ChaptersImport
         
         foreach ($headers as $index => $header) {
             $value = $row[$index] ?? '';
-            $header = trim($header);
+            // Убираем звездочку и пробелы из заголовка
+            $header = trim(str_replace('*', '', $header));
             
             switch ($header) {
                 case 'ID':

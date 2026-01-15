@@ -45,10 +45,10 @@ class ProductsExport
                 // BOM для правильного отображения кириллицы в Excel
                 fprintf($csvFile, chr(0xEF).chr(0xBB).chr(0xBF));
 
-                // Заголовки
+                // Заголовки (* - обязательные поля)
                 fputcsv($csvFile, [
                     'ID',
-                    'Название',
+                    'Название*',
                     'Slug',
                     'Описание',
                     'Раздел ID',
@@ -235,10 +235,10 @@ class ProductsExport
             // BOM для правильного отображения кириллицы в Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Заголовки
+            // Заголовки (* - обязательные поля)
             fputcsv($file, [
                 'ID',
-                'Название',
+                'Название*',
                 'Slug',
                 'Описание',
                 'Раздел ID',

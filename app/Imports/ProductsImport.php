@@ -233,7 +233,8 @@ class ProductsImport
         
         foreach ($headers as $index => $header) {
             $value = $row[$index] ?? '';
-            $header = trim($header);
+            // Убираем звездочку и пробелы из заголовка
+            $header = trim(str_replace('*', '', $header));
             
             switch ($header) {
                 case 'ID':

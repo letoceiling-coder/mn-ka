@@ -54,11 +54,11 @@ class CasesExport
                 // BOM для кириллицы
                 fprintf($csvFile, chr(0xEF).chr(0xBB).chr(0xBF));
 
-                // Заголовки
+                // Заголовки (* - обязательные поля)
                 fputcsv($csvFile, [
                     'ID',
-                    'Название',
-                    'Slug',
+                    'Название*',
+                    'Slug*',
                     'Описание',
                     'HTML',
                     'Раздел ID',
@@ -301,11 +301,11 @@ class CasesExport
             // BOM для правильного отображения кириллицы в Excel
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Заголовки
+            // Заголовки (* - обязательные поля)
             fputcsv($file, [
                 'ID',
-                'Название',
-                'Slug',
+                'Название*',
+                'Slug*',
                 'Описание',
                 'HTML',
                 'Раздел ID',

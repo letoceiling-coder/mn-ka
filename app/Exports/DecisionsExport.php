@@ -115,10 +115,10 @@ class DecisionsExport
         // BOM для кириллицы
         fprintf($csvFile, chr(0xEF).chr(0xBB).chr(0xBF));
 
-        // Заголовки
+        // Заголовки (* - обязательные поля)
         fputcsv($csvFile, [
             'ID',
-            'Название',
+            'Название*',
             'Порядок',
             'Активен',
         ], ';');
@@ -149,10 +149,10 @@ class DecisionsExport
         // BOM для кириллицы
         fprintf($csvFile, chr(0xEF).chr(0xBB).chr(0xBF));
 
-        // Заголовки
+        // Заголовки (* - обязательные поля)
         fputcsv($csvFile, [
             'ID',
-            'Название',
+            'Название*',
             'Slug',
             'Описание',
             'Раздел ID',
@@ -270,10 +270,10 @@ class DecisionsExport
         // BOM для кириллицы
         fprintf($csvFile, chr(0xEF).chr(0xBB).chr(0xBF));
 
-        // Заголовки
+        // Заголовки (* - обязательные поля)
         fputcsv($csvFile, [
             'ID',
-            'Название',
+            'Название*',
             'Slug',
             'Описание',
             'HTML контент',
@@ -402,11 +402,11 @@ class DecisionsExport
         // BOM для кириллицы
         fprintf($csvFile, chr(0xEF).chr(0xBB).chr(0xBF));
 
-        // Заголовки
+        // Заголовки (* - обязательные поля)
         fputcsv($csvFile, [
             'ID',
-            'Название',
-            'Slug',
+            'Название*',
+            'Slug*',
             'Описание',
             'HTML',
             'Раздел ID',
