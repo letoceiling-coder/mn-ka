@@ -162,40 +162,9 @@
                     </div>
                 </div>
 
-                <!-- Почему выбирают нас -->
-                <div v-if="benefits.length > 0" class="mb-16 md:mb-20">
-                    <h2 class="text-2xl md:text-3xl font-semibold text-[#424448] text-center mb-8 md:mb-10">
-                        Почему выбирают нас
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-                        <div
-                            v-for="benefit in benefits"
-                            :key="benefit.id"
-                            class="bg-[#F4F6FC] rounded-xl p-6 min-h-[140px] flex flex-col justify-between relative hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                        >
-                            <div>
-                                <h3 class="font-medium text-lg text-[#424448] mb-2 md:mb-3">
-                                    {{ benefit.title }}
-                                </h3>
-                                <p class="text-base text-[#424448]">
-                                    {{ benefit.description }}
-                                </p>
-                            </div>
-                            <div class="absolute bottom-5 right-5 w-[58px] h-[49px]">
-                                <svg width="58" height="49" viewBox="0 0 58 49" fill="none">
-                                    <rect width="58" height="49" rx="4" fill="#688E67"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center mt-8 md:mt-10">
-                        <router-link
-                            to="/contacts"
-                            class="inline-flex items-center justify-center px-6 md:px-10 py-3 md:py-4 bg-[#688E67] hover:bg-[#5a7856] text-white font-medium rounded-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-                        >
-                            Запросить подбор участка
-                        </router-link>
-                    </div>
+                <!-- Почему выбирают нас - используем компонент с главной страницы -->
+                <div class="mb-16 md:mb-20">
+                    <WhyChooseUs />
                 </div>
 
                 <!-- Форма обратной связи -->
@@ -224,6 +193,7 @@ import ProductCard from '../components/public/ProductCard.vue';
 import HowWork from '../components/public/HowWork.vue';
 import Faq from '../components/public/Faq.vue';
 import FeedbackForm from '../components/public/FeedbackForm.vue';
+import WhyChooseUs from '../components/public/WhyChooseUs.vue';
 
 export default {
     name: 'AboutPage',
@@ -233,6 +203,7 @@ export default {
         HowWork,
         Faq,
         FeedbackForm,
+        WhyChooseUs,
     },
     setup() {
         const store = useStore();
@@ -245,7 +216,6 @@ export default {
         const products = ref([]);
         const clients = ref([]);
         const team = ref([]);
-        const benefits = ref([]);
 
         // Загрузка настроек страницы "О нас"
         const fetchAboutSettings = async () => {
@@ -282,12 +252,6 @@ export default {
                     team.value = (settings.team || []).map((member, index) => ({
                         id: index + 1,
                         ...member,
-                    }));
-
-                    // Преимущества
-                    benefits.value = (settings.benefits || []).map((benefit, index) => ({
-                        id: index + 1,
-                        ...benefit,
                     }));
                 }
             } catch (err) {
@@ -351,7 +315,6 @@ export default {
             products,
             clients,
             team,
-            benefits,
             canonicalUrl,
             aboutSchema,
         };

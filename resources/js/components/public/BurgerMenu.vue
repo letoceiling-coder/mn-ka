@@ -164,6 +164,10 @@ export default {
         const products = ref([]);
         const expandedProducts = ref([]);
         const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth <= 767);
+        
+        // Состояния загрузки из store
+        const loadingServices = computed(() => store.getters.isPublicServicesLoading(true));
+        const loadingProducts = computed(() => store.getters.isPublicProductsLoading(false));
 
         // Загрузка услуг из store
         const fetchServices = async () => {

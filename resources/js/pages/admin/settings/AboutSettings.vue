@@ -390,13 +390,19 @@
                 </div>
             </div>
 
-            <!-- Преимущества -->
-            <div class="bg-card rounded-lg border border-border p-6 space-y-6">
+            <!-- Преимущества (не используется на странице About - используется компонент WhyChooseUs) -->
+            <div class="bg-card rounded-lg border border-border p-6 space-y-6 opacity-60">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-semibold text-foreground">Почему выбирают нас</h2>
+                    <div>
+                        <h2 class="text-xl font-semibold text-foreground">Почему выбирают нас</h2>
+                        <p class="text-xs text-muted-foreground mt-1">
+                            ⚠️ Это поле больше не используется на странице "О нас". Используется компонент "Почему выбирают нас" из настроек блоков.
+                        </p>
+                    </div>
                     <button
                         @click="addBenefit"
                         class="px-4 py-2 text-sm bg-accent text-accent-foreground rounded hover:bg-accent/90"
+                        disabled
                     >
                         + Добавить
                     </button>
