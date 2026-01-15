@@ -95,6 +95,9 @@
                     </div>
                 </div>
 
+                <!-- HTML контент продукта -->
+                <div v-if="product.html_content" class="mt-8 product-html-content" v-html="product.html_content"></div>
+
                 <!-- Информация об услугах -->
                 <div class="mt-8 py-5 relative">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

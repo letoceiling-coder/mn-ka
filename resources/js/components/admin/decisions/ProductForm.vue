@@ -91,6 +91,16 @@
             </div>
         </div>
         <div>
+            <label class="text-sm font-medium mb-1 block">HTML контент</label>
+            <textarea
+                v-model="localForm.html_content"
+                rows="10"
+                class="w-full px-3 py-2 border border-border rounded bg-background focus:outline-none focus:ring-2 focus:ring-accent resize-none font-mono text-sm"
+                placeholder="Введите HTML контент для продукта"
+            ></textarea>
+            <p class="text-xs text-muted-foreground mt-1">HTML контент, который будет отображаться на странице продукта</p>
+        </div>
+        <div>
             <label class="text-sm font-medium mb-1 block">Порядок</label>
             <input
                 v-model.number="localForm.order"
@@ -221,6 +231,7 @@ export default {
                 chapter_id: null,
                 image_id: null,
                 icon_id: null,
+                html_content: '',
                 order: 0,
                 is_active: true,
             }),
@@ -250,6 +261,7 @@ export default {
             chapter_id: props.initialData.chapter_id || null,
             image_id: props.initialData.image_id || null,
             icon_id: props.initialData.icon_id || null,
+            html_content: props.initialData.html_content || '',
             order: props.initialData.order ?? 0,
             is_active: props.initialData.is_active !== false,
         });
@@ -320,6 +332,7 @@ export default {
                 chapter_id: newData.chapter_id || null,
                 image_id: newData.image_id || null,
                 icon_id: newData.icon_id || null,
+                html_content: newData.html_content || '',
                 order: newData.order ?? 0,
                 is_active: newData.is_active !== false,
             };
@@ -341,6 +354,7 @@ export default {
                 chapter_id: localForm.value.chapter_id || null,
                 image_id: localForm.value.image_id || null,
                 icon_id: localForm.value.icon_id || null,
+                html_content: localForm.value.html_content || null,
                 order: localForm.value.order,
                 is_active: localForm.value.is_active,
                 services: selectedServices.value,
