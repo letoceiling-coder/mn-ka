@@ -27,7 +27,7 @@
                             <button
                                 @click="handleSearch"
                                 type="button"
-                                class="absolute right-3 sm:right-[10px] top-1/2 -translate-y-1/2 flex items-center cursor-pointer pointer-events-none z-10"
+                                class="absolute right-3 sm:right-[10px] top-1/2 -translate-y-1/2 flex items-center cursor-pointer z-10"
                             >
                                 <svg 
                                     width="18" 
@@ -68,12 +68,14 @@
                 
                 <div class="mt-6 sm:mt-12 burger-menu-content">
                     <div class="font-medium text-xl sm:text-2xl md:text-[28px] leading-6 sm:leading-[34px] text-white mb-3 sm:mb-2">Все услуги</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div v-if="loadingServices" class="text-white/70 text-sm">Загрузка...</div>
+                    <div v-else-if="services.length === 0" class="text-white/70 text-sm">Услуги не найдены</div>
+                    <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div v-for="service in services" :key="service.slug" class="w-full">
                             <router-link 
                                 :to="service.slug" 
                                 @click="$emit('close')"
-                                class="font-normal text-sm md:text-[14px] leading-5 md:leading-[17px] text-[#F4F6FC] no-underline block mb-3 sm:mb-2.5 py-1"
+                                class="font-normal text-sm md:text-[14px] leading-5 md:leading-[17px] text-[#F4F6FC] no-underline block mb-3 sm:mb-2.5 py-1 hover:text-white transition-colors"
                             >
                                 {{ service.name }}
                             </router-link>
@@ -81,8 +83,12 @@
                     </div>
                 </div>
                 
-                <div class="mt-6 sm:mt-12 pb-6 sm:pb-0 burger-menu-content" v-if="products.length > 0">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                <div class="mt-6 sm:mt-12 pb-6 sm:pb-0 burger-menu-content">
+                    <div v-if="loadingProducts" class="text-white/70 text-sm">Загрузка продуктов...</div>
+                    <div v-else-if="products.length === 0" class="text-white/70 text-sm">Продукты не найдены</div>
+                    <template v-else>
+                        <div class="font-medium text-xl sm:text-2xl md:text-[28px] leading-6 sm:leading-[34px] text-white mb-3 sm:mb-2">Продуктовые направления</div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div 
                             v-for="product in products" 
                             :key="product.name"
@@ -128,7 +134,8 @@
                                 </router-link>
                             </div>
                         </div>
-                    </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -136,7 +143,8 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
     name: 'BurgerMenu',
@@ -147,79 +155,121 @@ export default {
         },
     },
     emits: ['close'],
-    setup() {
+    setup(props) {
+        const router = useRouter();
         const searchQuery = ref('');
-        const services = ref([
-            { slug: '/service1', name: 'Услуга 1' },
-            { slug: '/service2', name: 'Услуга 2' },
-            { slug: '/service3', name: 'Услуга 3' }
-        ]);
-        const products = ref([
-            {
-                slug: '',
-                name: 'Склады',
-                items: [
-                    { slug: '/warehouse/light', name: 'Light Industrial до 5 га' },
-                    { slug: '/warehouse/large', name: 'Склады от 5 га' },
-                    { slug: '/warehouse/mkd', name: 'МКД / Офисы' },
-                    { slug: '/warehouse/izhs', name: 'ИЖС' }
-                ]
-            },
-            {
-                slug: '',
-                name: 'Производство',
-                items: [
-                    { slug: '/production/cat1', name: 'Производство 1-й категории' },
-                    { slug: '/production/cat2', name: 'Производство 2-й категории' },
-                    { slug: '/production/cat3', name: 'Производство 3-й категории' }
-                ]
-            },
-            {
-                slug: '',
-                name: 'Придорожный сервис',
-                items: [
-                    { slug: '/road/carwash', name: 'Участок под автомойку' },
-                    { slug: '/road/gas', name: 'Участок под АЗС' },
-                    { slug: '/road/charging', name: 'Участок под зарядочную станцию' },
-                    { slug: '/road/food', name: 'Участок под общепит' },
-                    { slug: '/road/service', name: 'Автосервис' },
-                    { slug: '/road/shop', name: 'Магазин' }
-                ]
-            },
-            {
-                slug: '',
-                name: 'Коммерция',
-                items: [
-                    { slug: '/commerce/business', name: 'Бизнес центр' },
-                    { slug: '/commerce/mfc', name: 'МФК' },
-                    { slug: '/commerce/mall', name: 'Торговый центр' }
-                ]
-            },
-            {
-                slug: '',
-                name: 'Ритейл',
-                items: [
-                    { slug: '/retail/building', name: 'Торговое здание' },
-                    { slug: '/retail/free', name: 'Помещение свободного назначения' },
-                    { slug: '/retail/x5', name: 'Договор аренды земельного участка с договором X5-Retail' }
-                ]
-            },
-            {
-                slug: '',
-                name: 'Рекреация',
-                items: [
-                    { slug: '/recreation/glamping', name: 'Участок под глэмпинг' },
-                    { slug: '/recreation/hotel', name: 'Участок под гостиничный комплекс' },
-                    { slug: '/recreation/pier', name: 'Причалы' },
-                    { slug: '/recreation/coast', name: 'Аренда участка прибрежной зоны' },
-                    { slug: '/recreation/water', name: 'Аренда водоемов' },
-                    { slug: '/recreation/forest', name: 'Лесные участки' },
-                    { slug: '/recreation/island', name: 'Острова' }
-                ]
-            }
-        ]);
+        const services = ref([]);
+        const products = ref([]);
+        const loadingServices = ref(false);
+        const loadingProducts = ref(false);
         const expandedProducts = ref([]);
         const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth <= 767);
+
+        // Загрузка услуг
+        const fetchServices = async () => {
+            if (services.value.length > 0) return; // Уже загружены
+            
+            loadingServices.value = true;
+            try {
+                const response = await fetch('/api/public/services?active=1&minimal=1', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const servicesList = data.data || [];
+                    // Сортируем услуги по полю order (если есть)
+                    services.value = servicesList
+                        .sort((a, b) => {
+                            const orderA = a.order ?? 999999;
+                            const orderB = b.order ?? 999999;
+                            return orderA - orderB;
+                        })
+                        .map(service => {
+                            const serviceSlug = service.slug ? service.slug.replace(/^\/+/, '') : '';
+                            return {
+                                slug: serviceSlug ? `/services/${serviceSlug}` : '/services',
+                                name: service.name || service.title,
+                            };
+                        });
+                }
+            } catch (err) {
+                console.error('Error fetching services:', err);
+            } finally {
+                loadingServices.value = false;
+            }
+        };
+
+        // Загрузка продуктов
+        const fetchProducts = async () => {
+            if (products.value.length > 0) return; // Уже загружены
+            
+            loadingProducts.value = true;
+            try {
+                const response = await fetch('/api/public/products?active=1', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const productsList = data.data || [];
+                    
+                    // Группируем продукты по chapter (разделам)
+                    const groupedProducts = {};
+                    
+                    productsList.forEach(product => {
+                        const chapterName = product.chapter?.name || 'Без категории';
+                        const chapterId = product.chapter_id || 'no-chapter';
+                        
+                        if (!groupedProducts[chapterId]) {
+                            groupedProducts[chapterId] = {
+                                name: chapterName,
+                                items: [],
+                            };
+                        }
+                        
+                        const productSlug = product.slug ? product.slug.replace(/^\/+/, '') : '';
+                        groupedProducts[chapterId].items.push({
+                            slug: productSlug ? `/products/${productSlug}` : '/products',
+                            name: product.name,
+                        });
+                    });
+                    
+                    // Преобразуем объект в массив и сортируем
+                    products.value = Object.values(groupedProducts)
+                        .filter(group => group.items.length > 0)
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                }
+            } catch (err) {
+                console.error('Error fetching products:', err);
+            } finally {
+                loadingProducts.value = false;
+            }
+        };
+
+        // Загрузка данных при открытии меню
+        watch(() => props.isOpen, (isOpen) => {
+            if (isOpen) {
+                fetchServices();
+                fetchProducts();
+            }
+        });
+
+        // Загрузка при монтировании (если меню уже открыто)
+        onMounted(() => {
+            if (props.isOpen) {
+                fetchServices();
+                fetchProducts();
+            }
+        });
 
         const toggleProduct = (product) => {
             if (isMobile.value) {
@@ -234,7 +284,12 @@ export default {
 
         const handleSearch = () => {
             if (searchQuery.value.trim()) {
-                console.log('Search:', searchQuery.value);
+                const query = searchQuery.value.trim();
+                searchQuery.value = '';
+                router.push({
+                    name: 'search',
+                    query: { q: query }
+                });
             }
         };
 
@@ -242,6 +297,8 @@ export default {
             searchQuery,
             services,
             products,
+            loadingServices,
+            loadingProducts,
             expandedProducts,
             isMobile,
             toggleProduct,
