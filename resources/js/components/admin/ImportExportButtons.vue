@@ -67,69 +67,79 @@
             class="hidden"
         />
 
-        <!-- Модальное окно с результатами импорта -->
-        <div
-            v-if="showImportResults"
-            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            @click.self="showImportResults = false"
-        >
-            <div class="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-border">
-                    <h3 class="text-lg font-semibold">Результаты импорта</h3>
-                </div>
-                <div class="p-6 overflow-y-auto flex-1">
-                    <div class="mb-4">
-                        <p class="text-sm mb-2">
-                            <span class="font-medium">Успешно импортировано:</span>
-                            <span class="text-green-600 dark:text-green-400 ml-2">{{ importResults.success_count || 0 }}</span>
-                        </p>
-                        <p class="text-sm">
-                            <span class="font-medium">Пропущено:</span>
-                            <span class="text-orange-600 dark:text-orange-400 ml-2">{{ importResults.skip_count || 0 }}</span>
-                        </p>
+        <!-- Модальное окно с результатами импорта (через Teleport в body) -->
+        <Teleport to="body">
+            <div
+                v-if="showImportResults"
+                class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+                @click.self="showImportResults = false"
+            >
+                <div class="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+                    <div class="p-6 border-b border-border">
+                        <h3 class="text-lg font-semibold">Результаты импорта</h3>
                     </div>
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <div class="mb-4">
+                            <p class="text-sm mb-2">
+                                <span class="font-medium">Успешно импортировано:</span>
+                                <span class="text-green-600 dark:text-green-400 ml-2">{{ importResults.success_count || 0 }}</span>
+                            </p>
+                            <p class="text-sm">
+                                <span class="font-medium">Пропущено:</span>
+                                <span class="text-orange-600 dark:text-orange-400 ml-2">{{ importResults.skip_count || 0 }}</span>
+                            </p>
+                        </div>
 
-                    <!-- Ошибки -->
-                    <div v-if="importResults.errors && importResults.errors.length > 0" class="mt-4">
-                        <h4 class="font-medium text-sm mb-2">Ошибки импорта:</h4>
-                        <div class="space-y-2 max-h-96 overflow-y-auto">
-                            <div
-                                v-for="(error, index) in importResults.errors"
-                                :key="index"
-                                class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm"
-                            >
-                                <p class="font-medium text-red-800 dark:text-red-400">
-                                    <span v-if="error.section">[{{ error.section }}]</span>
-                                    Строка {{ error.row }}:
-                                </p>
-                                <ul class="list-disc list-inside mt-1 text-red-700 dark:text-red-300">
-                                    <li v-for="(err, i) in error.errors" :key="i">{{ err }}</li>
-                                </ul>
+                        <!-- Ошибки -->
+                        <div v-if="importResults.errors && importResults.errors.length > 0" class="mt-4">
+                            <h4 class="font-medium text-sm mb-2">Ошибки импорта:</h4>
+                            <div class="space-y-2 max-h-96 overflow-y-auto">
+                                <div
+                                    v-for="(error, index) in importResults.errors"
+                                    :key="index"
+                                    class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm"
+                                >
+                                    <p class="font-medium text-red-800 dark:text-red-400">
+                                        <span v-if="error.section">[{{ error.section }}]</span>
+                                        Строка {{ error.row || 'неизвестна' }}:
+                                    </p>
+                                    <ul v-if="error.errors && error.errors.length > 0" class="list-disc list-inside mt-1 text-red-700 dark:text-red-300">
+                                        <li v-for="(err, i) in error.errors" :key="i">{{ err }}</li>
+                                    </ul>
+                                    <p v-else-if="typeof error === 'string'" class="mt-1 text-red-700 dark:text-red-300">
+                                        {{ error }}
+                                    </p>
+                                    <p v-else class="mt-1 text-red-700 dark:text-red-300">
+                                        Неизвестная ошибка
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="p-6 border-t border-border flex justify-end">
-                    <button
-                        @click="showImportResults = false"
-                        class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 transition-colors"
-                    >
-                        Закрыть
-                    </button>
+                    <div class="p-6 border-t border-border flex justify-end">
+                        <button
+                            @click="showImportResults = false"
+                            class="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 transition-colors"
+                        >
+                            Закрыть
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
 
-        <!-- Loader -->
-        <div
-            v-if="loading"
-            class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        >
-            <div class="bg-card rounded-lg p-6 flex items-center gap-4">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-                <span class="text-sm font-medium">{{ loadingMessage }}</span>
+        <!-- Loader (через Teleport в body) -->
+        <Teleport to="body">
+            <div
+                v-if="loading"
+                class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
+            >
+                <div class="bg-card rounded-lg p-6 flex items-center gap-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                    <span class="text-sm font-medium">{{ loadingMessage }}</span>
+                </div>
             </div>
-        </div>
+        </Teleport>
     </div>
 </template>
 
@@ -272,7 +282,15 @@ export default {
                     },
                 });
 
-                importResults.value = response.data;
+                // Нормализуем данные ответа
+                importResults.value = {
+                    success: response.data.success !== undefined ? response.data.success : true,
+                    message: response.data.message || 'Импорт завершен',
+                    success_count: response.data.success_count || 0,
+                    skip_count: response.data.skip_count || 0,
+                    errors: Array.isArray(response.data.errors) ? response.data.errors : [],
+                };
+                
                 showImportResults.value = true;
 
                 // Очищаем input
@@ -282,10 +300,25 @@ export default {
                 
                 // Проверяем, есть ли детальная информация об ошибке
                 if (error.response?.data) {
-                    importResults.value = error.response.data;
+                    const errorData = error.response.data;
+                    importResults.value = {
+                        success: errorData.success !== undefined ? errorData.success : false,
+                        message: errorData.message || 'Ошибка при импорте',
+                        success_count: errorData.success_count || 0,
+                        skip_count: errorData.skip_count || 0,
+                        errors: Array.isArray(errorData.errors) ? errorData.errors : 
+                                (errorData.errors ? [errorData.errors] : []),
+                    };
                     showImportResults.value = true;
                 } else {
-                    alert('Ошибка при импорте: ' + (error.response?.data?.message || error.message));
+                    importResults.value = {
+                        success: false,
+                        message: 'Ошибка при импорте',
+                        success_count: 0,
+                        skip_count: 0,
+                        errors: [{ row: 'неизвестна', errors: [error.message || 'Неизвестная ошибка'] }],
+                    };
+                    showImportResults.value = true;
                 }
                 
                 // Очищаем input
