@@ -142,16 +142,41 @@ class QuizSubmissionController extends Controller
                 'completed_at' => now()->toDateTimeString(),
             ];
 
+            // Создаем заявку в product_requests (для отображения в админке /admin/product-requests)
+            $comment = "Прохождение квиза: {$quiz->title}\n\n";
+            $comment .= "Ответы:\n";
+            foreach ($detailedAnswers as $index => $answerData) {
+                $comment .= ($index + 1) . ". {$answerData['question_text']}\n";
+                $comment .= "   Ответ: {$answerData['answer']['text']}\n\n";
+            }
+            
+            $productRequest = \App\Models\ProductRequest::create([
+                'product_id' => null, // Заявка из квиза, не привязана к продукту
+                'name' => $request->contact['name'],
+                'phone' => $request->contact['phone'],
+                'email' => $request->contact['email'],
+                'comment' => $comment,
+                'status' => \App\Models\ProductRequest::STATUS_NEW,
+            ]);
+            
+            // Добавляем запись в историю
+            $productRequest->addHistory(
+                \App\Models\RequestHistory::ACTION_CREATED,
+                null,
+                'Заявка создана через прохождение квиза'
+            );
+
             // Создаем уведомление для администраторов через NotificationTool
             $adminUsers = User::whereHas('roles', function($q) {
                 $q->whereIn('slug', ['admin', 'manager']);
             })->get();
 
             // Добавляем ссылку на просмотр уведомления в данных
-            $quizData['view_url'] = '/admin/notifications';
+            $quizData['view_url'] = '/admin/product-requests';
+            $quizData['request_id'] = $productRequest->id;
             
             $title = 'Новое прохождение квиза';
-            $message = "Пользователь {$request->contact['name']} ({$request->contact['email']}) прошел квиз \"{$quiz->title}\". Перейдите в уведомления для просмотра деталей.";
+            $message = "Пользователь {$request->contact['name']} ({$request->contact['email']}) прошел квиз \"{$quiz->title}\". Перейдите в заявки для просмотра деталей.";
             
             // Создаем уведомления в БД для каждого администратора
             foreach ($adminUsers as $admin) {

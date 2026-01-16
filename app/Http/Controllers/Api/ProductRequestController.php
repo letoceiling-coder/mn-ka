@@ -44,6 +44,7 @@ class ProductRequestController extends Controller
                 $query->where(function($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                       ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
                       ->orWhere('comment', 'like', "%{$search}%");
                 });
             }

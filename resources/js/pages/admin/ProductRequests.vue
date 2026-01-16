@@ -28,7 +28,7 @@
                             type="text"
                             v-model="filters.search"
                             @input="handleSearch"
-                            placeholder="Поиск по имени, телефону, комментарию..."
+                            placeholder="Поиск по имени, телефону, email, комментарию..."
                             class="w-full h-10 pl-9 pr-3 border border-border rounded bg-background text-sm"
                         />
                     </div>
@@ -116,8 +116,11 @@
                                 <p class="text-foreground">
                                     <span class="font-medium">Клиент:</span> {{ request.name }}
                                 </p>
-                                <p class="text-muted-foreground">
+                                <p v-if="request.phone" class="text-muted-foreground">
                                     <span class="font-medium">Телефон:</span> {{ request.phone }}
+                                </p>
+                                <p v-if="request.email" class="text-muted-foreground">
+                                    <span class="font-medium">Email:</span> {{ request.email }}
                                 </p>
                                 <p v-if="request.product" class="text-muted-foreground">
                                     <span class="font-medium">Продукт:</span> {{ request.product.name }}
@@ -224,11 +227,15 @@
                         </div>
                         <div>
                             <label class="text-sm font-medium text-muted-foreground">Телефон</label>
-                            <p class="text-foreground mt-1">{{ selectedRequest.phone }}</p>
+                            <p class="text-foreground mt-1">{{ selectedRequest.phone || 'Не указан' }}</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-muted-foreground">Email</label>
+                            <p class="text-foreground mt-1">{{ selectedRequest.email || 'Не указан' }}</p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-muted-foreground">Продукт</label>
-                            <p class="text-foreground mt-1">{{ selectedRequest.product?.name || 'Не указан' }}</p>
+                            <p class="text-foreground mt-1">{{ selectedRequest.product?.name || 'Не указан (общая заявка)' }}</p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-muted-foreground">Исполнитель</label>

@@ -15,6 +15,7 @@ class ProductRequest extends Model
         'product_id',
         'name',
         'phone',
+        'email',
         'comment',
         'services',
         'status',

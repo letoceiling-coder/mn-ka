@@ -26,6 +26,7 @@ class ProductRequestResource extends JsonResource
             }),
             'name' => $this->name,
             'phone' => $this->phone,
+            'email' => $this->email,
             'comment' => $this->comment,
             'services' => $this->services,
             'status' => $this->status,

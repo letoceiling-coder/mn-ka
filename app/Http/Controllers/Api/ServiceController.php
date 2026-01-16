@@ -401,14 +401,22 @@ class ServiceController extends Controller
                 $message .= "\nКомментарий: {$request->comment}";
             }
 
-            // Создаем заявку в FeedbackRequest
-            $feedbackRequest = \App\Models\FeedbackRequest::create([
+            // Создаем заявку в product_requests (для отображения в админке /admin/product-requests)
+            $productRequest = \App\Models\ProductRequest::create([
+                'product_id' => null, // Заявка на услугу, не привязана к продукту
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'email' => null,
-                'message' => $message,
-                'status' => \App\Models\FeedbackRequest::STATUS_NEW,
+                'comment' => $message, // message сохраняем в comment
+                'status' => \App\Models\ProductRequest::STATUS_NEW,
             ]);
+            
+            // Добавляем запись в историю
+            $productRequest->addHistory(
+                \App\Models\RequestHistory::ACTION_CREATED,
+                null,
+                'Заявка на услугу создана через форму на сайте'
+            );
 
             // Получаем всех администраторов и менеджеров для отправки уведомлений
             $adminUsers = \App\Models\User::whereHas('roles', function ($query) {
@@ -467,7 +475,7 @@ class ServiceController extends Controller
                     $notificationMessage,
                     'info',
                     [
-                        'request_id' => $feedbackRequest->id,
+                        'request_id' => $productRequest->id,
                         'service_id' => $service->id,
                         'service_name' => $service->name,
                         'type' => 'service_request',

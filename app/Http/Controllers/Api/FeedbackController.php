@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\FeedbackRequest;
+use App\Models\ProductRequest;
 use App\Models\User;
 use App\Mail\FeedbackMail;
 use App\Services\NotificationTool;
@@ -36,14 +36,18 @@ class FeedbackController extends Controller
         }
 
         try {
-            // Создаем заявку
-            $feedbackRequest = FeedbackRequest::create([
+            // Создаем заявку в product_requests (для отображения в админке /admin/product-requests)
+            $productRequest = ProductRequest::create([
+                'product_id' => null, // Общая заявка обратной связи, не привязана к продукту
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'email' => $request->email,
-                'message' => $request->message,
-                'status' => FeedbackRequest::STATUS_NEW,
+                'comment' => $request->message, // message сохраняем в comment
+                'status' => ProductRequest::STATUS_NEW,
             ]);
+            
+            // Также создаем запись в feedback_requests для обратной совместимости (если нужно)
+            // Но основная заявка теперь в product_requests
 
             // Получаем всех администраторов и менеджеров для отправки уведомлений
             $adminUsers = User::whereHas('roles', function ($query) {
@@ -70,7 +74,7 @@ class FeedbackController extends Controller
                     $notificationMessage,
                     'info',
                     [
-                        'request_id' => $feedbackRequest->id,
+                        'request_id' => $productRequest->id,
                         'type' => 'feedback',
                         'contact' => [
                             'name' => $request->name,
@@ -88,7 +92,15 @@ class FeedbackController extends Controller
                 $validEmails = EmailHelper::filterValidEmails($adminEmails);
                 
                 if (!empty($validEmails)) {
-                    Mail::to($validEmails)->send(new FeedbackMail($feedbackRequest));
+                    // Создаем временный объект FeedbackRequest для совместимости с FeedbackMail
+                    // или можно адаптировать FeedbackMail для работы с ProductRequest
+                    $feedbackRequestForMail = (object)[
+                        'name' => $productRequest->name,
+                        'phone' => $productRequest->phone,
+                        'email' => $productRequest->email,
+                        'message' => $productRequest->comment,
+                    ];
+                    Mail::to($validEmails)->send(new FeedbackMail($feedbackRequestForMail));
                     Log::info('Feedback email sent', [
                         'sent_to' => $validEmails,
                         'skipped' => array_diff($adminEmails, $validEmails),
@@ -116,7 +128,7 @@ class FeedbackController extends Controller
                     $telegramMessage .= "📧 <b>Email:</b> {$request->email}\n";
                 }
                 $telegramMessage .= "\n💬 <b>Сообщение:</b>\n{$request->message}";
-                $telegramMessage .= "\n\n🔗 <a href=\"" . url('/admin/feedback-requests/' . $feedbackRequest->id) . "\">Просмотреть в админке</a>";
+                $telegramMessage .= "\n\n🔗 <a href=\"" . url('/admin/product-requests') . "\">Просмотреть в админке</a>";
                 
                 // Отправляем всем администраторам с telegram_chat_id
                 $telegramAdmins = User::whereNotNull('telegram_chat_id')
