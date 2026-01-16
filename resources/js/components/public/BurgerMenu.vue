@@ -96,6 +96,7 @@
                             :class="{'border-b border-white/20 pb-4 sm:pb-3': isMobile}"
                         >
                             <div 
+                                v-if="product.name !== 'Без категории'"
                                 class="font-medium text-base sm:text-lg md:text-2xl md:text-[28px] leading-5 sm:leading-6 md:leading-[34px] text-white mb-3 sm:mb-4 cursor-pointer"
                                 :class="{'flex items-center gap-2 sm:gap-[10px] py-1': isMobile}"
                                 @click="toggleProduct(product)"
@@ -120,8 +121,8 @@
                                 </svg>
                             </div>
                             <div 
-                                v-show="!isMobile || expandedProducts.includes(product.name)"
-                                class="mt-2 p-0"
+                                v-show="!isMobile || expandedProducts.includes(product.name) || product.name === 'Без категории'"
+                                :class="product.name === 'Без категории' ? 'mt-0 p-0' : 'mt-2 p-0'"
                             >
                                 <router-link
                                     v-for="child in product.items"

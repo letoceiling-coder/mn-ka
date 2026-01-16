@@ -474,9 +474,9 @@ export default {
 
         // SEO computed properties
         const caseTitle = computed(() => {
-            if (!caseItem.value) return 'Кейс - Lagom';
+            if (!caseItem.value) return 'Кейс - МНКА';
             if (caseItem.value.seo_title) return caseItem.value.seo_title;
-            return `${caseItem.value.name} - Lagom | Пример реализованного проекта`;
+            return `${caseItem.value.name} - МНКА | Пример реализованного проекта`;
         });
 
         const caseMetaDescription = computed(() => {
@@ -493,7 +493,7 @@ export default {
         const caseKeywords = computed(() => {
             if (!caseItem.value) return 'кейс, проект, земельные участки';
             if (caseItem.value.seo_keywords) return caseItem.value.seo_keywords;
-            return `${caseItem.value.name}, кейс, проект, пример работ, земельные участки, объект, Lagom`;
+            return `${caseItem.value.name}, кейс, проект, пример работ, земельные участки, объект, МНКА`;
         });
 
         const caseImage = computed(() => {
@@ -526,7 +526,7 @@ export default {
                 'url': canonicalUrl.value,
                 'author': {
                     '@type': 'Organization',
-                    'name': 'Lagom',
+                    'name': 'МНКА',
                 },
             };
 

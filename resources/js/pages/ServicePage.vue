@@ -480,9 +480,9 @@ export default {
 
         // SEO computed properties
         const serviceTitle = computed(() => {
-            if (!service.value) return 'Услуга - Lagom';
+            if (!service.value) return 'Услуга - МНКА';
             if (service.value.seo_title) return service.value.seo_title;
-            return `${service.value.name} - Lagom | Профессиональные услуги`;
+            return `${service.value.name} - МНКА | Профессиональные услуги`;
         });
 
         const serviceDescription = computed(() => {
@@ -500,7 +500,7 @@ export default {
         const serviceKeywords = computed(() => {
             if (!service.value) return 'услуга, кадастр, земельные участки';
             if (service.value.seo_keywords) return service.value.seo_keywords;
-            return `${service.value.name}, услуга, кадастр, земельные участки, оформление документов, Lagom`;
+            return `${service.value.name}, услуга, кадастр, земельные участки, оформление документов, МНКА`;
         });
 
         const serviceImage = computed(() => {
@@ -525,7 +525,7 @@ export default {
                 'url': canonicalUrl.value,
                 'provider': {
                     '@type': 'Organization',
-                    'name': 'Lagom',
+                    'name': 'МНКА',
                 },
             };
 

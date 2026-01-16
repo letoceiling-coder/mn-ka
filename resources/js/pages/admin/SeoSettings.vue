@@ -25,7 +25,7 @@
                     <input
                         v-model="form.site_name"
                         type="text"
-                        placeholder="Lagom"
+                        placeholder="МНКА"
                         maxlength="255"
                         class="w-full h-12 px-4 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-[#688E67]"
                     />
@@ -113,7 +113,7 @@
                         <input
                             v-model="form.og_site_name"
                             type="text"
-                            placeholder="Lagom"
+                            placeholder="МНКА"
                             class="w-full h-12 px-4 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-[#688E67]"
                         />
                     </div>

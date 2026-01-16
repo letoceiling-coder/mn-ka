@@ -152,22 +152,22 @@ export default {
 
         // SEO computed properties
         const pageTitle = computed(() => {
-            if (!page.value) return 'Страница - Lagom';
+            if (!page.value) return 'Страница - МНКА';
             if (page.value.seo_title) return page.value.seo_title;
-            return `${page.value.title} - Lagom`;
+            return `${page.value.title} - МНКА`;
         });
 
         const pageDescription = computed(() => {
-            if (!page.value) return 'Информационная страница сайта Lagom.';
+            if (!page.value) return 'Информационная страница сайта МНКА.';
             if (page.value.seo_description) return page.value.seo_description;
             // Создаем описание на основе title, если seo_description отсутствует
-            return `${page.value.title} - подробная информация на сайте Lagom. Профессиональные услуги по подбору и оформлению земельных участков.`;
+            return `${page.value.title} - подробная информация на сайте МНКА. Профессиональные услуги по подбору и оформлению земельных участков.`;
         });
 
         const pageKeywords = computed(() => {
             if (!page.value) return 'страница, информация';
             if (page.value.seo_keywords) return page.value.seo_keywords;
-            return `${page.value.title}, информация, услуги, земельные участки, Lagom`;
+            return `${page.value.title}, информация, услуги, земельные участки, МНКА`;
         });
 
         const ogImage = computed(() => {

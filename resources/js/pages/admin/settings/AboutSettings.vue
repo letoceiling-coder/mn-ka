@@ -328,7 +328,7 @@
                                 <input
                                     type="text"
                                     v-model="member.position"
-                                    placeholder="CEO lagom"
+                                    placeholder="CEO МНКА"
                                     class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
                                 />
                             </div>

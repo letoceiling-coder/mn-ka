@@ -94,7 +94,7 @@ class AboutSettingsSeeder extends Seeder
         $team = [
             [
                 'name' => 'Зубенко Михаил Петрович',
-                'position' => 'CEO lagom',
+                'position' => 'CEO МНКА',
                 'photo' => $this->copyOrCreatePhoto('team/1.jpg', '1.jpg'),
             ],
             [

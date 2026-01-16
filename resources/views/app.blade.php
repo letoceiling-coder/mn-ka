@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Lagom - Профессиональные услуги по работе с земельными участками</title>
+    <title>МНКА - Профессиональные услуги по работе с земельными участками</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -36,7 +36,7 @@
         // Устанавливаем дефолтный title и метатеги сразу, чтобы избежать отображения "Laravel"
         // Vue компонент SEOHead обновит их при монтировании
         (function() {
-            const defaultTitle = 'Lagom - Профессиональные услуги по работе с земельными участками';
+            const defaultTitle = 'МНКА - Профессиональные услуги по работе с земельными участками';
             const defaultDescription = 'Профессиональные услуги по подбору и оформлению земельных участков';
             
             // Обновляем title сразу

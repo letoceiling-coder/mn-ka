@@ -604,9 +604,9 @@ export default {
 
         // SEO computed properties
         const productTitle = computed(() => {
-            if (!product.value) return 'Продукт - Lagom';
+            if (!product.value) return 'Продукт - МНКА';
             if (product.value.seo_title) return product.value.seo_title;
-            return `${product.value.name} - Lagom | Продукты и услуги`;
+            return `${product.value.name} - МНКА | Продукты и услуги`;
         });
 
         const productDescription = computed(() => {
@@ -624,7 +624,7 @@ export default {
         const productKeywords = computed(() => {
             if (!product.value) return 'продукт, услуги, земельные участки';
             if (product.value.seo_keywords) return product.value.seo_keywords;
-            return `${product.value.name}, продукт, услуги, земельные участки, недвижимость, Lagom`;
+            return `${product.value.name}, продукт, услуги, земельные участки, недвижимость, МНКА`;
         });
 
         const productImage = computed(() => {

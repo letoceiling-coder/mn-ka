@@ -21,14 +21,14 @@ class SeoSettingsSeeder extends Seeder
             ['id' => 1],
             [
                 // Основные настройки сайта
-                'site_name' => 'Lagom - Профессиональные услуги по работе с земельными участками',
+                'site_name' => 'МНКА - Профессиональные услуги по работе с земельными участками',
                 'site_description' => 'Профессиональные услуги по подбору и оформлению земельных участков. Кадастровые работы, консультации, оформление документов. Помогаем найти идеальный участок под ваш проект и решить все юридические вопросы.',
-                'site_keywords' => 'земельные участки, подбор участка, оформление земли, кадастровые услуги, недвижимость, покупка земли, кадастр, юридическое сопровождение, оформление документов, Lagom',
+                'site_keywords' => 'земельные участки, подбор участка, оформление земли, кадастровые услуги, недвижимость, покупка земли, кадастр, юридическое сопровождение, оформление документов, МНКА',
                 
                 // Open Graph настройки
                 'default_og_image' => $baseUrl . '/img/og-image-default.jpg',
                 'og_type' => 'website',
-                'og_site_name' => 'Lagom',
+                'og_site_name' => 'МНКА',
                 
                 // Twitter Cards настройки
                 'twitter_card' => 'summary_large_image',
@@ -36,7 +36,7 @@ class SeoSettingsSeeder extends Seeder
                 'twitter_creator' => '@lagom',
                 
                 // Контактная информация организации (для Schema.org)
-                'organization_name' => 'Lagom',
+                'organization_name' => 'МНКА',
                 'organization_logo' => $baseUrl . '/img/logo.png',
                 'organization_phone' => '+7 (999) 123-45-67',
                 'organization_email' => 'info@lagom.ru',
@@ -52,7 +52,7 @@ class SeoSettingsSeeder extends Seeder
         );
 
         $this->command->info('✅ SEO settings created successfully!');
-        $this->command->info('   Site Name: Lagom - Профессиональные услуги по работе с земельными участками');
+        $this->command->info('   Site Name: МНКА - Профессиональные услуги по работе с земельными участками');
         $this->command->info('   Indexing: Enabled');
         $this->command->info('   Sitemap: ' . $baseUrl . '/sitemap.xml');
     }

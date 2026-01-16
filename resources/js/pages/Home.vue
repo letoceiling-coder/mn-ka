@@ -56,9 +56,9 @@ export default {
         // Инициализируем seoSettings с дефолтными значениями сразу
         // Это предотвращает мерцание title/description при загрузке
         const defaultSeoSettings = {
-            site_name: 'Lagom - Профессиональные услуги по работе с земельными участками',
+            site_name: 'МНКА - Профессиональные услуги по работе с земельными участками',
             site_description: 'Профессиональные услуги по подбору и оформлению земельных участков. Кадастровые работы, консультации, оформление документов.',
-            site_keywords: 'земельные участки, кадастр, оформление документов, недвижимость, Lagom',
+            site_keywords: 'земельные участки, кадастр, оформление документов, недвижимость, МНКА',
             default_og_image: '',
             og_type: 'website',
         };
@@ -124,7 +124,7 @@ export default {
             const websiteSchema = seoSettings.value.website_schema || {
                 '@context': 'https://schema.org',
                 '@type': 'WebSite',
-                'name': seoSettings.value.site_name || 'Lagom',
+                'name': seoSettings.value.site_name || 'МНКА',
                 'description': seoSettings.value.site_description || 'Профессиональные услуги по подбору и оформлению земельных участков',
                 'url': window.location.origin,
             };
@@ -134,7 +134,7 @@ export default {
             const organizationSchema = seoSettings.value.organization_schema || {
                 '@context': 'https://schema.org',
                 '@type': 'Organization',
-                'name': seoSettings.value.site_name || 'Lagom',
+                'name': seoSettings.value.site_name || 'МНКА',
                 'url': window.location.origin,
             };
             schemas.push(organizationSchema);

@@ -43,7 +43,7 @@ class SeoSettings extends Model
 
         if (!$settings) {
             $settings = static::create([
-                'site_name' => config('app.name', 'Lagom'),
+                'site_name' => config('app.name', 'МНКА'),
                 'site_description' => 'Профессиональные услуги по подбору и оформлению земельных участков',
                 'og_type' => 'website',
                 'twitter_card' => 'summary_large_image',
