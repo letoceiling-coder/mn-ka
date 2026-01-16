@@ -92,15 +92,7 @@ class FeedbackController extends Controller
                 $validEmails = EmailHelper::filterValidEmails($adminEmails);
                 
                 if (!empty($validEmails)) {
-                    // Создаем временный объект FeedbackRequest для совместимости с FeedbackMail
-                    // или можно адаптировать FeedbackMail для работы с ProductRequest
-                    $feedbackRequestForMail = (object)[
-                        'name' => $productRequest->name,
-                        'phone' => $productRequest->phone,
-                        'email' => $productRequest->email,
-                        'message' => $productRequest->comment,
-                    ];
-                    Mail::to($validEmails)->send(new FeedbackMail($feedbackRequestForMail));
+                    Mail::to($validEmails)->send(new FeedbackMail($productRequest));
                     Log::info('Feedback email sent', [
                         'sent_to' => $validEmails,
                         'skipped' => array_diff($adminEmails, $validEmails),

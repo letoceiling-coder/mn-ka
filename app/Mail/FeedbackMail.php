@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\FeedbackRequest;
+use App\Models\ProductRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -13,14 +13,14 @@ class FeedbackMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $feedbackRequest;
+    public $productRequest;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(FeedbackRequest $feedbackRequest)
+    public function __construct(ProductRequest $productRequest)
     {
-        $this->feedbackRequest = $feedbackRequest;
+        $this->productRequest = $productRequest;
     }
 
     /**
@@ -29,7 +29,7 @@ class FeedbackMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Новая обратная связь от ' . $this->feedbackRequest->name,
+            subject: 'Новая обратная связь от ' . $this->productRequest->name,
         );
     }
 
@@ -41,7 +41,9 @@ class FeedbackMail extends Mailable
         return new Content(
             view: 'emails.feedback',
             with: [
-                'feedbackRequest' => $this->feedbackRequest,
+                'productRequest' => $this->productRequest,
+                // Для обратной совместимости с шаблоном
+                'feedbackRequest' => $this->productRequest,
             ],
         );
     }

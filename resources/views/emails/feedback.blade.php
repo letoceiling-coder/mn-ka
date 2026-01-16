@@ -133,11 +133,11 @@
             
             <div class="message-block">
                 <div class="message-label">💬 Сообщение</div>
-                <div class="message-text">{{ $feedbackRequest->message }}</div>
+                <div class="message-text">{{ $feedbackRequest->comment ?? $feedbackRequest->message ?? '' }}</div>
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
-                <a href="{{ url('/admin/feedback-requests/' . $feedbackRequest->id) }}" class="button">
+                <a href="{{ url('/admin/product-requests') }}" class="button">
                     Просмотреть в админке
                 </a>
             </div>
