@@ -196,13 +196,6 @@
                     </div>
                 </div>
 
-                <!-- Форма обратной связи -->
-                <div class="mt-12 pb-12">
-                    <FeedbackForm 
-                        title="Остались вопросы?"
-                        description="Напишите нам, и мы с удовольствием ответим на все ваши вопросы"
-                    />
-                </div>
             </div>
             </div>
         </div>
@@ -233,7 +226,6 @@ import DecisionCard from '../components/public/DecisionCard.vue';
 import ProductCard from '../components/public/ProductCard.vue';
 import LazyImage from '../components/public/LazyImage.vue';
 import ProductSkeleton from '../components/public/ProductSkeleton.vue';
-import FeedbackForm from '../components/public/FeedbackForm.vue';
 import { useProductCache } from '../composables/useProductCache';
 import OptionsStage from '../components/public/product/OptionsStage.vue';
 import FormsStage from '../components/public/product/FormsStage.vue';
@@ -247,7 +239,6 @@ export default {
         ProductCard,
         LazyImage,
         ProductSkeleton,
-        FeedbackForm,
         OptionsStage,
         FormsStage,
         SuccessStage,

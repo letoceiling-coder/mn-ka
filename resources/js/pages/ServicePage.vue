@@ -159,13 +159,6 @@
                         </div>
                     </div>
 
-                    <!-- Форма обратной связи -->
-                    <div class="mt-12 pb-12">
-                        <FeedbackForm 
-                            title="Остались вопросы?"
-                            description="Напишите нам, и мы с удовольствием ответим на все ваши вопросы"
-                        />
-                    </div>
                 </div>
             </div>
         </div>
@@ -194,7 +187,6 @@ import SEOHead from '../components/SEOHead.vue';
 import DecisionCard from '../components/public/DecisionCard.vue';
 import LazyImage from '../components/public/LazyImage.vue';
 import ProductSkeleton from '../components/public/ProductSkeleton.vue';
-import FeedbackForm from '../components/public/FeedbackForm.vue';
 import ServiceOptionsStage from '../components/public/service/OptionsStage.vue';
 import ServiceFormsStage from '../components/public/service/FormsStage.vue';
 import ServiceSuccessStage from '../components/public/service/SuccessStage.vue';
@@ -206,7 +198,6 @@ export default {
         DecisionCard,
         LazyImage,
         ProductSkeleton,
-        FeedbackForm,
         ServiceOptionsStage,
         ServiceFormsStage,
         ServiceSuccessStage,
