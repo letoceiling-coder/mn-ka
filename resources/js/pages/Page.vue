@@ -49,7 +49,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import SEOHead from '../components/SEOHead.vue';
 
 export default {
@@ -59,6 +59,7 @@ export default {
     },
     setup() {
         const route = useRoute();
+        const router = useRouter();
         const page = ref(null);
         const loading = ref(true);
         const error = ref(null);
@@ -74,12 +75,8 @@ export default {
                 const isReserved = reservedPaths.some(path => currentPath.startsWith(path));
                 
                 if (isReserved) {
-                    error.value = 'Страница не найдена';
-                    loading.value = false;
-                    // Перенаправляем на 404
-                    setTimeout(() => {
-                        window.location.href = '/404';
-                    }, 100);
+                    // Сразу редиректим на 404 без показа промежуточного сообщения
+                    router.replace('/404');
                     return;
                 }
 
@@ -120,19 +117,24 @@ export default {
                             metaKeywords.setAttribute('content', page.value.seo_keywords);
                         }
                     } else {
-                        error.value = 'Страница не найдена';
+                        // Страница не найдена - сразу редиректим на 404
+                        router.replace('/404');
+                        return;
                     }
                 } else if (response.status === 404) {
-                    error.value = 'Страница не найдена';
-                    // Перенаправляем на 404 через небольшую задержку
-                    setTimeout(() => {
-                        window.location.href = '/404';
-                    }, 2000);
+                    // Страница не найдена - сразу редиректим на 404
+                    router.replace('/404');
+                    return;
                 } else {
                     error.value = 'Ошибка загрузки страницы';
                 }
             } catch (err) {
                 console.error('Error fetching page:', err);
+                // При ошибке также редиректим на 404, если это похоже на 404
+                if (err.message && err.message.includes('404')) {
+                    router.replace('/404');
+                    return;
+                }
                 error.value = 'Ошибка загрузки страницы';
             } finally {
                 loading.value = false;

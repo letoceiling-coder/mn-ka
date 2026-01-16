@@ -22,27 +22,27 @@
                 <!-- Заголовок -->
                 <div class="mt-6 md:mt-8 mb-8">
                     <h1 class="text-2xl md:text-3xl font-semibold text-foreground text-center md:text-left">
-                        Наши услуги и продукты
+                        Наши услуги
                     </h1>
                     <p class="text-base md:text-lg text-muted-foreground mt-2 text-center md:text-left">
-                        Выберите услугу или продукт, который подходит именно вам
+                        Выберите услугу, которая подходит именно вам
                     </p>
                 </div>
 
                 <!-- Загрузка -->
-                <div v-if="loadingProducts || loadingServices" class="py-12 flex items-center justify-center">
+                <div v-if="loadingServices" class="py-12 flex items-center justify-center">
                     <p class="text-muted-foreground">Загрузка...</p>
                 </div>
 
                 <!-- Ошибка -->
-                <div v-if="error && !loadingProducts && !loadingServices" class="py-12">
+                <div v-if="error && !loadingServices" class="py-12">
                     <div class="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
                         <p class="text-destructive">{{ error }}</p>
                     </div>
                 </div>
 
                 <!-- Контент -->
-                <div v-if="!loadingProducts && !loadingServices">
+                <div v-if="!loadingServices">
                     <!-- Услуги -->
                     <div v-if="services.length > 0" class="mb-12">
                         <h2 class="text-xl md:text-2xl font-semibold text-foreground mb-6">Все услуги</h2>
@@ -57,31 +57,9 @@
                         </div>
                     </div>
 
-                    <!-- Продукты -->
-                    <div v-if="products.length > 0" class="mb-12">
-                        <h2 class="text-xl md:text-2xl font-semibold text-foreground mb-6">Продуктовые направления</h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
-                            <ProductCard
-                                v-for="product in products"
-                                :key="`product-${product.id}`"
-                                :decision="product"
-                                slug="products"
-                                class="h-full"
-                            />
-                        </div>
-                    </div>
-
                     <!-- Пустое состояние -->
-                    <div v-if="products.length === 0 && services.length === 0" class="py-12 text-center">
-                        <p class="text-muted-foreground">Услуги и продукты пока не добавлены</p>
-                    </div>
-
-                    <!-- Форма обратной связи -->
-                    <div class="mt-12 pb-12">
-                        <FeedbackForm 
-                            title="Остались вопросы?"
-                            description="Напишите нам, и мы с удовольствием ответим на все ваши вопросы"
-                        />
+                    <div v-if="services.length === 0" class="py-12 text-center">
+                        <p class="text-muted-foreground">Услуги пока не добавлены</p>
                     </div>
                 </div>
             </div>
@@ -93,37 +71,20 @@
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import ProductCard from '../components/public/ProductCard.vue';
-import FeedbackForm from '../components/public/FeedbackForm.vue';
 import SEOHead from '../components/SEOHead.vue';
 
 export default {
     name: 'ServicesPage',
     components: {
         ProductCard,
-        FeedbackForm,
         SEOHead,
     },
     setup() {
         const store = useStore();
         const error = ref(null);
-        const products = ref([]);
         const services = ref([]);
 
-        const loadingProducts = computed(() => store.getters.isPublicProductsLoading(false));
         const loadingServices = computed(() => store.getters.isPublicServicesLoading(true));
-
-        const fetchProducts = async () => {
-            try {
-                const data = await store.dispatch('fetchPublicProducts', { minimal: false });
-                products.value = data || [];
-            } catch (err) {
-                console.error('Error fetching products:', err);
-                // Не показываем ошибку для продуктов, если услуги загрузились
-                if (services.value.length === 0) {
-                    error.value = err.message || 'Ошибка загрузки продуктов';
-                }
-            }
-        };
 
         const fetchServices = async () => {
             error.value = null;
@@ -142,11 +103,7 @@ export default {
         };
 
         onMounted(() => {
-            // Загружаем параллельно
-            Promise.all([
-                fetchServices(),
-                fetchProducts(),
-            ]);
+            fetchServices();
         });
 
         const canonicalUrl = computed(() => window.location.origin + '/services');
@@ -170,10 +127,8 @@ export default {
         }));
 
         return {
-            loadingProducts,
             loadingServices,
             error,
-            products,
             services,
             canonicalUrl,
             breadcrumbSchema,

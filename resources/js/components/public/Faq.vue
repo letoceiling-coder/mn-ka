@@ -48,7 +48,7 @@
                             @keydown.space.prevent="toggleAnswer(index)"
                             :aria-expanded="openItems[index]"
                             :aria-controls="`faq-answer-${index}`"
-                            class="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left focus:outline-none focus:ring-2 focus:ring-[#306221] focus:ring-offset-2 transition-colors flex-shrink-0"
+                            class="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left focus:outline-none transition-colors flex-shrink-0"
                             :class="openItems[index] ? 'bg-[#F9FAFB]' : 'bg-transparent'"
                         >
                             <h3 class="flex-1 text-base sm:text-lg md:text-xl font-semibold text-[#424448] leading-relaxed pr-4">
@@ -166,23 +166,31 @@ export default {
             return answer.replace(/\n/g, '<br>');
         };
 
-        // Анимации для аккордеона
+        // Анимации для аккордеона (оптимизированные для плавности)
         const onEnter = (el) => {
+            // Устанавливаем начальное состояние сразу
             el.style.height = '0';
             el.style.opacity = '0';
+            // Принудительно запускаем рефлоу для синхронизации
+            el.offsetHeight;
         };
 
         const onAfterEnter = (el) => {
-            nextTick(() => {
+            // Используем requestAnimationFrame для более плавной анимации
+            requestAnimationFrame(() => {
                 el.style.height = `${el.scrollHeight}px`;
                 el.style.opacity = '1';
             });
         };
 
         const onLeave = (el) => {
+            // Сохраняем текущую высоту перед анимацией
             el.style.height = `${el.scrollHeight}px`;
             el.style.opacity = '1';
-            nextTick(() => {
+            // Принудительно запускаем рефлоу
+            el.offsetHeight;
+            // Используем requestAnimationFrame для плавности
+            requestAnimationFrame(() => {
                 el.style.height = '0';
                 el.style.opacity = '0';
             });
@@ -213,15 +221,17 @@ export default {
 </script>
 
 <style scoped>
-/* Плавные анимации для аккордеона */
+/* Плавные анимации для аккордеона (оптимизированные) */
 .faq-accordion-enter-active {
-    transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-out;
     overflow: hidden;
+    will-change: height, opacity;
 }
 
 .faq-accordion-leave-active {
-    transition: height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+    transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-in;
     overflow: hidden;
+    will-change: height, opacity;
 }
 
 .faq-accordion-enter-from,
@@ -276,10 +286,9 @@ export default {
     color: #657C6C;
 }
 
-/* Улучшенная доступность для фокуса */
+/* Улучшенная доступность для фокуса - убрано зеленое кольцо */
 button:focus-visible {
-    outline: 2px solid #306221;
-    outline-offset: 2px;
+    outline: none;
 }
 
 /* Плавная анимация для карточек */

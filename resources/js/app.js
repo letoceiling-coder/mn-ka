@@ -399,13 +399,28 @@ const routes = [
                 path: ':slug',
                 name: 'page',
                 component: () => import('./pages/Page.vue'),
-                beforeEnter: (to, from, next) => {
+                beforeEnter: async (to, from, next) => {
                     // Исключаем зарезервированные пути
                     const reservedPaths = ['admin', 'login', 'register', 'forgot-password', 'reset-password', '403', '404', '500'];
                     if (reservedPaths.includes(to.params.slug)) {
                         next('/404');
-                    } else {
+                        return;
+                    }
+                    
+                    // Проверяем существование страницы через API
+                    try {
+                        const response = await fetch(`/api/public/pages/${to.params.slug}`);
+                        if (!response.ok || response.status === 404) {
+                            // Страница не найдена - сразу редиректим на 404
+                            next('/404');
+                            return;
+                        }
+                        // Страница существует - продолжаем
                         next();
+                    } catch (err) {
+                        // При ошибке также редиректим на 404
+                        console.error('Error checking page existence:', err);
+                        next('/404');
                     }
                 },
             },

@@ -3,7 +3,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-semibold text-foreground">Меню</h1>
-                <p class="text-muted-foreground mt-1">Управление меню сайта (Header, Footer, Burger)</p>
+                <p class="text-muted-foreground mt-1">Управление меню сайта (Header, Footer)</p>
             </div>
             <button
                 @click="showCreateModal = true"
@@ -196,7 +196,6 @@ export default {
         const menuTypes = [
             { value: 'header', label: 'Header Меню' },
             { value: 'footer', label: 'Footer Меню' },
-            { value: 'burger', label: 'Burger Меню' },
         ]
 
         const availableParents = computed(() => {
