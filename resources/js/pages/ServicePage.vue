@@ -43,9 +43,17 @@
                             </h1>
                             <div 
                                 v-if="service.description" 
-                                class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center"
+                                class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center mb-4"
                                 v-html="typeof service.description === 'string' ? service.description : service.description?.ru || ''"
                             ></div>
+                            <div class="flex justify-center md:justify-start">
+                                <button
+                                    @click="showFeedbackModal = true"
+                                    class="px-6 md:px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
+                                >
+                                    Получить услугу
+                                </button>
+                            </div>
                         </div>
                         <div class="relative">
                             <LazyImage
@@ -176,6 +184,13 @@
                 </button>
             </div>
         </div>
+
+        <!-- Модальное окно обратной связи -->
+        <FeedbackModal
+            :is-open="showFeedbackModal"
+            @close="showFeedbackModal = false"
+            @success="showFeedbackModal = false"
+        />
     </div>
 </template>
 
@@ -190,6 +205,7 @@ import ProductSkeleton from '../components/public/ProductSkeleton.vue';
 import ServiceOptionsStage from '../components/public/service/OptionsStage.vue';
 import ServiceFormsStage from '../components/public/service/FormsStage.vue';
 import ServiceSuccessStage from '../components/public/service/SuccessStage.vue';
+import FeedbackModal from '../components/public/FeedbackModal.vue';
 
 export default {
     name: 'ServicePage',
@@ -201,6 +217,7 @@ export default {
         ServiceOptionsStage,
         ServiceFormsStage,
         ServiceSuccessStage,
+        FeedbackModal,
     },
     setup() {
         const route = useRoute();
@@ -224,6 +241,7 @@ export default {
         });
         const windowWidth = ref(window.innerWidth);
         const showInfoModal = ref(false);
+        const showFeedbackModal = ref(false);
         const modalSettings = ref(null);
         const formContainer = ref(null);
         
@@ -417,7 +435,7 @@ export default {
             try {
                 // Загружаем все услуги из store (минимальный набор для карточек)
                 const data = await store.dispatch('fetchPublicServices', { minimal: true });
-                // Фильтруем все услуги, исключая текущую
+                    // Фильтруем все услуги, исключая текущую
                 servicesList.value = (data || []).filter(s => s.id !== service.value?.id);
             } catch (err) {
                 console.error('Error fetching services:', err);
@@ -564,6 +582,7 @@ export default {
             formData,
             windowWidth,
             showInfoModal,
+            showFeedbackModal,
             modalSettings,
             currentStageComponent,
             canProceed,

@@ -173,7 +173,7 @@ export default {
             } else {
                 // Во всех остальных случаях (method, не указан, или пустой) открываем форму обратной связи
                 console.log('Opening feedback modal');
-                showFeedbackModal.value = true;
+                    showFeedbackModal.value = true;
             }
         };
 

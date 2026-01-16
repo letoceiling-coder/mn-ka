@@ -90,12 +90,12 @@ export default {
             error.value = null;
             try {
                 const servicesList = await store.dispatch('fetchPublicServices', { minimal: true });
-                // Сортируем услуги по полю order (если есть)
+                    // Сортируем услуги по полю order (если есть)
                 services.value = (servicesList || []).sort((a, b) => {
-                    const orderA = a.order ?? 999999;
-                    const orderB = b.order ?? 999999;
-                    return orderA - orderB;
-                });
+                        const orderA = a.order ?? 999999;
+                        const orderB = b.order ?? 999999;
+                        return orderA - orderB;
+                    });
             } catch (err) {
                 console.error('Error fetching services:', err);
                 error.value = err.message || 'Ошибка загрузки услуг';

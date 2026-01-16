@@ -43,9 +43,17 @@
                         </h1>
                         <div 
                             v-if="product.description" 
-                            class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center"
+                            class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center mb-4"
                             v-html="typeof product.description === 'string' ? product.description : product.description?.ru || ''"
                         ></div>
+                        <div class="flex justify-center md:justify-start">
+                            <button
+                                @click="showFeedbackModal = true"
+                                class="px-6 md:px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
+                            >
+                                Получить услугу
+                            </button>
+                        </div>
                     </div>
                     <div class="relative">
                         <LazyImage
@@ -213,6 +221,13 @@
                 </button>
             </div>
         </div>
+
+        <!-- Модальное окно обратной связи -->
+        <FeedbackModal
+            :is-open="showFeedbackModal"
+            @close="showFeedbackModal = false"
+            @success="showFeedbackModal = false"
+        />
     </div>
 </template>
 
@@ -230,6 +245,7 @@ import { useProductCache } from '../composables/useProductCache';
 import OptionsStage from '../components/public/product/OptionsStage.vue';
 import FormsStage from '../components/public/product/FormsStage.vue';
 import SuccessStage from '../components/public/product/SuccessStage.vue';
+import FeedbackModal from '../components/public/FeedbackModal.vue';
 
 export default {
     name: 'ProductPage',
@@ -242,6 +258,7 @@ export default {
         OptionsStage,
         FormsStage,
         SuccessStage,
+        FeedbackModal,
     },
     setup() {
         const route = useRoute();
@@ -264,6 +281,7 @@ export default {
         });
         const windowWidth = ref(window.innerWidth);
         const showInfoModal = ref(false);
+        const showFeedbackModal = ref(false);
         const modalSettings = ref(null);
         const formContainer = ref(null); // Ref для контейнера формы
         
@@ -734,6 +752,7 @@ export default {
             formData,
             windowWidth,
             showInfoModal,
+            showFeedbackModal,
             modalSettings,
             currentStageComponent,
             formattedCount,

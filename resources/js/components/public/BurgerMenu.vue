@@ -88,7 +88,7 @@
                     <div v-else-if="products.length === 0" class="text-white/70 text-sm">Продукты не найдены</div>
                     <template v-else>
                         <div class="font-medium text-xl sm:text-2xl md:text-[28px] leading-6 sm:leading-[34px] text-white mb-3 sm:mb-2">Продуктовые направления</div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                         <div 
                             v-for="product in products" 
                             :key="product.name"
@@ -135,7 +135,7 @@
                                 </router-link>
                             </div>
                         </div>
-                        </div>
+                    </div>
                     </template>
                 </div>
             </div>

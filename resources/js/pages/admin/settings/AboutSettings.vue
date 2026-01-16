@@ -394,7 +394,7 @@
             <div class="bg-card rounded-lg border border-border p-6 space-y-6 opacity-60">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-xl font-semibold text-foreground">Почему выбирают нас</h2>
+                    <h2 class="text-xl font-semibold text-foreground">Почему выбирают нас</h2>
                         <p class="text-xs text-muted-foreground mt-1">
                             ⚠️ Это поле больше не используется на странице "О нас". Используется компонент "Почему выбирают нас" из настроек блоков.
                         </p>
