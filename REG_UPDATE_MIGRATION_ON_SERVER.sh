@@ -1,3 +1,7 @@
+#!/bin/bash
+# Скрипт для обновления миграции на сервере
+
+cat > database/migrations/2025_11_08_171010_add_protected_to_folders_table.php << 'ENDOFFILE'
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -46,3 +50,8 @@ return new class extends Migration
         });
     }
 };
+ENDOFFILE
+
+echo "Файл обновлен. Проверяю синтаксис..."
+php -l database/migrations/2025_11_08_171010_add_protected_to_folders_table.php
+
