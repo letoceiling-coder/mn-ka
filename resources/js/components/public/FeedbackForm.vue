@@ -86,6 +86,15 @@
                     </p>
                 </div>
 
+                <!-- Чекбокс согласия на обработку ПДн -->
+                <div class="pt-2">
+                    <ConsentCheckbox 
+                        v-model="consentGiven" 
+                        :error="consentError"
+                        @update:error="consentError = $event"
+                    />
+                </div>
+
                 <!-- Кнопка отправки -->
                 <div class="flex justify-center pt-4">
                     <button
@@ -124,9 +133,13 @@
 <script>
 import { ref, computed, watch } from 'vue';
 import Swal from 'sweetalert2';
+import ConsentCheckbox from './ConsentCheckbox.vue';
 
 export default {
     name: 'FeedbackForm',
+    components: {
+        ConsentCheckbox,
+    },
     props: {
         title: {
             type: String,
@@ -149,6 +162,8 @@ export default {
         const loading = ref(false);
         const success = ref(false);
         const error = ref(null);
+        const consentGiven = ref(false);
+        const consentError = ref(false);
 
         // Форматирование телефона
         const formatPhone = (value) => {
@@ -194,14 +209,33 @@ export default {
         });
 
         const canSubmit = computed(() => {
-            return form.value.name.trim() !== '' && form.value.message.trim() !== '';
+            return form.value.name.trim() !== '' && form.value.message.trim() !== '' && consentGiven.value;
         });
 
         const submitForm = async () => {
-            if (!canSubmit.value || loading.value) return;
+            if (loading.value) return;
 
             errors.value = {};
             error.value = null;
+            consentError.value = false;
+
+            // Проверка согласия на обработку ПДн
+            if (!consentGiven.value) {
+                consentError.value = true;
+                return;
+            }
+
+            // Проверка обязательных полей
+            if (form.value.name.trim() === '' || form.value.message.trim() === '') {
+                if (form.value.name.trim() === '') {
+                    errors.value.name = 'Поле обязательно для заполнения';
+                }
+                if (form.value.message.trim() === '') {
+                    errors.value.message = 'Поле обязательно для заполнения';
+                }
+                return;
+            }
+
             loading.value = true;
 
             try {
@@ -237,6 +271,8 @@ export default {
                     email: '',
                     message: '',
                 };
+                consentGiven.value = false;
+                consentError.value = false;
 
                 // Показываем уведомление
                 await Swal.fire({
@@ -266,6 +302,8 @@ export default {
             success,
             error,
             canSubmit,
+            consentGiven,
+            consentError,
             submitForm,
         };
     },

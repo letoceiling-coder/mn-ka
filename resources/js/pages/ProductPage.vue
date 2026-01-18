@@ -155,6 +155,15 @@
                         </button>
                     </div>
 
+                    <!-- Чекбокс согласия на обработку ПДн (только для этапа forms) -->
+                    <div v-if="stage === 'forms'" class="mt-6 px-5">
+                        <ConsentCheckbox 
+                            v-model="consentGiven" 
+                            :error="consentError"
+                            @update:error="consentError = $event"
+                        />
+                    </div>
+
                     <!-- Кнопка действия -->
                     <div class="mt-6 mb-8 flex justify-center">
                         <button
@@ -246,6 +255,7 @@ import OptionsStage from '../components/public/product/OptionsStage.vue';
 import FormsStage from '../components/public/product/FormsStage.vue';
 import SuccessStage from '../components/public/product/SuccessStage.vue';
 import FeedbackModal from '../components/public/FeedbackModal.vue';
+import ConsentCheckbox from '../components/public/ConsentCheckbox.vue';
 
 export default {
     name: 'ProductPage',
@@ -259,6 +269,7 @@ export default {
         FormsStage,
         SuccessStage,
         FeedbackModal,
+        ConsentCheckbox,
     },
     setup() {
         const route = useRoute();
@@ -279,6 +290,8 @@ export default {
             phone: '',
             comment: '',
         });
+        const consentGiven = ref(false);
+        const consentError = ref(false);
         const windowWidth = ref(window.innerWidth);
         const showInfoModal = ref(false);
         const showFeedbackModal = ref(false);
@@ -321,7 +334,7 @@ export default {
                 return servicesCount.value > 0;
             }
             if (stage.value === 'forms') {
-                return formData.value.name.trim() !== '' && formData.value.phone.trim() !== '';
+                return formData.value.name.trim() !== '' && formData.value.phone.trim() !== '' && consentGiven.value;
             }
             return false;
         });
@@ -345,6 +358,12 @@ export default {
                 await nextTick();
                 await scrollToForm();
             } else if (stage.value === 'forms') {
+                // Проверка согласия перед отправкой
+                if (!consentGiven.value) {
+                    consentError.value = true;
+                    return;
+                }
+                consentError.value = false;
                 await submitForm();
             }
         };
@@ -761,6 +780,8 @@ export default {
             handleServicesUpdate,
             handleFormUpdate,
             handleNextStage,
+            consentGiven,
+            consentError,
             formContainer,
             scrollToForm,
             loadingLists,

@@ -133,6 +133,15 @@
                             <component :is="currentStageComponent" :service="service" @update-options="handleOptionsUpdate" @update-form="handleFormUpdate"></component>
                         </div>
 
+                        <!-- Чекбокс согласия на обработку ПДн (только для этапа forms) -->
+                        <div v-if="stage === 'forms'" class="mt-6 px-4 md:px-6">
+                            <ConsentCheckbox 
+                                v-model="consentGiven" 
+                                :error="consentError"
+                                @update:error="consentError = $event"
+                            />
+                        </div>
+
                         <!-- Кнопка действия -->
                         <div class="mt-6 mb-8 flex justify-center px-4 md:px-6">
                             <button
@@ -206,6 +215,7 @@ import ServiceOptionsStage from '../components/public/service/OptionsStage.vue';
 import ServiceFormsStage from '../components/public/service/FormsStage.vue';
 import ServiceSuccessStage from '../components/public/service/SuccessStage.vue';
 import FeedbackModal from '../components/public/FeedbackModal.vue';
+import ConsentCheckbox from '../components/public/ConsentCheckbox.vue';
 
 export default {
     name: 'ServicePage',
@@ -218,6 +228,7 @@ export default {
         ServiceFormsStage,
         ServiceSuccessStage,
         FeedbackModal,
+        ConsentCheckbox,
     },
     setup() {
         const route = useRoute();
@@ -239,6 +250,8 @@ export default {
             phone: '',
             comment: '',
         });
+        const consentGiven = ref(false);
+        const consentError = ref(false);
         const windowWidth = ref(window.innerWidth);
         const showInfoModal = ref(false);
         const showFeedbackModal = ref(false);
@@ -261,7 +274,7 @@ export default {
                 return selectedOptions.value.appCategory && selectedOptions.value.chapter && selectedOptions.value.case;
             }
             if (stage.value === 'forms') {
-                return formData.value.name.trim() !== '' && formData.value.phone.trim() !== '';
+                return formData.value.name.trim() !== '' && formData.value.phone.trim() !== '' && consentGiven.value;
             }
             return false;
         });
@@ -284,6 +297,12 @@ export default {
                 await nextTick();
                 await scrollToForm();
             } else if (stage.value === 'forms') {
+                // Проверка согласия перед отправкой
+                if (!consentGiven.value) {
+                    consentError.value = true;
+                    return;
+                }
+                consentError.value = false;
                 await submitForm();
             }
         };
@@ -589,6 +608,8 @@ export default {
             handleOptionsUpdate,
             handleFormUpdate,
             handleNextStage,
+            consentGiven,
+            consentError,
             formContainer,
             scrollToForm,
             loadingLists,

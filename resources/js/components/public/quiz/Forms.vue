@@ -50,18 +50,17 @@
                         placeholder="+7 (999) 123-45-67"
                     />
                 </div>
-                <div class="flex items-start">
-                    <input
-                        id="quiz-check"
-                        v-model="data.form.check"
-                        type="checkbox"
-                        required
-                        class="mt-1 h-4 w-4 rounded border-gray-300 text-[#657C6C] focus:ring-[#657C6C] focus:ring-2"
+                
+                <!-- Чекбокс согласия на обработку ПДн -->
+                <div class="pt-2">
+                    <ConsentCheckbox 
+                        v-model="data.form.check" 
+                        :error="consentError"
+                        @update:error="consentError = $event"
+                        input-id="quiz-consent-checkbox"
                     />
-                    <label for="quiz-check" class="ml-3 text-sm text-gray-600">
-                        Отправляя данную форму, вы соглашаетесь на обработку персональных данных
-                    </label>
                 </div>
+                
                 <button
                     type="submit"
                     :disabled="!isFormValid"
@@ -75,8 +74,13 @@
 </template>
 
 <script>
+import ConsentCheckbox from '../ConsentCheckbox.vue';
+
 export default {
     name: 'Forms',
+    components: {
+        ConsentCheckbox,
+    },
     props: {
         data: {
             type: Object,
@@ -88,6 +92,11 @@ export default {
         },
     },
     emits: ['next', 'answer'],
+    data() {
+        return {
+            consentError: false,
+        };
+    },
     computed: {
         isFormValid() {
             return (
@@ -103,6 +112,13 @@ export default {
     },
     methods: {
         async handleSubmit() {
+            // Проверка согласия перед отправкой
+            if (!this.data.form.check) {
+                this.consentError = true;
+                return;
+            }
+            this.consentError = false;
+
             if (this.isFormValid) {
                 // Сохраняем ответ формы
                 this.$emit('answer', this.data.form);

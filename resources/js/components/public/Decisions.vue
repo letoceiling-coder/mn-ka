@@ -20,15 +20,15 @@
 
             <!-- Контент -->
             <template v-else>
-                <!-- Сетка карточек -->
-                <div v-if="allItems.length > 0" class="relative">
+                <!-- Сетка карточек (только первые 9) -->
+                <div v-if="displayedItems.length > 0" class="relative">
                     <TransitionGroup
                         name="stagger"
                         tag="div"
                         class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6"
                     >
                         <DecisionCard
-                            v-for="(item, index) in allItems"
+                            v-for="(item, index) in displayedItems"
                             :key="`${item.id}-${item.category}`"
                             :decision="item"
                             :slug="item.category === 'products' ? 'products' : 'services'"
@@ -38,13 +38,23 @@
                 <div v-else class="flex justify-center items-center py-12">
                     <div class="text-gray-500">Продукты и услуги не найдены</div>
                 </div>
+
+                <!-- Кнопка "Услуги" -->
+                <div v-if="displayedItems.length > 0" class="flex justify-center mt-8 sm:mt-10">
+                    <router-link
+                        to="/services"
+                        class="font-semibold text-xs leading-[15px] text-black bg-white rounded-lg inline-flex items-center justify-center outline-none no-underline shadow-[0_4px_6px_rgba(65,132,144,0.1),0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer select-none h-[45px] transition-all duration-200 border-0 px-[15px] whitespace-nowrap hover:scale-105"
+                    >
+                        Услуги
+                    </router-link>
+                </div>
             </template>
         </div>
     </div>
 </template>
 
 <script>
-import { ref, onMounted, TransitionGroup } from 'vue';
+import { ref, computed, onMounted, TransitionGroup } from 'vue';
 import { useStore } from 'vuex';
 import DecisionCard from './DecisionCard.vue';
 
@@ -79,6 +89,11 @@ export default {
 
         // Все элементы (продукты и услуги)
         const allItems = ref([]);
+
+        // Ограничиваем отображение до первых 9 карточек
+        const displayedItems = computed(() => {
+            return allItems.value.slice(0, 9);
+        });
 
         // Загрузка всех продуктов и услуг из store
         const loadChapters = async () => {
@@ -121,6 +136,7 @@ export default {
         return {
             title,
             allItems,
+            displayedItems,
             loading,
             error,
         };
