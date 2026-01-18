@@ -1,5 +1,9 @@
 RewriteEngine on
 
+# Redirect non-www to www (to match SSL certificate)
+RewriteCond %{HTTP_HOST} ^mn-ka\.ru$ [NC]
+RewriteRule ^(.*)$ https://www.mn-ka.ru/$1 [L,R=301]
+
 RewriteCond %{REQUEST_URI} !^/public/
 
 RewriteCond %{REQUEST_URI} !-f
