@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import Swal from 'sweetalert2';
@@ -65,6 +65,7 @@ export default {
 
         const fetchPage = async () => {
             if (!isEdit.value) {
+                page.value = null;
                 return;
             }
 
@@ -124,6 +125,16 @@ export default {
         onMounted(() => {
             fetchPage();
         });
+
+        // Отслеживаем изменения параметра id в маршруте
+        watch(
+            () => route.params.id,
+            (newId, oldId) => {
+                if (newId !== oldId) {
+                    fetchPage();
+                }
+            }
+        );
 
         return {
             loading,
