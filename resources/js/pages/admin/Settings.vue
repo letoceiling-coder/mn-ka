@@ -89,6 +89,27 @@
                     Редактирование настроек футера: контакты, соцсети, меню
                 </p>
             </router-link>
+
+            <!-- JavaScript Settings Card -->
+            <router-link
+                to="/admin/settings/javascript"
+                class="bg-card rounded-lg border border-border p-6 hover:border-accent transition-colors cursor-pointer"
+            >
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-foreground">JavaScript код</h2>
+                        <p class="text-sm text-muted-foreground">Аналитика и отслеживание</p>
+                    </div>
+                </div>
+                <p class="text-sm text-muted-foreground">
+                    Добавление JavaScript кода для Яндекс.Метрики, Google Analytics и других сервисов
+                </p>
+            </router-link>
         </div>
     </div>
 </template>

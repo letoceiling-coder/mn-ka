@@ -84,59 +84,20 @@
                 </div>
                 
                 <div class="mt-6 sm:mt-12 pb-6 sm:pb-0 burger-menu-content">
-                    <div v-if="loadingProducts" class="text-white/70 text-sm">Загрузка продуктов...</div>
+                    <div class="font-medium text-xl sm:text-2xl md:text-[28px] leading-6 sm:leading-[34px] text-white mb-3 sm:mb-2">Продуктовые направления</div>
+                    <div v-if="loadingProducts" class="text-white/70 text-sm">Загрузка...</div>
                     <div v-else-if="products.length === 0" class="text-white/70 text-sm">Продукты не найдены</div>
-                    <template v-else>
-                        <div class="font-medium text-xl sm:text-2xl md:text-[28px] leading-6 sm:leading-[34px] text-white mb-3 sm:mb-2">Продуктовые направления</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                        <div 
-                            v-for="product in products" 
-                            :key="product.name"
-                            class="mt-3"
-                            :class="{'border-b border-white/20 pb-4 sm:pb-3': isMobile}"
-                        >
-                            <div 
-                                v-if="product.name !== 'Без категории'"
-                                class="font-medium text-base sm:text-lg md:text-2xl md:text-[28px] leading-5 sm:leading-6 md:leading-[34px] text-white mb-3 sm:mb-4 cursor-pointer"
-                                :class="{'flex items-center gap-2 sm:gap-[10px] py-1': isMobile}"
-                                @click="toggleProduct(product)"
+                    <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                        <div v-for="product in products" :key="product.slug" class="w-full">
+                            <router-link 
+                                :to="product.slug" 
+                                @click="$emit('close')"
+                                class="font-normal text-sm md:text-[14px] leading-5 md:leading-[17px] text-[#F4F6FC] no-underline block mb-3 sm:mb-2.5 py-1 hover:text-white transition-colors"
                             >
                                 {{ product.name }}
-                                <svg 
-                                    v-if="isMobile"
-                                    width="16" 
-                                    height="16" 
-                                    viewBox="0 0 16 16" 
-                                    fill="none" 
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="transition-transform duration-300"
-                                    :class="{'rotate-180': expandedProducts.includes(product.name)}"
-                                >
-                                    <path 
-                                        fill-rule="evenodd" 
-                                        clip-rule="evenodd"
-                                        d="M7.29374 5.29331C7.48124 5.10604 7.73541 5.00085 8.00041 5.00085C8.26541 5.00085 8.51957 5.10604 8.70708 5.29331L12.4791 9.06397C12.5719 9.15686 12.6456 9.26713 12.6958 9.38848C12.746 9.50982 12.7719 9.63988 12.7718 9.77121C12.7718 9.90254 12.7459 10.0326 12.6956 10.1539C12.6453 10.2752 12.5716 10.3855 12.4787 10.4783C12.3859 10.5712 12.2756 10.6448 12.1542 10.695C12.0329 10.7453 11.9028 10.7711 11.7715 10.7711C11.6402 10.771 11.5101 10.7451 11.3888 10.6948C11.2675 10.6446 11.1573 10.5709 11.0644 10.478L8.00041 7.41464L4.93641 10.4786C4.84421 10.5742 4.7339 10.6504 4.61192 10.7029C4.48994 10.7554 4.35873 10.783 4.22595 10.7842C4.09318 10.7854 3.96149 10.7602 3.83857 10.71C3.71565 10.6598 3.60396 10.5856 3.51002 10.4917C3.41609 10.3979 3.34178 10.2862 3.29144 10.1634C3.2411 10.0405 3.21574 9.90883 3.21683 9.77605C3.21792 9.64327 3.24545 9.51204 3.2978 9.39001C3.35015 9.26798 3.42628 9.1576 3.52174 9.06531L7.29374 5.29331Z"
-                                        fill="#F4F6FC"
-                                    />
-                                </svg>
-                            </div>
-                            <div 
-                                v-show="!isMobile || expandedProducts.includes(product.name) || product.name === 'Без категории'"
-                                :class="product.name === 'Без категории' ? 'mt-0 p-0' : 'mt-2 p-0'"
-                            >
-                                <router-link
-                                    v-for="child in product.items"
-                                    :key="child.slug"
-                                    :to="child.slug"
-                                    @click="$emit('close')"
-                                    class="font-normal text-sm md:text-[14px] leading-5 md:leading-[17px] text-[#F4F6FC] no-underline block mb-2 sm:mb-2.5 py-1"
-                                >
-                                    {{ child.name }}
-                                </router-link>
-                            </div>
+                            </router-link>
                         </div>
                     </div>
-                    </template>
                 </div>
             </div>
         </div>
@@ -163,7 +124,6 @@ export default {
         const searchQuery = ref('');
         const services = ref([]);
         const products = ref([]);
-        const expandedProducts = ref([]);
         const isMobile = computed(() => typeof window !== 'undefined' && window.innerWidth <= 767);
         
         // Состояния загрузки из store
@@ -198,31 +158,20 @@ export default {
             try {
                 const productsList = await store.dispatch('fetchPublicProducts', { minimal: false });
                 
-                // Группируем продукты по chapter (разделам)
-                const groupedProducts = {};
-                
-                productsList.forEach(product => {
-                    const chapterName = product.chapter?.name || 'Без категории';
-                    const chapterId = product.chapter_id || 'no-chapter';
-                    
-                    if (!groupedProducts[chapterId]) {
-                        groupedProducts[chapterId] = {
-                            name: chapterName,
-                            items: [],
+                // Преобразуем в плоский список, как услуги
+                products.value = productsList
+                    .sort((a, b) => {
+                        const orderA = a.order ?? 999999;
+                        const orderB = b.order ?? 999999;
+                        return orderA - orderB;
+                    })
+                    .map(product => {
+                        const productSlug = product.slug ? product.slug.replace(/^\/+/, '') : '';
+                        return {
+                            slug: productSlug ? `/products/${productSlug}` : '/products',
+                            name: product.name || product.title,
                         };
-                    }
-                    
-                    const productSlug = product.slug ? product.slug.replace(/^\/+/, '') : '';
-                    groupedProducts[chapterId].items.push({
-                        slug: productSlug ? `/products/${productSlug}` : '/products',
-                        name: product.name,
                     });
-                });
-                
-                // Преобразуем объект в массив и сортируем
-                products.value = Object.values(groupedProducts)
-                    .filter(group => group.items.length > 0)
-                    .sort((a, b) => a.name.localeCompare(b.name));
             } catch (err) {
                 console.error('Error fetching products:', err);
             }
@@ -244,17 +193,6 @@ export default {
             }
         });
 
-        const toggleProduct = (product) => {
-            if (isMobile.value) {
-                const index = expandedProducts.value.indexOf(product.name);
-                if (index > -1) {
-                    expandedProducts.value.splice(index, 1);
-                } else {
-                    expandedProducts.value.push(product.name);
-                }
-            }
-        };
-
         const handleSearch = () => {
             if (searchQuery.value.trim()) {
                 const query = searchQuery.value.trim();
@@ -274,9 +212,7 @@ export default {
             products,
             loadingServices,
             loadingProducts,
-            expandedProducts,
             isMobile,
-            toggleProduct,
             handleSearch,
         };
     },

@@ -27,6 +27,7 @@ class SeoSettings extends Model
         'allow_indexing',
         'robots_txt',
         'additional_schema',
+        'custom_js_code',
     ];
 
     protected $casts = [

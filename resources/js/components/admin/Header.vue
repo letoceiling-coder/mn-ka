@@ -123,6 +123,7 @@ export default {
             'admin.settings.about': 'О нас',
             'admin.settings.footer': 'Футер',
             'admin.settings.case-cards': 'Карточки кейсов',
+            'admin.settings.javascript': 'JavaScript код',
             'admin.menus': 'Меню',
             'admin.banners.home': 'Баннер главной',
             'admin.notifications': 'Уведомления',

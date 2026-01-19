@@ -18,6 +18,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    @php
+        $seoSettings = \App\Models\SeoSettings::getSettings();
+        $customJsCode = $seoSettings->custom_js_code ?? '';
+    @endphp
+    
+    @if(!empty($customJsCode))
+        {!! $customJsCode !!}
+    @endif
+    
     @verbatim
     <script>
         // Применяем тему до загрузки страницы, чтобы избежать мигания
@@ -160,7 +170,7 @@
                     <circle cx="30" cy="30" r="26" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="163.363" stroke-dashoffset="163.363" class="preloader-circle">
                         <animate attributeName="stroke-dashoffset" dur="1.5s" values="163.363;0;163.363" repeatCount="indefinite"/>
                     </circle>
-                    <text x="30" y="38" font-family="Montserrat, sans-serif" font-size="24" font-weight="600" text-anchor="middle" fill="currentColor">L</text>
+                    <text x="30" y="38" font-family="Montserrat, sans-serif" font-size="24" font-weight="600" text-anchor="middle" fill="currentColor">M</text>
                 </svg>
             </div>
             <div class="preloader-text">Загрузка...</div>

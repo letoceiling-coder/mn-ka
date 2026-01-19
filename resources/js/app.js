@@ -566,6 +566,12 @@ const routes = [
                 meta: { requiresAuth: true, requiresRole: ['admin', 'manager'] },
             },
             {
+                path: 'settings/javascript',
+                name: 'admin.settings.javascript',
+                component: () => import('./pages/admin/settings/JSSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin'] },
+            },
+            {
                 path: 'menus',
                 name: 'admin.menus',
                 component: () => import('./pages/admin/Menus.vue'),

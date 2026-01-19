@@ -56,6 +56,7 @@ class SeoSettingsController extends Controller
             'allow_indexing' => 'nullable|boolean',
             'robots_txt' => 'nullable|string',
             'additional_schema' => 'nullable|array',
+            'custom_js_code' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -106,6 +107,7 @@ class SeoSettingsController extends Controller
                     'twitter_site' => $settings->twitter_site,
                     'organization_schema' => $settings->getOrganizationSchema(),
                     'website_schema' => $settings->getWebSiteSchema(),
+                    'custom_js_code' => $settings->custom_js_code,
                 ],
             ]);
         } catch (\Exception $e) {
