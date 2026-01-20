@@ -260,6 +260,9 @@ class QuizSubmissionController extends Controller
                     ]);
                     $emailError = 'Невалидный email адрес';
                 } else {
+                // Применяем SMTP настройки из базы данных
+                \App\Services\SmtpConfigService::applySettings();
+                
                 // Проверяем настройки почты перед отправкой
                 $mailConfig = config('mail.default');
                 Log::info('Попытка отправки email', [

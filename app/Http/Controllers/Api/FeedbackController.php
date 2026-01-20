@@ -9,6 +9,7 @@ use App\Models\EmailSettings;
 use App\Mail\FeedbackMail;
 use App\Services\NotificationTool;
 use App\Services\TelegramService;
+use App\Services\SmtpConfigService;
 use App\Helpers\EmailHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -89,6 +90,9 @@ class FeedbackController extends Controller
 
             // Отправляем email на адрес из настроек
             try {
+                // Применяем SMTP настройки из базы данных
+                SmtpConfigService::applySettings();
+                
                 $emailSettings = EmailSettings::getSettings();
                 $recipientEmail = $emailSettings->recipient_email;
                 

@@ -123,6 +123,7 @@ export default {
             'admin.settings.about': 'О нас',
             'admin.settings.footer': 'Футер',
             'admin.settings.email': 'Email',
+            'admin.settings.smtp': 'SMTP',
             'admin.settings.case-cards': 'Карточки кейсов',
             'admin.settings.javascript': 'JavaScript код',
             'admin.menus': 'Меню',

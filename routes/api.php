@@ -36,6 +36,7 @@ use App\Http\Controllers\Api\ContactSettingsController;
 use App\Http\Controllers\Api\AboutSettingsController;
 use App\Http\Controllers\Api\FooterSettingsController;
 use App\Http\Controllers\Api\EmailSettingsController;
+use App\Http\Controllers\Api\SmtpSettingsController;
 use App\Http\Controllers\Api\CaseCardSettingsController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\DecisionController;
@@ -136,6 +137,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('footer-settings', [FooterSettingsController::class, 'update']);
             Route::get('email-settings', [EmailSettingsController::class, 'show']);
             Route::put('email-settings', [EmailSettingsController::class, 'update']);
+            Route::get('smtp-settings', [SmtpSettingsController::class, 'show']);
+            Route::put('smtp-settings', [SmtpSettingsController::class, 'update']);
             Route::get('case-card-settings', [CaseCardSettingsController::class, 'show']);
             Route::put('case-card-settings', [CaseCardSettingsController::class, 'update']);
             Route::get('telegram-admin-requests', [TelegramAdminRequestController::class, 'index']);
