@@ -63,8 +63,11 @@ class FooterSettingsController extends Controller
             'social_networks.instagram' => 'nullable|url|max:500',
             'social_networks.telegram' => 'nullable|url|max:500',
             'vk_icon_id' => 'nullable|exists:media,id',
+            'vk_icon_svg' => 'nullable|string',
             'instagram_icon_id' => 'nullable|exists:media,id',
+            'instagram_icon_svg' => 'nullable|string',
             'telegram_icon_id' => 'nullable|exists:media,id',
+            'telegram_icon_svg' => 'nullable|string',
             'privacy_policy_link' => 'nullable|string|max:500',
             'copyright' => 'nullable|string|max:255',
         ]);
@@ -86,8 +89,11 @@ class FooterSettingsController extends Controller
             'issues_email',
             'social_networks',
             'vk_icon_id',
+            'vk_icon_svg',
             'instagram_icon_id',
+            'instagram_icon_svg',
             'telegram_icon_id',
+            'telegram_icon_svg',
             'privacy_policy_link',
             'copyright',
         ]));

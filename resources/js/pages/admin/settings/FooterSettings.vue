@@ -163,14 +163,25 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-muted-foreground mb-1">
-                                Иконка для VK
+                                Иконка для VK (SVG код)
+                            </label>
+                            <textarea
+                                v-model="settings.vk_icon_svg"
+                                placeholder="Вставьте SVG код иконки"
+                                rows="4"
+                                class="w-full px-3 py-2 border border-border rounded bg-background text-xs font-mono"
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted-foreground mb-1">
+                                Или выберите изображение из медиа
                             </label>
                             <div class="space-y-2">
                                 <div v-if="settings.vk_icon" class="flex items-center gap-3">
                                     <img
                                         :src="settings.vk_icon.url"
                                         alt="VK icon"
-                                        class="w-10 h-10 object-contain rounded border border-border bg-background"
+                                        class="w-[60px] h-[60px] object-contain rounded border border-border bg-background"
                                     />
                                     <div class="flex gap-2">
                                         <button
@@ -217,14 +228,25 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-muted-foreground mb-1">
-                                Иконка для Instagram
+                                Иконка для Instagram (SVG код)
+                            </label>
+                            <textarea
+                                v-model="settings.instagram_icon_svg"
+                                placeholder="Вставьте SVG код иконки"
+                                rows="4"
+                                class="w-full px-3 py-2 border border-border rounded bg-background text-xs font-mono"
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted-foreground mb-1">
+                                Или выберите изображение из медиа
                             </label>
                             <div class="space-y-2">
                                 <div v-if="settings.instagram_icon" class="flex items-center gap-3">
                                     <img
                                         :src="settings.instagram_icon.url"
                                         alt="Instagram icon"
-                                        class="w-10 h-10 object-contain rounded border border-border bg-background"
+                                        class="w-[60px] h-[60px] object-contain rounded border border-border bg-background"
                                     />
                                     <div class="flex gap-2">
                                         <button
@@ -399,6 +421,16 @@ export default {
             }
             if (typeof data.telegram_icon === 'undefined') {
                 data.telegram_icon = null;
+            }
+
+            if (typeof data.vk_icon_svg === 'undefined') {
+                data.vk_icon_svg = null;
+            }
+            if (typeof data.instagram_icon_svg === 'undefined') {
+                data.instagram_icon_svg = null;
+            }
+            if (typeof data.telegram_icon_svg === 'undefined') {
+                data.telegram_icon_svg = null;
             }
 
             return data;

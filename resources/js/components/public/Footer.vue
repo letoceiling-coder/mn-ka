@@ -62,47 +62,53 @@
                         >
                             <!-- VK -->
                             <a 
-                                v-if="settings.social_networks?.vk && settings.vk_icon?.url"
+                                v-if="settings.social_networks?.vk && (settings.vk_icon_svg || settings.vk_icon?.url)"
                                 :href="settings.social_networks.vk"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="hover:opacity-80 transition-opacity"
+                                class="hover:opacity-80 transition-opacity flex items-center justify-center social-icon-link"
                             >
                                 <img
+                                    v-if="settings.vk_icon?.url"
                                     :src="settings.vk_icon.url"
                                     alt="VK"
-                                    class="w-[57px] h-[35px] object-contain"
+                                    class="social-icon-img"
                                 />
+                                <div v-else-if="settings.vk_icon_svg" v-html="settings.vk_icon_svg" class="social-icon-svg"></div>
                             </a>
 
                             <!-- Instagram -->
                             <a 
-                                v-if="settings.social_networks?.instagram && settings.instagram_icon?.url"
+                                v-if="settings.social_networks?.instagram && (settings.instagram_icon_svg || settings.instagram_icon?.url)"
                                 :href="settings.social_networks.instagram"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="hover:opacity-80 transition-opacity"
+                                class="hover:opacity-80 transition-opacity flex items-center justify-center social-icon-link"
                             >
                                 <img
+                                    v-if="settings.instagram_icon?.url"
                                     :src="settings.instagram_icon.url"
                                     alt="Instagram"
-                                    class="w-[35px] h-[35px] object-contain"
+                                    class="social-icon-img"
                                 />
+                                <div v-else-if="settings.instagram_icon_svg" v-html="settings.instagram_icon_svg" class="social-icon-svg"></div>
                             </a>
 
                             <!-- Telegram -->
                             <a 
-                                v-if="settings.social_networks?.telegram && settings.telegram_icon?.url"
+                                v-if="settings.social_networks?.telegram && (settings.telegram_icon_svg || settings.telegram_icon?.url)"
                                 :href="settings.social_networks.telegram"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="hover:opacity-80 transition-opacity"
+                                class="hover:opacity-80 transition-opacity flex items-center justify-center social-icon-link"
                             >
                                 <img
+                                    v-if="settings.telegram_icon?.url"
                                     :src="settings.telegram_icon.url"
                                     alt="Telegram"
-                                    class="w-[41px] h-[35px] object-contain"
+                                    class="social-icon-img"
                                 />
+                                <div v-else-if="settings.telegram_icon_svg" v-html="settings.telegram_icon_svg" class="social-icon-svg"></div>
                             </a>
                         </div>
                     </div>
@@ -163,9 +169,9 @@ export default {
             const socials = settings.value.social_networks;
             const data = settings.value;
             return !!(
-                (socials.vk && data.vk_icon && data.vk_icon.url) ||
-                (socials.instagram && data.instagram_icon && data.instagram_icon.url) ||
-                (socials.telegram && data.telegram_icon && data.telegram_icon.url)
+                (socials.vk && (data.vk_icon_svg || (data.vk_icon && data.vk_icon.url))) ||
+                (socials.instagram && (data.instagram_icon_svg || (data.instagram_icon && data.instagram_icon.url))) ||
+                (socials.telegram && (data.telegram_icon_svg || (data.telegram_icon && data.telegram_icon.url)))
             );
         });
 
@@ -272,6 +278,37 @@ a {
     .footer-menu-item {
         font-size: 1.125rem;
     }
+}
+
+/* Стили для иконок соцсетей */
+.social-icon-link {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.social-icon-svg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-icon-svg svg {
+    width: 100%;
+    height: 100%;
+    max-width: 60px;
+    max-height: 60px;
+    object-fit: contain;
+}
+
+.social-icon-img {
+    max-width: 60px;
+    max-height: 60px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
 }
 
 </style>

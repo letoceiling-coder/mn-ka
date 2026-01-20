@@ -28,8 +28,11 @@ class FooterSettingsResource extends JsonResource
             'privacy_policy_link' => $this->privacy_policy_link,
             'copyright' => $this->copyright,
             'vk_icon_id' => $this->vk_icon_id,
+            'vk_icon_svg' => $this->vk_icon_svg,
             'instagram_icon_id' => $this->instagram_icon_id,
+            'instagram_icon_svg' => $this->instagram_icon_svg,
             'telegram_icon_id' => $this->telegram_icon_id,
+            'telegram_icon_svg' => $this->telegram_icon_svg,
             'vk_icon' => $this->whenLoaded('vkIcon', function () {
                 return new MediaResource($this->vkIcon);
             }),
