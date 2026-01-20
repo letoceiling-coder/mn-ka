@@ -147,41 +147,167 @@
             <div class="bg-card rounded-lg border border-border p-6 space-y-6">
                 <h2 class="text-xl font-semibold text-foreground">Социальные сети</h2>
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-foreground mb-2">
-                            VK
-                        </label>
-                        <input
-                            type="url"
-                            v-model="settings.social_networks.vk"
-                            placeholder="https://vk.com/example"
-                            class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
-                        />
+                <div class="space-y-6">
+                    <!-- VK -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">
+                                VK
+                            </label>
+                            <input
+                                type="url"
+                                v-model="settings.social_networks.vk"
+                                placeholder="https://vk.com/example"
+                                class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted-foreground mb-1">
+                                Иконка для VK
+                            </label>
+                            <div class="space-y-2">
+                                <div v-if="settings.vk_icon" class="flex items-center gap-3">
+                                    <img
+                                        :src="settings.vk_icon.url"
+                                        alt="VK icon"
+                                        class="w-10 h-10 object-contain rounded border border-border bg-background"
+                                    />
+                                    <div class="flex gap-2">
+                                        <button
+                                            type="button"
+                                            @click="selectIcon('vk')"
+                                            class="px-3 py-1.5 text-xs bg-accent/10 text-accent border border-accent/40 rounded hover:bg-accent/20"
+                                        >
+                                            Изменить
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="clearIcon('vk')"
+                                            class="px-3 py-1.5 text-xs bg-destructive/10 text-destructive border border-destructive/40 rounded hover:bg-destructive/20"
+                                        >
+                                            Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <button
+                                        type="button"
+                                        @click="selectIcon('vk')"
+                                        class="w-full h-10 border-2 border-dashed border-border rounded flex items-center justify-center hover:bg-muted/10 text-xs text-muted-foreground"
+                                    >
+                                        Выбрать иконку VK из медиа
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-foreground mb-2">
-                            Instagram
-                        </label>
-                        <input
-                            type="url"
-                            v-model="settings.social_networks.instagram"
-                            placeholder="https://instagram.com/example"
-                            class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
-                        />
+                    <!-- Instagram -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">
+                                Instagram
+                            </label>
+                            <input
+                                type="url"
+                                v-model="settings.social_networks.instagram"
+                                placeholder="https://instagram.com/example"
+                                class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted-foreground mb-1">
+                                Иконка для Instagram
+                            </label>
+                            <div class="space-y-2">
+                                <div v-if="settings.instagram_icon" class="flex items-center gap-3">
+                                    <img
+                                        :src="settings.instagram_icon.url"
+                                        alt="Instagram icon"
+                                        class="w-10 h-10 object-contain rounded border border-border bg-background"
+                                    />
+                                    <div class="flex gap-2">
+                                        <button
+                                            type="button"
+                                            @click="selectIcon('instagram')"
+                                            class="px-3 py-1.5 text-xs bg-accent/10 text-accent border border-accent/40 rounded hover:bg-accent/20"
+                                        >
+                                            Изменить
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="clearIcon('instagram')"
+                                            class="px-3 py-1.5 text-xs bg-destructive/10 text-destructive border border-destructive/40 rounded hover:bg-destructive/20"
+                                        >
+                                            Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <button
+                                        type="button"
+                                        @click="selectIcon('instagram')"
+                                        class="w-full h-10 border-2 border-dashed border-border rounded flex items-center justify-center hover:bg-muted/10 text-xs text-muted-foreground"
+                                    >
+                                        Выбрать иконку Instagram из медиа
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-foreground mb-2">
-                            Telegram
-                        </label>
-                        <input
-                            type="url"
-                            v-model="settings.social_networks.telegram"
-                            placeholder="https://t.me/example"
-                            class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
-                        />
+                    <!-- Telegram -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">
+                                Telegram
+                            </label>
+                            <input
+                                type="url"
+                                v-model="settings.social_networks.telegram"
+                                placeholder="https://t.me/example"
+                                class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted-foreground mb-1">
+                                Иконка для Telegram
+                            </label>
+                            <div class="space-y-2">
+                                <div v-if="settings.telegram_icon" class="flex items-center gap-3">
+                                    <img
+                                        :src="settings.telegram_icon.url"
+                                        alt="Telegram icon"
+                                        class="w-10 h-10 object-contain rounded border border-border bg-background"
+                                    />
+                                    <div class="flex gap-2">
+                                        <button
+                                            type="button"
+                                            @click="selectIcon('telegram')"
+                                            class="px-3 py-1.5 text-xs bg-accent/10 text-accent border border-accent/40 rounded hover:bg-accent/20"
+                                        >
+                                            Изменить
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="clearIcon('telegram')"
+                                            class="px-3 py-1.5 text-xs bg-destructive/10 text-destructive border border-destructive/40 rounded hover:bg-destructive/20"
+                                        >
+                                            Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <button
+                                        type="button"
+                                        @click="selectIcon('telegram')"
+                                        class="w-full h-10 border-2 border-dashed border-border rounded flex items-center justify-center hover:bg-muted/10 text-xs text-muted-foreground"
+                                    >
+                                        Выбрать иконку Telegram из медиа
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -197,6 +323,32 @@
                 </button>
             </div>
         </div>
+
+        <!-- Media Selector Modal -->
+        <div
+            v-if="showMediaModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm overflow-y-auto p-4"
+            @click.self="showMediaModal = false"
+        >
+            <div class="bg-background border border-border rounded-lg shadow-2xl w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col my-auto">
+                <div class="p-4 border-b border-border flex items-center justify-between flex-shrink-0">
+                    <h3 class="text-lg font-semibold">Выберите иконку</h3>
+                    <button
+                        @click="showMediaModal = false"
+                        class="text-muted-foreground hover:text-foreground w-8 h-8 flex items-center justify-center rounded hover:bg-muted/10"
+                    >
+                        ✕
+                    </button>
+                </div>
+                <div class="flex-1 overflow-auto h-full">
+                    <Media
+                        :selection-mode="true"
+                        :count-file="1"
+                        @file-selected="handleIconSelected"
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -204,14 +356,53 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import Media from '../Media.vue';
 
 export default {
     name: 'FooterSettings',
+    components: {
+        Media,
+    },
     setup() {
         const loading = ref(true);
         const saving = ref(false);
         const error = ref(null);
         const settings = ref(null);
+
+        const showMediaModal = ref(false);
+        const selectedSocialKey = ref(null);
+
+        const ensureDefaults = (data) => {
+            if (!data.social_networks || typeof data.social_networks !== 'object') {
+                data.social_networks = {
+                    vk: null,
+                    instagram: null,
+                    telegram: null,
+                };
+            }
+
+            if (typeof data.vk_icon_id === 'undefined') {
+                data.vk_icon_id = null;
+            }
+            if (typeof data.instagram_icon_id === 'undefined') {
+                data.instagram_icon_id = null;
+            }
+            if (typeof data.telegram_icon_id === 'undefined') {
+                data.telegram_icon_id = null;
+            }
+
+            if (typeof data.vk_icon === 'undefined') {
+                data.vk_icon = null;
+            }
+            if (typeof data.instagram_icon === 'undefined') {
+                data.instagram_icon = null;
+            }
+            if (typeof data.telegram_icon === 'undefined') {
+                data.telegram_icon = null;
+            }
+
+            return data;
+        };
 
         const fetchSettings = async () => {
             loading.value = true;
@@ -219,16 +410,8 @@ export default {
             
             try {
                 const response = await axios.get('/api/v1/footer-settings');
-                settings.value = response.data.data;
-                
-                // Инициализируем social_networks, если его нет
-                if (!settings.value.social_networks || typeof settings.value.social_networks !== 'object') {
-                    settings.value.social_networks = {
-                        vk: null,
-                        instagram: null,
-                        telegram: null,
-                    };
-                }
+                const data = ensureDefaults(response.data.data || {});
+                settings.value = data;
             } catch (err) {
                 error.value = err.response?.data?.message || 'Ошибка загрузки настроек';
                 console.error('Error fetching footer settings:', err);
@@ -238,11 +421,17 @@ export default {
         };
 
         const saveSettings = async () => {
+            if (!settings.value) return;
+
             saving.value = true;
             error.value = null;
             
             try {
-                const response = await axios.put('/api/v1/footer-settings', settings.value);
+                const payload = {
+                    ...settings.value,
+                };
+
+                await axios.put('/api/v1/footer-settings', payload);
                 
                 await Swal.fire({
                     icon: 'success',
@@ -263,6 +452,36 @@ export default {
             }
         };
 
+        const selectIcon = (socialKey) => {
+            selectedSocialKey.value = socialKey;
+            showMediaModal.value = true;
+        };
+
+        const handleIconSelected = (file) => {
+            if (!file || file.type !== 'photo' || !selectedSocialKey.value || !settings.value) {
+                return;
+            }
+
+            const key = selectedSocialKey.value;
+            const idField = `${key}_icon_id`;
+            const iconField = `${key}_icon`;
+
+            settings.value[idField] = file.id;
+            settings.value[iconField] = file;
+
+            selectedSocialKey.value = null;
+            showMediaModal.value = false;
+        };
+
+        const clearIcon = (socialKey) => {
+            if (!settings.value) return;
+            const idField = `${socialKey}_icon_id`;
+            const iconField = `${socialKey}_icon`;
+
+            settings.value[idField] = null;
+            settings.value[iconField] = null;
+        };
+
         onMounted(() => {
             fetchSettings();
         });
@@ -273,6 +492,11 @@ export default {
             error,
             settings,
             saveSettings,
+            showMediaModal,
+            selectedSocialKey,
+            selectIcon,
+            handleIconSelected,
+            clearIcon,
         };
     },
 };

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\FooterSettingsResource;
 use App\Models\FooterSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,10 +16,14 @@ class FooterSettingsController extends Controller
     public function show()
     {
         try {
-            $settings = FooterSettings::getSettings();
+            $settings = FooterSettings::getSettings()->load([
+                'vkIcon',
+                'instagramIcon',
+                'telegramIcon',
+            ]);
             
             return response()->json([
-                'data' => $settings,
+                'data' => new FooterSettingsResource($settings),
             ]);
         } catch (\Exception $e) {
             \Log::error('Error in FooterSettingsController::show: ' . $e->getMessage(), [
@@ -57,6 +62,9 @@ class FooterSettingsController extends Controller
             'social_networks.vk' => 'nullable|url|max:500',
             'social_networks.instagram' => 'nullable|url|max:500',
             'social_networks.telegram' => 'nullable|url|max:500',
+            'vk_icon_id' => 'nullable|exists:media,id',
+            'instagram_icon_id' => 'nullable|exists:media,id',
+            'telegram_icon_id' => 'nullable|exists:media,id',
             'privacy_policy_link' => 'nullable|string|max:500',
             'copyright' => 'nullable|string|max:255',
         ]);
@@ -77,6 +85,9 @@ class FooterSettingsController extends Controller
             'issues_label',
             'issues_email',
             'social_networks',
+            'vk_icon_id',
+            'instagram_icon_id',
+            'telegram_icon_id',
             'privacy_policy_link',
             'copyright',
         ]));

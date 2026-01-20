@@ -20,6 +20,9 @@ class FooterSettings extends Model
         'issues_label',
         'issues_email',
         'social_networks',
+        'vk_icon_id',
+        'instagram_icon_id',
+        'telegram_icon_id',
         'menu_items',
         'privacy_policy_link',
         'copyright',
@@ -29,6 +32,30 @@ class FooterSettings extends Model
         'social_networks' => 'array',
         'menu_items' => 'array',
     ];
+
+    /**
+     * Иконка VK.
+     */
+    public function vkIcon()
+    {
+        return $this->belongsTo(Media::class, 'vk_icon_id');
+    }
+
+    /**
+     * Иконка Instagram.
+     */
+    public function instagramIcon()
+    {
+        return $this->belongsTo(Media::class, 'instagram_icon_id');
+    }
+
+    /**
+     * Иконка Telegram.
+     */
+    public function telegramIcon()
+    {
+        return $this->belongsTo(Media::class, 'telegram_icon_id');
+    }
 
     /**
      * Получить настройки футера (singleton)
