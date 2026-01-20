@@ -293,14 +293,25 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-muted-foreground mb-1">
-                                Иконка для Telegram
+                                Иконка для Telegram (SVG код)
+                            </label>
+                            <textarea
+                                v-model="settings.telegram_icon_svg"
+                                placeholder="Вставьте SVG код иконки"
+                                rows="4"
+                                class="w-full px-3 py-2 border border-border rounded bg-background text-xs font-mono"
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted-foreground mb-1">
+                                Или выберите изображение из медиа
                             </label>
                             <div class="space-y-2">
                                 <div v-if="settings.telegram_icon" class="flex items-center gap-3">
                                     <img
                                         :src="settings.telegram_icon.url"
                                         alt="Telegram icon"
-                                        class="w-10 h-10 object-contain rounded border border-border bg-background"
+                                        class="w-[60px] h-[60px] object-contain rounded border border-border bg-background"
                                     />
                                     <div class="flex gap-2">
                                         <button
