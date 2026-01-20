@@ -195,9 +195,11 @@ export default {
     setup() {
         const loading = ref(true);
         const saving = ref(false);
+        const testing = ref(false);
         const error = ref(null);
         const settings = ref(null);
         const password = ref('');
+        const testEmail = ref('');
 
         const fetchSettings = async () => {
             loading.value = true;
