@@ -143,6 +143,34 @@
                 </div>
             </div>
 
+            <!-- Test SMTP Section -->
+            <div class="bg-card rounded-lg border border-border p-6 space-y-4">
+                <h2 class="text-xl font-semibold text-foreground">Тестирование SMTP</h2>
+                <p class="text-sm text-muted-foreground">
+                    Отправьте тестовое письмо для проверки настроек SMTP
+                </p>
+                <div class="flex gap-3 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-foreground mb-2">
+                            Email для теста
+                        </label>
+                        <input
+                            type="email"
+                            v-model="testEmail"
+                            placeholder="test@example.com"
+                            class="w-full h-10 px-3 border border-border rounded bg-background text-sm"
+                        />
+                    </div>
+                    <button
+                        @click="testSmtp"
+                        :disabled="testing || !testEmail"
+                        class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap"
+                    >
+                        {{ testing ? 'Отправка...' : 'Отправить тест' }}
+                    </button>
+                </div>
+            </div>
+
             <!-- Save Button -->
             <div class="flex justify-end">
                 <button
@@ -225,6 +253,44 @@ export default {
             }
         };
 
+        const testSmtp = async () => {
+            if (!testEmail.value) {
+                await Swal.fire({
+                    icon: 'warning',
+                    title: 'Внимание',
+                    text: 'Введите email адрес для теста',
+                });
+                return;
+            }
+
+            testing.value = true;
+            error.value = null;
+
+            try {
+                await axios.post('/api/v1/smtp-settings/test', {
+                    email: testEmail.value,
+                });
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Успешно!',
+                    html: `Тестовое письмо отправлено на <strong>${testEmail.value}</strong><br><br>Проверьте почтовый ящик.`,
+                    timer: 4000,
+                });
+            } catch (err) {
+                const errorMessage = err.response?.data?.message || 'Ошибка при отправке тестового письма';
+                const errorDetails = err.response?.data?.error?.message || '';
+                
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Ошибка отправки',
+                    html: `<p>${errorMessage}</p>${errorDetails ? `<p class="text-xs mt-2">${errorDetails}</p>` : ''}`,
+                });
+            } finally {
+                testing.value = false;
+            }
+        };
+
         onMounted(() => {
             fetchSettings();
         });
@@ -232,10 +298,13 @@ export default {
         return {
             loading,
             saving,
+            testing,
             error,
             settings,
             password,
+            testEmail,
             saveSettings,
+            testSmtp,
         };
     },
 };

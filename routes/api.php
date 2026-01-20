@@ -139,6 +139,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('email-settings', [EmailSettingsController::class, 'update']);
             Route::get('smtp-settings', [SmtpSettingsController::class, 'show']);
             Route::put('smtp-settings', [SmtpSettingsController::class, 'update']);
+            Route::post('smtp-settings/test', [SmtpSettingsController::class, 'test']);
             Route::get('case-card-settings', [CaseCardSettingsController::class, 'show']);
             Route::put('case-card-settings', [CaseCardSettingsController::class, 'update']);
             Route::get('telegram-admin-requests', [TelegramAdminRequestController::class, 'index']);
