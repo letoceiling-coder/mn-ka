@@ -33,7 +33,7 @@ class CreateUser extends Command
     public function handle()
     {
         // Если параметры не указаны, используем значения по умолчанию
-        $email = $this->option('email') ?: 'dsc-23@yandex.ru';
+        $email = $this->option('email') ?: 'info@mn-ka.ru';
         $password = $this->option('password') ?: '123123123';
         $name = $this->option('name') ?: 'Джон Уик';
         $rolesInput = $this->option('roles');

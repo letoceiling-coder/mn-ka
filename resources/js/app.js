@@ -560,6 +560,12 @@ const routes = [
                 meta: { requiresAuth: true, requiresRole: ['admin'] },
             },
             {
+                path: 'settings/email',
+                name: 'admin.settings.email',
+                component: () => import('./pages/admin/settings/EmailSettings.vue'),
+                meta: { requiresAuth: true, requiresRole: ['admin'] },
+            },
+            {
                 path: 'settings/case-cards',
                 name: 'admin.settings.case-cards',
                 component: () => import('./pages/admin/settings/CaseCardSettings.vue'),

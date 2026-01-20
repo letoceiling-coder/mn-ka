@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ProductRequest;
 use App\Models\User;
+use App\Models\EmailSettings;
 use App\Mail\FeedbackMail;
 use App\Services\NotificationTool;
 use App\Services\TelegramService;
@@ -86,20 +87,19 @@ class FeedbackController extends Controller
                 );
             }
 
-            // Отправляем email администраторам (только валидные адреса)
+            // Отправляем email на адрес из настроек
             try {
-                $adminEmails = $adminUsers->pluck('email')->filter()->toArray();
-                $validEmails = EmailHelper::filterValidEmails($adminEmails);
+                $emailSettings = EmailSettings::getSettings();
+                $recipientEmail = $emailSettings->recipient_email;
                 
-                if (!empty($validEmails)) {
-                    Mail::to($validEmails)->send(new FeedbackMail($productRequest));
+                if ($recipientEmail && EmailHelper::isValidForSending($recipientEmail)) {
+                    Mail::to($recipientEmail)->send(new FeedbackMail($productRequest));
                     Log::info('Feedback email sent', [
-                        'sent_to' => $validEmails,
-                        'skipped' => array_diff($adminEmails, $validEmails),
+                        'sent_to' => $recipientEmail,
                     ]);
                 } else {
-                    Log::info('No valid emails for feedback notification', [
-                        'all_emails' => $adminEmails,
+                    Log::warning('Invalid or missing recipient email in email settings', [
+                        'recipient_email' => $recipientEmail,
                     ]);
                 }
             } catch (\Exception $e) {
