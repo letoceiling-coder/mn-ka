@@ -75,40 +75,40 @@ export default {
                         return null;
                     }
                     // Для FeedbackForm передаем title и description как props
-                    const props = block.settings || {};
+                    const blockProps = { ...(block.settings || {}) };
                     
                     // Добавляем настройки из HomePageSettings для соответствующих блоков
                     if (homePageSettings.value) {
-                        if (block.component === 'HeroBanner' && homePageSettings.value.hero_title) {
-                            props.title = homePageSettings.value.hero_title;
-                            props.subtitle = homePageSettings.value.hero_subtitle;
-                            props.buttonText = homePageSettings.value.hero_button_text;
-                            props.buttonLink = homePageSettings.value.hero_button_link;
-                        } else if (block.component === 'Decisions' && homePageSettings.value.select_title) {
-                            props.title = homePageSettings.value.select_title;
-                            props.subtitle = homePageSettings.value.select_subtitle;
-                        } else if (block.component === 'HowWork' && homePageSettings.value.work_title) {
-                            props.title = homePageSettings.value.work_title;
-                            props.items = homePageSettings.value.work_items;
-                            props.buttonText = homePageSettings.value.work_button_text;
-                            props.buttonLink = homePageSettings.value.work_button_link;
-                        } else if (block.component === 'Faq' && homePageSettings.value.faq_title) {
-                            props.title = homePageSettings.value.faq_title;
-                            props.items = homePageSettings.value.faq_items;
-                        } else if (block.component === 'WhyChooseUs' && homePageSettings.value.benefits_title) {
-                            props.title = homePageSettings.value.benefits_title;
-                            props.items = homePageSettings.value.benefits_items;
-                        } else if (block.component === 'FeedbackForm' && homePageSettings.value.contact_title) {
-                            props.title = homePageSettings.value.contact_title;
-                            props.subtitle = homePageSettings.value.contact_subtitle;
-                            props.hintText = homePageSettings.value.contact_form_hint_text;
+                        if (block.component === 'HeroBanner') {
+                            if (homePageSettings.value.hero_title) blockProps.title = homePageSettings.value.hero_title;
+                            if (homePageSettings.value.hero_subtitle) blockProps.subtitle = homePageSettings.value.hero_subtitle;
+                            if (homePageSettings.value.hero_button_text) blockProps.buttonText = homePageSettings.value.hero_button_text;
+                            if (homePageSettings.value.hero_button_link) blockProps.buttonLink = homePageSettings.value.hero_button_link;
+                        } else if (block.component === 'Decisions') {
+                            if (homePageSettings.value.select_title) blockProps.title = homePageSettings.value.select_title;
+                            if (homePageSettings.value.select_subtitle) blockProps.subtitle = homePageSettings.value.select_subtitle;
+                        } else if (block.component === 'HowWork') {
+                            if (homePageSettings.value.work_title) blockProps.title = homePageSettings.value.work_title;
+                            if (homePageSettings.value.work_items) blockProps.items = homePageSettings.value.work_items;
+                            if (homePageSettings.value.work_button_text) blockProps.buttonText = homePageSettings.value.work_button_text;
+                            if (homePageSettings.value.work_button_link) blockProps.buttonLink = homePageSettings.value.work_button_link;
+                        } else if (block.component === 'Faq') {
+                            if (homePageSettings.value.faq_title) blockProps.title = homePageSettings.value.faq_title;
+                            if (homePageSettings.value.faq_items) blockProps.items = homePageSettings.value.faq_items;
+                        } else if (block.component === 'WhyChooseUs') {
+                            if (homePageSettings.value.benefits_title) blockProps.title = homePageSettings.value.benefits_title;
+                            if (homePageSettings.value.benefits_items) blockProps.items = homePageSettings.value.benefits_items;
+                        } else if (block.component === 'FeedbackForm') {
+                            if (homePageSettings.value.contact_title) blockProps.title = homePageSettings.value.contact_title;
+                            if (homePageSettings.value.contact_subtitle) blockProps.subtitle = homePageSettings.value.contact_subtitle;
+                            if (homePageSettings.value.contact_form_hint_text) blockProps.hintText = homePageSettings.value.contact_form_hint_text;
                         }
                     }
                     
                     return {
                         key: block.key,
                         component,
-                        props,
+                        props: blockProps,
                     };
                 })
                 .filter(block => block !== null);

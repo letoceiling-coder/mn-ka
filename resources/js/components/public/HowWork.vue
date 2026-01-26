@@ -160,12 +160,12 @@ export default {
 
         // Computed для отображения с fallback
         const displayTitle = computed(() => {
-            return props.title || settings.value?.title || null;
+            return props?.title || settings.value?.title || null;
         });
 
         const displayItems = computed(() => {
             // Если пришли items из props (HomePageSettings), используем их
-            if (props.items && Array.isArray(props.items)) {
+            if (props?.items && Array.isArray(props.items)) {
                 return props.items;
             }
             // Иначе используем steps из settings
@@ -173,11 +173,11 @@ export default {
         });
 
         const displayButtonText = computed(() => {
-            return props.buttonText || settings.value?.button_text || null;
+            return props?.buttonText || settings.value?.button_text || null;
         });
 
         const displayButtonLink = computed(() => {
-            return props.buttonLink || (settings.value?.button_type === 'url' ? settings.value?.button_value : null);
+            return props?.buttonLink || (settings.value?.button_type === 'url' ? settings.value?.button_value : null);
         });
 
         const fetchSettings = async () => {

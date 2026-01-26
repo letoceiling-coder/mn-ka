@@ -86,19 +86,19 @@ export default {
 
         // Computed для отображения с fallback
         const displayTitle = computed(() => {
-            return props.title || banner.value?.heading_1 || banner.value?.heading_2 || null;
+            return props?.title || banner.value?.heading_1 || banner.value?.heading_2 || null;
         });
 
         const displaySubtitle = computed(() => {
-            return props.subtitle || banner.value?.description || null;
+            return props?.subtitle || banner.value?.description || null;
         });
 
         const displayButtonText = computed(() => {
-            return props.buttonText || banner.value?.button_text || null;
+            return props?.buttonText || banner.value?.button_text || null;
         });
 
         const displayButtonLink = computed(() => {
-            return props.buttonLink || (banner.value?.button_type === 'url' ? banner.value?.button_value : null);
+            return props?.buttonLink || (banner.value?.button_type === 'url' ? banner.value?.button_value : null);
         });
 
         const fetchBanner = async () => {

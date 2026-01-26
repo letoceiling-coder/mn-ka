@@ -134,11 +134,11 @@ export default {
 
         // Computed для отображения с fallback
         const displayTitle = computed(() => {
-            return props.title || settings.value?.title || null;
+            return props?.title || settings.value?.title || null;
         });
 
         const displayItems = computed(() => {
-            return props.items || settings.value?.faq_items || [];
+            return props?.items || settings.value?.faq_items || [];
         });
 
         const fetchSettings = async () => {
@@ -149,7 +149,7 @@ export default {
                     if (data.data) {
                         settings.value = data.data;
                         // Инициализируем состояние открытых элементов
-                        const items = props.items || data.data.faq_items || [];
+                        const items = props?.items || data.data.faq_items || [];
                         if (Array.isArray(items)) {
                             items.forEach((_, index) => {
                                 openItems.value[index] = false;

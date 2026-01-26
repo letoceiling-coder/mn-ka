@@ -8,9 +8,9 @@
                 </h2>
             </div>
             <!-- Подзаголовок -->
-            <div v-if="props.subtitle" class="flex justify-center mb-6 sm:mb-8">
+            <div v-if="subtitle" class="flex justify-center mb-6 sm:mb-8">
                 <p class="text-base sm:text-lg text-gray-600 text-center max-w-3xl">
-                    {{ props.subtitle }}
+                    {{ subtitle }}
                 </p>
             </div>
 
@@ -88,7 +88,11 @@ export default {
 
         // Computed для отображения с fallback
         const displayTitle = computed(() => {
-            return props.title || titleFromSettings.value;
+            return props?.title || titleFromSettings.value;
+        });
+
+        const subtitle = computed(() => {
+            return props?.subtitle || null;
         });
 
         // Загрузка настроек блока
@@ -156,6 +160,7 @@ export default {
 
         return {
             displayTitle,
+            subtitle,
             allItems,
             displayedItems,
             loading,

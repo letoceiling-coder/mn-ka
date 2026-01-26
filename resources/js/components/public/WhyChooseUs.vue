@@ -77,11 +77,11 @@ export default {
 
         // Computed для отображения с fallback
         const displayTitle = computed(() => {
-            return props.title || settings.value?.title || null;
+            return props?.title || settings.value?.title || null;
         });
 
         const displayItems = computed(() => {
-            return props.items || settings.value?.items || [];
+            return props?.items || settings.value?.items || [];
         });
 
         const fetchSettings = async () => {
