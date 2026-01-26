@@ -1,15 +1,21 @@
 <template>
-    <section class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20 bg-background">
+    <section class="w-full px-3 sm:px-4 md:px-5 py-20 md:py-24 bg-background">
         <div class="w-full max-w-[1200px] mx-auto">
             <div class="feedback-form-container bg-[#F4F6FC] py-8 md:py-12 px-4 md:px-6 rounded-lg">
                 <div class="max-w-4xl mx-auto">
             <!-- Заголовок -->
-            <div v-if="title || description" class="text-center mb-8">
+            <div v-if="title || subtitle" class="text-center mb-8">
                 <h2 v-if="title" class="text-2xl md:text-3xl font-semibold text-foreground mb-3">
                     {{ title }}
                 </h2>
-                <p v-if="description" class="text-muted-foreground text-base md:text-lg">
-                    {{ description }}
+                <p v-if="subtitle" class="text-muted-foreground text-base md:text-lg">
+                    {{ subtitle }}
+                </p>
+            </div>
+            <!-- Подсказка -->
+            <div v-if="hintText" class="text-center mb-4">
+                <p class="text-sm text-muted-foreground">
+                    {{ hintText }}
                 </p>
             </div>
 
@@ -145,9 +151,13 @@ export default {
             type: String,
             default: 'Обратная связь',
         },
-        description: {
+        subtitle: {
             type: String,
             default: 'Оставьте ваше сообщение, и мы обязательно свяжемся с вами',
+        },
+        hintText: {
+            type: String,
+            default: null,
         },
     },
     setup() {

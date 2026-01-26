@@ -1,14 +1,14 @@
 <template>
     <section 
         v-if="settings && settings.is_active" 
-        class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-b from-[#F4F6FC] to-white"
+        class="w-full px-3 sm:px-4 md:px-5 py-20 md:py-24 bg-gradient-to-b from-[#F4F6FC] to-white"
         aria-label="Часто задаваемые вопросы"
     >
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
-            <div v-if="settings.title" class="text-center mb-10 sm:mb-12 md:mb-16">
-                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#424448] mb-3 sm:mb-4">
-                    {{ settings.title }}
+            <div v-if="displayTitle" class="text-center mb-10 sm:mb-12 md:mb-16">
+                <h2 class="text-2xl md:text-3xl font-semibold text-[#424448] mb-3 sm:mb-4">
+                    {{ displayTitle }}
                 </h2>
                 <div class="w-20 h-1 bg-[#306221] mx-auto rounded-full"></div>
             </div>
@@ -23,12 +23,12 @@
 
             <!-- FAQ Items -->
             <div 
-                v-else-if="settings.faq_items && settings.faq_items.length > 0" 
+                v-else-if="displayItems && displayItems.length > 0" 
                 class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6 items-stretch"
                 role="list"
             >
                 <div
-                    v-for="(item, index) in settings.faq_items"
+                    v-for="(item, index) in displayItems"
                     :key="`faq-${index}-${item.question}`"
                     class="group h-full"
                     role="listitem"
@@ -113,14 +113,33 @@
 </template>
 
 <script>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 
 export default {
     name: 'Faq',
-    setup() {
+    props: {
+        title: {
+            type: String,
+            default: null,
+        },
+        items: {
+            type: Array,
+            default: null,
+        },
+    },
+    setup(props) {
         const settings = ref(null);
         const loading = ref(true);
         const openItems = ref({});
+
+        // Computed для отображения с fallback
+        const displayTitle = computed(() => {
+            return props.title || settings.value?.title || null;
+        });
+
+        const displayItems = computed(() => {
+            return props.items || settings.value?.faq_items || [];
+        });
 
         const fetchSettings = async () => {
             try {
@@ -130,8 +149,9 @@ export default {
                     if (data.data) {
                         settings.value = data.data;
                         // Инициализируем состояние открытых элементов
-                        if (data.data.faq_items && Array.isArray(data.data.faq_items)) {
-                            data.data.faq_items.forEach((_, index) => {
+                        const items = props.items || data.data.faq_items || [];
+                        if (Array.isArray(items)) {
+                            items.forEach((_, index) => {
                                 openItems.value[index] = false;
                             });
                         }
@@ -209,6 +229,8 @@ export default {
             settings,
             loading,
             openItems,
+            displayTitle,
+            displayItems,
             toggleAnswer,
             formatAnswer,
             onEnter,

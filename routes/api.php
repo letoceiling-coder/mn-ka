@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\SmtpSettingsController;
 use App\Http\Controllers\Api\CaseCardSettingsController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\DecisionController;
+use App\Http\Controllers\Api\HomePageSettingsController;
 use App\Http\Controllers\Api\v1\FolderController;
 use App\Http\Controllers\Api\v1\MediaController;
 use Illuminate\Support\Facades\Route;
@@ -142,6 +143,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('smtp-settings/test', [SmtpSettingsController::class, 'test']);
             Route::get('case-card-settings', [CaseCardSettingsController::class, 'show']);
             Route::put('case-card-settings', [CaseCardSettingsController::class, 'update']);
+            Route::get('home-page-settings', [HomePageSettingsController::class, 'show']);
+            Route::put('home-page-settings', [HomePageSettingsController::class, 'update']);
             Route::get('telegram-admin-requests', [TelegramAdminRequestController::class, 'index']);
             Route::post('telegram-admin-requests/{id}/approve', [TelegramAdminRequestController::class, 'approve']);
             Route::post('telegram-admin-requests/{id}/reject', [TelegramAdminRequestController::class, 'reject']);
@@ -187,6 +190,9 @@ Route::get('/public/why-choose-us-block/settings', [WhyChooseUsBlockSettingsCont
 
 // Публичные маршруты для Home Page Blocks (без авторизации)
 Route::get('/public/home-page-blocks', [HomePageBlocksController::class, 'getPublic']);
+
+// Публичные маршруты для настроек главной страницы (без авторизации)
+Route::get('/public/home-page-settings', [HomePageSettingsController::class, 'show']);
 
 // Публичные маршруты для Pages (без авторизации)
 Route::get('/public/pages/{slug}', [PageController::class, 'getBySlug']);

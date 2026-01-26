@@ -22,6 +22,12 @@ class Product extends Model
         'seo_keywords',
         'image_id',
         'icon_id',
+        'card_preview_image_id',
+        'short_description',
+        'page_title',
+        'page_subtitle',
+        'cta_text',
+        'cta_link',
         'chapter_id',
         'order',
         'is_active',
@@ -90,6 +96,14 @@ class Product extends Model
     public function icon(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'icon_id');
+    }
+
+    /**
+     * Изображение для карточки (превью)
+     */
+    public function cardPreviewImage(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'card_preview_image_id');
     }
 
     /**

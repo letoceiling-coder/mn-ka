@@ -53,6 +53,7 @@ export default {
         const { hidePreloader } = usePreloader();
         const blocks = ref([]);
         const loading = ref(true);
+        const homePageSettings = ref(null);
         // Инициализируем seoSettings с дефолтными значениями сразу
         // Это предотвращает мерцание title/description при загрузке
         const defaultSeoSettings = {
@@ -75,6 +76,35 @@ export default {
                     }
                     // Для FeedbackForm передаем title и description как props
                     const props = block.settings || {};
+                    
+                    // Добавляем настройки из HomePageSettings для соответствующих блоков
+                    if (homePageSettings.value) {
+                        if (block.component === 'HeroBanner' && homePageSettings.value.hero_title) {
+                            props.title = homePageSettings.value.hero_title;
+                            props.subtitle = homePageSettings.value.hero_subtitle;
+                            props.buttonText = homePageSettings.value.hero_button_text;
+                            props.buttonLink = homePageSettings.value.hero_button_link;
+                        } else if (block.component === 'Decisions' && homePageSettings.value.select_title) {
+                            props.title = homePageSettings.value.select_title;
+                            props.subtitle = homePageSettings.value.select_subtitle;
+                        } else if (block.component === 'HowWork' && homePageSettings.value.work_title) {
+                            props.title = homePageSettings.value.work_title;
+                            props.items = homePageSettings.value.work_items;
+                            props.buttonText = homePageSettings.value.work_button_text;
+                            props.buttonLink = homePageSettings.value.work_button_link;
+                        } else if (block.component === 'Faq' && homePageSettings.value.faq_title) {
+                            props.title = homePageSettings.value.faq_title;
+                            props.items = homePageSettings.value.faq_items;
+                        } else if (block.component === 'WhyChooseUs' && homePageSettings.value.benefits_title) {
+                            props.title = homePageSettings.value.benefits_title;
+                            props.items = homePageSettings.value.benefits_items;
+                        } else if (block.component === 'FeedbackForm' && homePageSettings.value.contact_title) {
+                            props.title = homePageSettings.value.contact_title;
+                            props.subtitle = homePageSettings.value.contact_subtitle;
+                            props.hintText = homePageSettings.value.contact_form_hint_text;
+                        }
+                    }
+                    
                     return {
                         key: block.key,
                         component,
@@ -183,8 +213,23 @@ export default {
             }
         };
 
+        const fetchHomePageSettings = async () => {
+            try {
+                const response = await fetch('/api/public/home-page-settings');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data) {
+                        homePageSettings.value = data.data;
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching home page settings:', error);
+            }
+        };
+
         onMounted(() => {
             fetchSeoSettings();
+            fetchHomePageSettings();
             fetchBlocks();
         });
 

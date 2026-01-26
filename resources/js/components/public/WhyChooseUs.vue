@@ -1,17 +1,17 @@
 <template>
-    <section v-if="settings && settings.is_active" class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20 bg-background">
+    <section v-if="settings && settings.is_active" class="w-full px-3 sm:px-4 md:px-5 py-20 md:py-24 bg-background">
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
-            <div v-if="settings.title" class="flex justify-center mb-6 md:mb-8">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground text-center">
-                    {{ settings.title }}
+            <div v-if="displayTitle" class="flex justify-center mb-6 md:mb-8">
+                <h2 class="text-2xl md:text-3xl font-semibold text-foreground text-center">
+                    {{ displayTitle }}
                 </h2>
             </div>
 
             <!-- Сетка карточек (Bootstrap-like grid с разными размерами) -->
-            <div v-if="settings.items && settings.items.length > 0" class="flex flex-wrap -mx-3">
+            <div v-if="displayItems && displayItems.length > 0" class="flex flex-wrap -mx-3">
                 <div
-                    v-for="(item, index) in settings.items"
+                    v-for="(item, index) in displayItems"
                     :key="index"
                     :class="getCardColumnClass(item, index)"
                     class="px-3 mb-3"
@@ -35,11 +35,19 @@
                         
                         <!-- Текст (абсолютное позиционирование слева вверху) -->
                         <div 
-                            v-if="item.text" 
+                            v-if="item.text || item.title" 
                             class="card-title absolute left-5 top-5 text-base sm:text-lg font-medium leading-[22px]"
                             :class="getCardTextClass(item, index)"
-                            v-html="item.text"
+                            v-html="item.text || item.title"
                         >
+                        </div>
+                        <!-- Короткий текст, если есть -->
+                        <div 
+                            v-if="item.short_text && !item.text && !item.title" 
+                            class="card-title absolute left-5 top-5 text-base sm:text-lg font-medium leading-[22px]"
+                            :class="getCardTextClass(item, index)"
+                        >
+                            {{ item.short_text }}
                         </div>
                     </div>
                 </div>
@@ -49,13 +57,32 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 export default {
     name: 'WhyChooseUs',
-    setup() {
+    props: {
+        title: {
+            type: String,
+            default: null,
+        },
+        items: {
+            type: Array,
+            default: null,
+        },
+    },
+    setup(props) {
         const settings = ref(null);
         const loading = ref(true);
+
+        // Computed для отображения с fallback
+        const displayTitle = computed(() => {
+            return props.title || settings.value?.title || null;
+        });
+
+        const displayItems = computed(() => {
+            return props.items || settings.value?.items || [];
+        });
 
         const fetchSettings = async () => {
             try {
@@ -125,6 +152,8 @@ export default {
         return {
             settings,
             loading,
+            displayTitle,
+            displayItems,
             getCardColumnClass,
             getCardBgClass,
             getCardTextClass,

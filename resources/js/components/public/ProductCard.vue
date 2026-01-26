@@ -8,11 +8,17 @@
                 </h1>
             </div>
             
-            <!-- Нижний ряд: иконка справа -->
+            <!-- Короткое описание, если есть -->
+            <div v-if="decision.short_description" class="text-xs text-gray-600 line-clamp-1 mb-2">
+                {{ decision.short_description }}
+            </div>
+            
+            <!-- Нижний ряд: изображение или иконка справа -->
             <div class="flex justify-end">
-                <div v-if="decision.icon && decision.icon.url" class="flex-shrink-0 w-[80px] h-[60px] flex items-center justify-center">
+                <!-- Используем card_preview_image, если есть, иначе icon -->
+                <div v-if="(decision.card_preview_image && decision.card_preview_image.url) || (decision.icon && decision.icon.url)" class="flex-shrink-0 w-[80px] h-[60px] flex items-center justify-center">
                     <img 
-                        :src="decision.icon.url" 
+                        :src="(decision.card_preview_image && decision.card_preview_image.url) ? decision.card_preview_image.url : decision.icon.url" 
                         :alt="decision.name"
                         class="max-w-full max-h-full object-contain"
                         loading="lazy"

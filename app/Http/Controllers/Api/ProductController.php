@@ -30,7 +30,7 @@ class ProductController extends Controller
             $cacheKey = "product_slug_{$slug}";
             
             return Cache::remember($cacheKey, $cacheTime, function () use ($request, $slug) {
-                $query = Product::with(['image', 'icon', 'services.chapter', 'chapter'])->ordered();
+                $query = Product::with(['image', 'icon', 'cardPreviewImage', 'services.chapter', 'chapter'])->ordered();
                 
                 // Очищаем slug от слэшей
                 $cleanSlug = trim($slug, '/');
@@ -53,7 +53,7 @@ class ProductController extends Controller
 
         // Для списка продуктов
         return Cache::remember($cacheKey, $cacheTime, function () use ($request) {
-            $query = Product::with(['image', 'icon', 'chapter'])->ordered();
+            $query = Product::with(['image', 'icon', 'cardPreviewImage', 'chapter'])->ordered();
 
             if ($request->has('chapter_id')) {
                 $query->where('chapter_id', $request->chapter_id);
@@ -91,6 +91,12 @@ class ProductController extends Controller
             'html_content' => 'nullable|string',
             'image_id' => 'nullable|exists:media,id',
             'icon_id' => 'nullable|exists:media,id',
+            'card_preview_image_id' => 'nullable|exists:media,id',
+            'short_description' => 'nullable|string|max:500',
+            'page_title' => 'nullable|string|max:255',
+            'page_subtitle' => 'nullable|string|max:500',
+            'cta_text' => 'nullable|string|max:255',
+            'cta_link' => 'nullable|string|max:500',
             'chapter_id' => 'nullable|exists:chapters,id',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
@@ -111,6 +117,12 @@ class ProductController extends Controller
             'html_content',
             'image_id',
             'icon_id',
+            'card_preview_image_id',
+            'short_description',
+            'page_title',
+            'page_subtitle',
+            'cta_text',
+            'cta_link',
             'chapter_id',
             'order',
             'is_active',
@@ -143,7 +155,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'Продукт успешно создан',
-            'data' => new ProductResource($product->load(['image', 'icon', 'services', 'chapter'])),
+            'data' => new ProductResource($product->load(['image', 'icon', 'cardPreviewImage', 'services', 'chapter'])),
         ], 201);
     }
 
@@ -152,7 +164,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::with(['image', 'icon', 'services', 'chapter'])->findOrFail($id);
+        $product = Product::with(['image', 'icon', 'cardPreviewImage', 'services', 'chapter'])->findOrFail($id);
         
         return response()->json([
             'data' => new ProductResource($product),
@@ -173,6 +185,12 @@ class ProductController extends Controller
             'html_content' => 'nullable|string',
             'image_id' => 'nullable|exists:media,id',
             'icon_id' => 'nullable|exists:media,id',
+            'card_preview_image_id' => 'nullable|exists:media,id',
+            'short_description' => 'nullable|string|max:500',
+            'page_title' => 'nullable|string|max:255',
+            'page_subtitle' => 'nullable|string|max:500',
+            'cta_text' => 'nullable|string|max:255',
+            'cta_link' => 'nullable|string|max:500',
             'chapter_id' => 'nullable|exists:chapters,id',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
@@ -194,6 +212,12 @@ class ProductController extends Controller
             'html_content',
             'image_id',
             'icon_id',
+            'card_preview_image_id',
+            'short_description',
+            'page_title',
+            'page_subtitle',
+            'cta_text',
+            'cta_link',
             'chapter_id',
             'order',
             'is_active',
@@ -219,7 +243,7 @@ class ProductController extends Controller
 
         return response()->json([
             'message' => 'Продукт успешно обновлен',
-            'data' => new ProductResource($product->load(['image', 'icon', 'services', 'chapter'])),
+            'data' => new ProductResource($product->load(['image', 'icon', 'cardPreviewImage', 'services', 'chapter'])),
         ]);
     }
 
@@ -266,6 +290,7 @@ class ProductController extends Controller
             $product = Product::with([
                 'image:id,name,disk,metadata,width,height',
                 'icon:id,name,disk,metadata',
+                'cardPreviewImage:id,name,disk,metadata,width,height',
                 'services:id,name,slug',
                 'chapter:id,name',
             ])

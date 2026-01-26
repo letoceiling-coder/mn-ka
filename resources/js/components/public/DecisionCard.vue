@@ -4,6 +4,10 @@
             <div class="name text-sm sm:text-base font-normal text-gray-900 leading-[1.4] mb-2 line-clamp-2 overflow-hidden">
                 {{ decision.name }}
             </div>
+            <!-- Короткое описание, если есть -->
+            <div v-if="decision.short_description" class="text-xs text-gray-600 line-clamp-1 mb-2">
+                {{ decision.short_description }}
+            </div>
             <div class="flex items-center justify-end gap-2 mt-auto flex-shrink-0 pt-1">
                 <span class="text-xs sm:text-sm font-normal text-[#688E67] whitespace-nowrap">подробнее</span>
                 <svg width="16" height="8" viewBox="0 0 16 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="flex-shrink-0">

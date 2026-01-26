@@ -21,25 +21,23 @@
                 :style="bannerStyle"
             >
                 <div class="w-full max-w-2xl">
-                    <div v-if="banner.heading_1 || banner.heading_2 || banner.description" class="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
-                        <h1 v-if="banner.heading_1" class="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold leading-tight drop-shadow-lg">
-                            {{ banner.heading_1 }}
+                    <div v-if="displayTitle || displaySubtitle" class="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
+                        <h1 v-if="displayTitle" class="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold leading-tight drop-shadow-lg">
+                            {{ displayTitle }}
                         </h1>
-                        <h2 v-if="banner.heading_2" class="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold leading-tight drop-shadow-lg">
-                            {{ banner.heading_2 }}
-                        </h2>
-                        <p v-if="banner.description" class="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-normal leading-relaxed whitespace-pre-line drop-shadow-md">
-                            {{ banner.description }}
+                        <p v-if="displaySubtitle" class="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-normal leading-relaxed whitespace-pre-line drop-shadow-md">
+                            {{ displaySubtitle }}
                         </p>
                     </div>
                     <component
-                        :is="banner.button_type === 'method' ? 'button' : 'router-link'"
-                        v-if="banner.button_text"
-                        :to="banner.button_type === 'url' ? banner.button_value : undefined"
-                        @click="handleButtonClick"
-                        class="inline-block bg-[#657C6C] hover:bg-[#55695a] active:bg-[#48554a] text-white font-medium text-base sm:text-lg px-8 sm:px-10 md:px-12 py-3 sm:py-3.5 md:py-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-100 shadow-lg"
+                        :is="displayButtonLink ? 'a' : 'button'"
+                        v-if="displayButtonText"
+                        :href="displayButtonLink || undefined"
+                        :to="displayButtonLink && !displayButtonLink.startsWith('http') ? displayButtonLink : undefined"
+                        @click="!displayButtonLink && handleButtonClick"
+                        class="inline-block px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
                     >
-                        {{ banner.button_text }}
+                        {{ displayButtonText }}
                     </component>
                 </div>
             </div>
@@ -64,11 +62,44 @@ export default {
             type: String,
             default: 'home-banner',
         },
+        title: {
+            type: String,
+            default: null,
+        },
+        subtitle: {
+            type: String,
+            default: null,
+        },
+        buttonText: {
+            type: String,
+            default: null,
+        },
+        buttonLink: {
+            type: String,
+            default: null,
+        },
     },
     setup(props) {
         const banner = ref(null);
         const loading = ref(true);
         const showFeedbackModal = ref(false);
+
+        // Computed для отображения с fallback
+        const displayTitle = computed(() => {
+            return props.title || banner.value?.heading_1 || banner.value?.heading_2 || null;
+        });
+
+        const displaySubtitle = computed(() => {
+            return props.subtitle || banner.value?.description || null;
+        });
+
+        const displayButtonText = computed(() => {
+            return props.buttonText || banner.value?.button_text || null;
+        });
+
+        const displayButtonLink = computed(() => {
+            return props.buttonLink || (banner.value?.button_type === 'url' ? banner.value?.button_value : null);
+        });
 
         const fetchBanner = async () => {
             try {
@@ -152,6 +183,10 @@ export default {
             loading,
             bannerStyle,
             showFeedbackModal,
+            displayTitle,
+            displaySubtitle,
+            displayButtonText,
+            displayButtonLink,
             handleButtonClick,
             handleFeedbackSuccess,
         };

@@ -1,11 +1,17 @@
 <template>
-    <div class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20">
+    <div class="w-full px-3 sm:px-4 md:px-5 py-20 md:py-24">
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
             <div class="flex justify-center mb-6 sm:mb-8">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900">
-                    {{ title }}
+                <h2 class="text-2xl md:text-3xl font-semibold text-gray-900">
+                    {{ displayTitle }}
                 </h2>
+            </div>
+            <!-- Подзаголовок -->
+            <div v-if="props.subtitle" class="flex justify-center mb-6 sm:mb-8">
+                <p class="text-base sm:text-lg text-gray-600 text-center max-w-3xl">
+                    {{ props.subtitle }}
+                </p>
             </div>
 
             <!-- Загрузка -->
@@ -43,7 +49,7 @@
                 <div v-if="displayedItems.length > 0" class="flex justify-center mt-8 sm:mt-10">
                     <router-link
                         to="/services"
-                        class="font-semibold text-xs leading-[15px] text-black bg-white rounded-lg inline-flex items-center justify-center outline-none no-underline shadow-[0_4px_6px_rgba(65,132,144,0.1),0_1px_3px_rgba(0,0,0,0.08)] cursor-pointer select-none h-[45px] transition-all duration-200 border-0 px-[15px] whitespace-nowrap hover:scale-105"
+                        class="px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base inline-flex items-center justify-center"
                     >
                         Услуги
                     </router-link>
@@ -64,11 +70,26 @@ export default {
         DecisionCard,
         TransitionGroup,
     },
-    setup() {
+    props: {
+        title: {
+            type: String,
+            default: null,
+        },
+        subtitle: {
+            type: String,
+            default: null,
+        },
+    },
+    setup(props) {
         const store = useStore();
-        const title = ref('Выберите решение под ваш участок');
+        const titleFromSettings = ref('Выберите решение под ваш участок');
         const loading = ref(true);
         const error = ref(null);
+
+        // Computed для отображения с fallback
+        const displayTitle = computed(() => {
+            return props.title || titleFromSettings.value;
+        });
 
         // Загрузка настроек блока
         const loadSettings = async () => {
@@ -79,7 +100,7 @@ export default {
                 }
                 const result = await response.json();
                 if (result.data && result.data.title) {
-                    title.value = result.data.title;
+                    titleFromSettings.value = result.data.title;
                 }
             } catch (err) {
                 console.error('Ошибка загрузки настроек:', err);
@@ -134,7 +155,7 @@ export default {
         });
 
         return {
-            title,
+            displayTitle,
             allItems,
             displayedItems,
             loading,

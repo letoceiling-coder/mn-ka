@@ -1,65 +1,35 @@
 <template>
     <footer class="bg-[#6C7B6D] mt-auto">
-        <div class="w-full px-3 sm:px-4 md:px-5 pt-5 pb-5">
+        <div class="w-full px-3 sm:px-4 md:px-5 pt-8 pb-6 md:pt-12 md:pb-8">
             <div class="w-full max-w-[1200px] mx-auto">
-                <!-- Заголовок -->
-                <div v-if="settings && settings.title" class="flex justify-center mb-5">
-                    <h2 class="text-2xl md:text-3xl font-semibold text-white text-center">
-                        {{ settings.title }}
-                    </h2>
-                </div>
+                <!-- Основной контент: 4 колонки (2 на мобилке) -->
+                <div v-if="settings" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+                    <!-- Колонка A: О компании -->
+                    <div class="footer-column">
+                        <h3 class="footer-column-title">О компании</h3>
+                        <nav class="footer-nav">
+                            <router-link to="/about" class="footer-link">О MNKA</router-link>
+                            <router-link to="/about#team" class="footer-link">Команда</router-link>
+                            <router-link to="/contacts" class="footer-link">Контакты</router-link>
+                            <router-link to="/about#requisites" class="footer-link">Реквизиты</router-link>
+                        </nav>
+                    </div>
 
-                <!-- Контент футера -->
-                <div v-if="settings" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-5">
-                    <!-- Левая колонка: Контакты и соцсети -->
-                    <div>
-                        <!-- Отдел -->
-                        <div v-if="settings.department_label || settings.department_phone" class="flex flex-col gap-[15px]">
-                            <label class="text-base sm:text-lg text-white font-normal leading-[22px]">
-                                {{ settings.department_label }}
-                            </label>
-                            <a 
-                                v-if="settings.department_phone"
-                                :href="`tel:${settings.department_phone}`"
-                                class="text-xl sm:text-2xl md:text-2xl text-white font-semibold leading-[29px] hover:opacity-80 transition-opacity"
-                            >
-                                {{ settings.department_phone }}
-                            </a>
-                        </div>
+                    <!-- Колонка B: Клиентам -->
+                    <div class="footer-column">
+                        <h3 class="footer-column-title">Клиентам</h3>
+                        <nav class="footer-nav">
+                            <router-link to="/products" class="footer-link">Решения</router-link>
+                            <router-link to="/services" class="footer-link">Услуги</router-link>
+                            <router-link to="/cases" class="footer-link">Кейсы</router-link>
+                            <router-link to="/#faq" class="footer-link">Вопросы и ответы</router-link>
+                        </nav>
+                    </div>
 
-                        <!-- Объекты -->
-                        <div v-if="settings.objects_label || settings.objects_phone" class="flex flex-col gap-[15px] mt-4">
-                            <label class="text-base sm:text-lg text-white font-normal leading-[22px]">
-                                {{ settings.objects_label }}
-                            </label>
-                            <a 
-                                v-if="settings.objects_phone"
-                                :href="`tel:${settings.objects_phone}`"
-                                class="text-xl sm:text-2xl md:text-2xl text-white font-semibold leading-[29px] hover:opacity-80 transition-opacity"
-                            >
-                                {{ settings.objects_phone }}
-                            </a>
-                        </div>
-
-                        <!-- Вопросы -->
-                        <div v-if="settings.issues_label || settings.issues_email" class="flex flex-col gap-[15px] mt-4">
-                            <label class="text-base sm:text-lg text-white font-normal leading-[22px]">
-                                {{ settings.issues_label }}
-                            </label>
-                            <a 
-                                v-if="settings.issues_email"
-                                :href="`mailto:${settings.issues_email}`"
-                                class="text-xl sm:text-2xl md:text-2xl text-white font-semibold leading-[29px] hover:opacity-80 transition-opacity"
-                            >
-                                {{ settings.issues_email }}
-                            </a>
-                        </div>
-
-                        <!-- Социальные сети -->
-                        <div
-                            v-if="hasSocialIcons"
-                            class="flex gap-5 items-center mt-5 mb-3"
-                        >
+                    <!-- Колонка C: Социальные сети -->
+                    <div class="footer-column">
+                        <h3 class="footer-column-title">Социальные сети</h3>
+                        <div class="flex gap-4 items-center mt-4">
                             <!-- VK -->
                             <a 
                                 v-if="settings.social_networks?.vk && (settings.vk_icon_svg || settings.vk_icon?.url)"
@@ -67,6 +37,7 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="hover:opacity-80 transition-opacity flex items-center justify-center social-icon-link"
+                                aria-label="VK"
                             >
                                 <img
                                     v-if="settings.vk_icon?.url"
@@ -84,6 +55,7 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="hover:opacity-80 transition-opacity flex items-center justify-center social-icon-link"
+                                aria-label="Instagram"
                             >
                                 <img
                                     v-if="settings.instagram_icon?.url"
@@ -101,6 +73,7 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="hover:opacity-80 transition-opacity flex items-center justify-center social-icon-link"
+                                aria-label="Telegram"
                             >
                                 <img
                                     v-if="settings.telegram_icon?.url"
@@ -113,40 +86,37 @@
                         </div>
                     </div>
 
-                    <!-- Правая колонка: Меню -->
-                    <div v-if="menuItems && menuItems.length > 0" class="w-full">
-                        <div class="grid grid-cols-1 md:grid-cols-2">
+                    <!-- Колонка D: Документы и политика -->
+                    <div class="footer-column">
+                        <h3 class="footer-column-title">Документы</h3>
+                        <nav class="footer-nav">
                             <router-link
-                                v-for="(menuItem, index) in menuItems"
-                                :key="index"
-                                :to="menuItem.slug || menuItem.url || '#'"
-                                class="footer-menu-item"
+                                v-if="settings.privacy_policy_link"
+                                :to="settings.privacy_policy_link"
+                                class="footer-link"
                             >
-                                {{ menuItem.title || menuItem.name }}
+                                Политика конфиденциальности
                             </router-link>
-                        </div>
+                            <router-link to="/personal-data" class="footer-link">Обработка персональных данных</router-link>
+                            <router-link to="/terms" class="footer-link">Пользовательское соглашение</router-link>
+                        </nav>
                     </div>
                 </div>
 
                 <!-- Разделитель -->
-                <div class="border-t border-white/20 mt-3"></div>
+                <div class="border-t border-white/20 mt-8 md:mt-10"></div>
 
-                <!-- Политика конфиденциальности и копирайт -->
-                <div class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <!-- Политика конфиденциальности -->
-                    <div class="flex justify-end sm:justify-start w-full sm:w-auto">
-                        <router-link
-                            v-if="settings && settings.privacy_policy_link"
-                            :to="settings.privacy_policy_link"
-                            class="text-white hover:opacity-80 transition-opacity text-sm sm:text-base"
-                        >
-                            Политика конфиденциальности
-                        </router-link>
+                <!-- Нижняя строка: Копирайт и дополнительные ссылки -->
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <!-- Копирайт -->
+                    <div class="text-white text-sm sm:text-base text-center sm:text-left">
+                        {{ settings?.copyright || '© MNKA 2026. Все права защищены.' }}
                     </div>
 
-                    <!-- Копирайт -->
-                    <div v-if="settings && settings.copyright" class="flex justify-center sm:justify-end text-white text-sm sm:text-base">
-                        {{ settings.copyright }}
+                    <!-- Дополнительные ссылки -->
+                    <div class="flex flex-wrap items-center justify-center sm:justify-end gap-4 text-sm">
+                        <a href="#" class="text-white hover:opacity-80 transition-opacity">Сообщить о нарушении</a>
+                        <a href="#" class="text-white hover:opacity-80 transition-opacity">Правила применения</a>
                     </div>
                 </div>
             </div>
@@ -155,25 +125,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 
 export default {
     name: 'Footer',
     setup() {
         const settings = ref(null);
-        const menuItems = ref([]);
         const loading = ref(true);
-
-        const hasSocialIcons = computed(() => {
-            if (!settings.value || !settings.value.social_networks) return false;
-            const socials = settings.value.social_networks;
-            const data = settings.value;
-            return !!(
-                (socials.vk && (data.vk_icon_svg || (data.vk_icon && data.vk_icon.url))) ||
-                (socials.instagram && (data.instagram_icon_svg || (data.instagram_icon && data.instagram_icon.url))) ||
-                (socials.telegram && (data.telegram_icon_svg || (data.telegram_icon && data.telegram_icon.url)))
-            );
-        });
 
         const fetchSettings = async () => {
             try {
@@ -191,99 +149,58 @@ export default {
             }
         };
 
-        const fetchMenu = async () => {
-            try {
-                const response = await fetch('/api/public/menus/footer');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.data && Array.isArray(data.data)) {
-                        // Преобразуем дерево в плоский массив
-                        const flattenMenu = (items) => {
-                            let result = [];
-                            items.forEach(item => {
-                                result.push(item);
-                                if (item.children && item.children.length > 0) {
-                                    result = result.concat(flattenMenu(item.children));
-                                }
-                            });
-                            return result;
-                        };
-                        menuItems.value = flattenMenu(data.data);
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching footer menu:', error);
-            }
-        };
-
         onMounted(() => {
             fetchSettings();
-            fetchMenu();
         });
 
         return {
             settings,
-            menuItems,
             loading,
-            hasSocialIcons,
         };
     },
 };
 </script>
 
 <style scoped>
-/* Адаптивные стили для социальных сетей */
-@media only screen and (max-width: 767px) {
-    svg {
-        width: 33px;
-        height: 22px;
-    }
-    
-    .flex.justify-end {
-        justify-content: center !important;
-    }
+/* Колонки футера */
+.footer-column {
+    display: flex;
+    flex-direction: column;
 }
 
-/* Стили для ссылок */
-a {
+.footer-column-title {
     color: #FFFFFF;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* Адаптивные размеры текста */
-@media only screen and (max-width: 767px) {
-    .text-xl,
-    .text-2xl {
-        font-size: 1.125rem; /* 18px */
-    }
+.footer-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-/* Стили для меню футера - как на фото */
-.footer-menu-item {
+.footer-link {
     color: #FFFFFF;
     text-decoration: none;
-    font-size: 1rem;
-    line-height: 1;
-    padding: 0;
-    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition: opacity 0.2s ease;
     display: block;
-    transition: opacity 0.3s;
-    margin-bottom: 0.75rem;
 }
 
-.footer-menu-item:hover {
+.footer-link:hover {
     opacity: 0.8;
-}
-
-@media (min-width: 768px) {
-    .footer-menu-item {
-        font-size: 1.125rem;
-    }
 }
 
 /* Стили для иконок соцсетей */
 .social-icon-link {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
 }
 
@@ -298,17 +215,38 @@ a {
 .social-icon-svg svg {
     width: 100%;
     height: 100%;
-    max-width: 60px;
-    max-height: 60px;
+    max-width: 40px;
+    max-height: 40px;
     object-fit: contain;
 }
 
 .social-icon-img {
-    max-width: 60px;
-    max-height: 60px;
+    max-width: 40px;
+    max-height: 40px;
     width: auto;
     height: auto;
     object-fit: contain;
+}
+
+/* Адаптивность */
+@media (max-width: 640px) {
+    .footer-column {
+        margin-bottom: 1.5rem;
+    }
+    
+    .footer-column:last-child {
+        margin-bottom: 0;
+    }
+}
+
+@media (min-width: 1024px) {
+    .footer-column-title {
+        font-size: 1.0625rem;
+    }
+    
+    .footer-link {
+        font-size: 1rem;
+    }
 }
 
 </style>

@@ -39,17 +39,25 @@
                 <div class="mt-6 md:mt-8 grid md:grid-cols-2 gap-6 md:gap-8 items-center">
                     <div>
                         <h1 class="text-2xl md:text-3xl font-semibold text-foreground mb-3 md:text-left text-center">
-                            {{ product.name }}
+                            {{ product.page_title || product.name }}
                         </h1>
                         <div 
-                            v-if="product.description" 
+                            v-if="product.page_subtitle || product.description" 
                             class="text-base md:text-lg text-muted-foreground leading-relaxed md:text-left text-center mb-4"
-                            v-html="typeof product.description === 'string' ? product.description : product.description?.ru || ''"
+                            v-html="product.page_subtitle || (typeof product.description === 'string' ? product.description : product.description?.ru || '')"
                         ></div>
                         <div class="flex justify-center md:justify-start">
+                            <a
+                                v-if="product.cta_link && product.cta_text"
+                                :href="product.cta_link"
+                                class="px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base inline-block"
+                            >
+                                {{ product.cta_text }}
+                            </a>
                             <button
+                                v-else
                                 @click="showFeedbackModal = true"
-                                class="px-6 md:px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
+                                class="px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
                             >
                                 Получить услугу
                             </button>
@@ -170,14 +178,14 @@
                             v-if="stage !== 'success'"
                             @click="handleNextStage"
                             :disabled="!canProceed"
-                            class="w-full md:w-auto md:px-8 h-12 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                            class="w-full md:w-auto px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-base"
                         >
                             {{ stage === 'options' ? 'Получить услугу' : 'Отправить заявку' }}
                         </button>
                         <router-link
                             v-else
                             to="/products"
-                            class="inline-flex items-center justify-center w-full md:w-auto md:px-8 h-12 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium"
+                            class="inline-flex items-center justify-center w-full md:w-auto px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
                         >
                             <span class="text-center">Смотреть другие услуги</span>
                         </router-link>

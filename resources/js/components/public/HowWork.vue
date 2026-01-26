@@ -1,10 +1,10 @@
 <template>
-    <section v-if="settings && settings.is_active" class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20">
+    <section v-if="settings && settings.is_active" class="w-full px-3 sm:px-4 md:px-5 py-20 md:py-24">
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
-            <div v-if="settings.title" class="flex justify-center mb-8 sm:mb-12">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-foreground">
-                    {{ settings.title }}
+            <div v-if="displayTitle" class="flex justify-center mb-8 sm:mb-12">
+                <h2 class="text-2xl md:text-3xl font-semibold text-foreground">
+                    {{ displayTitle }}
                 </h2>
             </div>
 
@@ -14,7 +14,7 @@
                 <div class="w-full md:w-1/2 order-2 md:order-1">
                     <div class="space-y-0">
                         <div
-                            v-for="(step, index) in settings.steps"
+                            v-for="(step, index) in displayItems"
                             :key="index"
                             class="flex gap-4 relative"
                         >
@@ -51,7 +51,7 @@
                                 
                                 <!-- Вертикальная линия (кроме последнего элемента) -->
                                 <div
-                                    v-if="index < settings.steps.length - 1"
+                                    v-if="index < displayItems.length - 1"
                                     class="w-0.5 bg-[#306221] flex-1 min-h-[50px] mt-2"
                                 ></div>
                             </div>
@@ -64,21 +64,28 @@
                                     v-html="step.title"
                                 ></h3>
                                 <p
-                                    v-if="step.description"
+                                    v-if="step.description || step.text"
                                     class="text-sm sm:text-base font-normal text-[#424448] leading-[20px]"
-                                    v-html="step.description"
+                                    v-html="step.description || step.text"
                                 ></p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Кнопка на мобильных (под шагами) -->
-                    <button
-                        v-if="settings.button_text"
-                        @click="handleButtonClick"
-                        class="mt-6 w-full md:hidden px-6 py-3 bg-[#6C7B6D] hover:bg-[#55695a] text-white font-medium rounded-lg transition-colors"
+                    <a
+                        v-if="displayButtonText && displayButtonLink"
+                        :href="displayButtonLink"
+                        class="mt-6 w-full md:hidden px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base text-center inline-block"
                     >
-                        {{ settings.button_text }}
+                        {{ displayButtonText }}
+                    </a>
+                    <button
+                        v-else-if="displayButtonText"
+                        @click="handleButtonClick"
+                        class="mt-6 w-full md:hidden px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
+                    >
+                        {{ displayButtonText }}
                     </button>
                 </div>
 
@@ -94,12 +101,19 @@
                     </div>
 
                     <!-- Кнопка на десктопе (под изображением) -->
-                    <button
-                        v-if="settings.button_text"
-                        @click="handleButtonClick"
-                        class="hidden md:block w-full px-6 py-3 bg-[#6C7B6D] hover:bg-[#55695a] text-white font-medium rounded-lg transition-colors"
+                    <a
+                        v-if="displayButtonText && displayButtonLink"
+                        :href="displayButtonLink"
+                        class="hidden md:block w-full px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base text-center inline-block"
                     >
-                        {{ settings.button_text }}
+                        {{ displayButtonText }}
+                    </a>
+                    <button
+                        v-else-if="displayButtonText"
+                        @click="handleButtonClick"
+                        class="hidden md:block w-full px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
+                    >
+                        {{ displayButtonText }}
                     </button>
                 </div>
             </div>
@@ -120,11 +134,51 @@ export default {
     components: {
         FeedbackModal,
     },
-    setup() {
+    props: {
+        title: {
+            type: String,
+            default: null,
+        },
+        items: {
+            type: Array,
+            default: null,
+        },
+        buttonText: {
+            type: String,
+            default: null,
+        },
+        buttonLink: {
+            type: String,
+            default: null,
+        },
+    },
+    setup(props) {
         const router = useRouter();
         const settings = ref(null);
         const loading = ref(true);
         const showFeedbackModal = ref(false);
+
+        // Computed для отображения с fallback
+        const displayTitle = computed(() => {
+            return props.title || settings.value?.title || null;
+        });
+
+        const displayItems = computed(() => {
+            // Если пришли items из props (HomePageSettings), используем их
+            if (props.items && Array.isArray(props.items)) {
+                return props.items;
+            }
+            // Иначе используем steps из settings
+            return settings.value?.steps || [];
+        });
+
+        const displayButtonText = computed(() => {
+            return props.buttonText || settings.value?.button_text || null;
+        });
+
+        const displayButtonLink = computed(() => {
+            return props.buttonLink || (settings.value?.button_type === 'url' ? settings.value?.button_value : null);
+        });
 
         const fetchSettings = async () => {
             try {
@@ -191,6 +245,10 @@ export default {
             loading,
             imageUrl,
             showFeedbackModal,
+            displayTitle,
+            displayItems,
+            displayButtonText,
+            displayButtonLink,
             handleButtonClick,
             handleFeedbackSuccess,
         };

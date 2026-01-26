@@ -1,5 +1,5 @@
 <template>
-    <section v-if="settings && settings.is_active && cases.length > 0" class="w-full px-3 sm:px-4 md:px-5 py-8 sm:py-12 md:py-16 lg:py-20 bg-background">
+    <section v-if="settings && settings.is_active && cases.length > 0" class="w-full px-3 sm:px-4 md:px-5 py-20 md:py-24 bg-background">
         <div class="w-full max-w-[1200px] mx-auto">
             <!-- Заголовок -->
             <div v-if="settings.title" class="flex justify-center mb-6 md:mb-8">
@@ -21,7 +21,7 @@
             <div class="flex justify-center mt-8 md:mt-12">
                 <router-link
                     to="/cases"
-                    class="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base md:text-lg"
+                    class="inline-flex items-center justify-center px-8 py-3 bg-[#688E67] text-white rounded-lg hover:bg-[#5a7a5a] transition-colors font-medium text-base"
                 >
                     Смотреть все кейсы
                 </router-link>
